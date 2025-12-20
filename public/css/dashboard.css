@@ -1,0 +1,527 @@
+/* =========================================================
+   GLOBAL VARIABLES
+   ========================================================= */
+:root {
+    --radius: 30px;
+}
+
+button,
+.btn,
+.btn-primary,
+.btn-default,
+.btn-secondary,
+.btn-big {
+    font-weight: 400 !important;
+    text-decoration: none;
+}
+
+
+/* =========================================================
+   GLOBAL RESET + BOX MODEL
+   ========================================================= */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+/* =========================================================
+   GLOBAL PAGE BACKGROUND
+   ========================================================= */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: "TTNorms", "Ubuntu", "Inter", Arial, sans-serif;
+    background: linear-gradient(135deg, #0B466E 0%, #001F33 70%);
+    min-height: 100vh;
+    background-attachment: fixed;
+    color: #001F33;
+    overflow-x: hidden;
+}
+
+.dash-block-title {
+    font-size: 22px;
+    font-weight: 600;
+    margin: 35px 0 15px;
+    color: #333333;
+}
+
+.dash-block-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+}
+
+.dash-card {
+    background: #f7fafc;
+    border: 1px solid #e2e8f0;
+    padding: 22px;
+    border-radius: 18px;
+    text-decoration: none;
+    color: #001F33;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: 0.25s;
+}
+
+.dash-card:hover {
+    background: #e8f3ff;
+    border-color: #cbd5e1;
+    transform: translateY(-3px);
+}
+
+.dash-card i {
+    font-size: 26px;
+    color: #333333;
+}
+
+.dash-card-title {
+    font-size: 17px;
+    font-weight: 600;
+}
+
+.dash-card-desc {
+    font-size: 14px;
+    color: #4a5568;
+}
+
+.dash-card-red {
+    background: #fff5f5;
+    border-color: #fecaca;
+}
+
+.dash-card-red:hover {
+    background: #ffe3e3;
+    border-color: #fca5a5;
+}
+
+
+/* =========================================================
+   TOPBAR
+   ========================================================= */
+.topbar {
+    width: 100%;
+    background: rgba(0, 31, 51, 0.45);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    padding: 14px 0;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+    position: sticky;
+    top: 0;
+    z-index: 999;
+}
+
+.topbar-inner {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+/* LEFT */
+.topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;                /* даём тексту возможность сжиматься */
+}
+
+.topbar-logo {
+    height: 40px;
+    flex-shrink: 0;
+}
+
+.topbar-title {
+    font-size: 20px;
+    font-weight: 400;
+    color: #fff;
+    line-height: 1.2;
+
+    white-space: normal; 
+    overflow: visible; 
+    text-overflow: clip; 
+    max-width: unset;  
+}
+
+/* Корзина: улучшенная читаемость и отступы */
+.topbar-cart-info {
+    font-size: 14px;
+    font-weight: 300;
+    opacity: 0.9;
+    margin-left: 6px;
+    white-space: nowrap;
+    text-shadow: 0 0 3px rgba(0, 0, 0, 0.35);
+}
+
+.topbar .topbar-cart-info {
+    color: #fff !important;
+}
+
+.topbar-cart-info:hover {
+    opacity: 1;
+}
+
+/* Увеличиваем расстояние между элементами справа */
+.topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 18px; /* увеличили для лучшего дыхания */
+    flex-shrink: 0;   
+}
+
+/* Подсветка корзины, когда она НЕ пуста */
+.cart-not-empty i {
+    color: #ffd84b !important; /* золотистый акцент */
+    opacity: 1 !important;
+    text-shadow: 0 0 6px rgba(255, 217, 81, 0.65);
+}
+
+/* Иконки справа */
+.topbar-icon {
+    font-size: 22px;
+    color: #fff;
+    opacity: 0.85;
+    transition: 0.2s;
+}
+.topbar-icon:hover {
+    opacity: 1;
+}
+
+/* Бургер */
+.topbar-burger {
+    font-size: 28px;
+    background: none;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+
+    display: none; /* На десктопе не показываем */
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+}
+
+/* =========================================================
+   BURGER MENU
+   ========================================================= */
+.burger-overlay {
+    position: fixed;
+    top: 0;
+    right: 0;
+    transform: translateX(100%);
+    width: 280px;
+    height: 100vh;
+    background: rgba(255,255,255,0.97);
+    backdrop-filter: blur(10px);
+    padding: 30px;
+    transition: transform 0.35s ease;
+    z-index: 9999;
+}
+
+.burger-overlay.open {
+    transform: translateX(0);
+}
+
+.burger-inner a {
+    display: block;
+    padding: 12px 0;
+    font-size: 17px;
+    color: #001F33;
+    text-decoration: none;
+    font-weight: 500;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+
+.burger-inner a i {
+    margin-right: 10px;
+    color: #0B466E;
+}
+
+/* =========================================================
+   PAGE WRAPPER
+   ========================================================= */
+.page-wrapper {
+    width: 100%;
+    padding: 40px 20px 60px;
+    display: flex;
+    justify-content: center;
+}
+
+/* =========================================================
+   WHITE CARD PANEL
+   ========================================================= */
+.page-card {
+    background: #fff;
+    width: 100%;
+    max-width: 1050px;
+    padding: 45px 55px;
+    border-radius: var(--radius);
+    box-shadow: 0 10px 35px rgba(0,0,0,0.25);
+}
+
+.page-title {
+    font-size: 32px;
+    font-weight: 800;
+    margin-bottom: 5px;
+    color: #333333;
+}
+
+.page-subtitle {
+    font-size: 16px;
+    margin-bottom: 30px;
+    color: #555;
+}
+
+/* =========================================================
+   SECTIONS
+   ========================================================= */
+.section-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 25px 0 15px;
+    color: #001F33;
+}
+
+/* =========================================================
+   MENU GRID
+   ========================================================= */
+.menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 18px;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #f6f9fc;
+    padding: 16px 18px;
+    border-radius: var(--radius);
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 500;
+    color: #001F33;
+    border: 1px solid #e5e8ef;
+    transition: 0.2s;
+}
+
+.menu-item:hover {
+    background: #e9f3fb;
+    transform: translateY(-2px);
+    border-color: #cfd8e3;
+}
+
+.menu-icon {
+    font-size: 22px;
+    color: #0B466E;
+}
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+.dashboard-footer {
+    text-align: center;
+    margin-top: 40px;
+    font-size: 14px;
+    color: rgba(0,0,0,0.35);
+    line-height: 1.6;
+}
+
+.dashboard-footer a {
+    color: #3294d1a2;
+    text-decoration: underline;
+    transition: 0.2s;
+}
+.dashboard-footer a:hover {
+    color: #0B466E;
+}
+
+/* =========================================================
+   INFO MESSAGE (dashboard notices)
+   ========================================================= */
+.info-message {
+    background: #eaf4ff;
+    border: 1px solid #cfe4ff;
+    color: #003b66;
+    padding: 14px 18px;
+    border-radius: 14px;
+    font-size: 15px;
+    margin: -10px 0 25px 0;
+    line-height: 1.55;
+
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.info-message:before {
+    content: "\f431"; /* icon: info-circle-fill */
+    font-family: "bootstrap-icons";
+    font-size: 18px;
+    flex-shrink: 0;
+    margin-top: 1px;
+    color: #0b466e;
+}
+
+/* =========================================================
+   TOOLBAR MENU
+   ========================================================= */
+
+/* Тулбар только на десктопе */
+.toolbar {
+    display: flex;
+    justify-content: center;
+}
+
+/*
+    Чтобы отвязать тулбар от топбара — достаточно убрать 
+    position: sticky и top: 64px у .toolbar-wrapper 
+    (или вообще не использовать .toolbar-wrapper).
+*/
+
+.toolbar-wrapper {
+    position: sticky;
+    top: 72px;
+    z-index: 998;
+}
+
+.toolbar {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.5);
+    padding: 10px 18px;
+
+    display: flex; /* Тулбар только на десктопе */
+    justify-content: center; /* Тулбар только на десктопе */
+    gap: 10px; /* Расстояние между элементами */
+}
+
+.toolbar-item {
+    color: #001F33;
+    background: #eaf4ff;
+    font-weight: 400;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 20px; /* воздушность элемента */
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+    transition: 0.2s;
+    border-color: #b4b4b4;
+}
+
+.toolbar-item:hover {
+    background: #bae4ff;
+    color: #0B466E;
+    font-weight: 400;
+    transition: 0.2s;
+    border-color: #89c9f9;
+}
+
+/* Активный пункт тулбара */
+.toolbar-item.active {
+    background: #3295D1;
+    color: #fff;
+    font-weight: 500;
+    border-radius: var(--radius);
+    border: none;
+}
+
+/* =========================================================
+   FORMS AND BUTTONS — UNIFIED RADIUS
+   ========================================================= */
+
+input,
+select,
+textarea,
+button,
+.form-input,
+.form-select,
+.form-textarea,
+.form-btn,
+.auth-input-glass,
+.auth-btn-glass,
+a.button,
+.btn {
+    border-radius: var(--radius) !important;
+}
+
+/* ===============================
+   NOTIFICATIONS ICON + BADGE
+   =============================== */
+.topbar-notify {
+    position: relative;
+}
+
+.notify-badge {
+    position: absolute;
+    top: -6px;
+    right: -9px;
+    background: #ff4d4d;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 400;
+    padding: 2px 5px;
+    border-radius: 12px;
+    box-shadow: 0 0 4px rgba(0,0,0,0.25);
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width: 900px) {
+    .topbar-title {
+        max-width: 160px;
+        font-size: 14px;
+    }
+
+    .page-card {
+        padding: 35px 28px;
+    }
+
+    /* На мобилке показываем бургер */
+    .topbar-burger {
+        display: flex;
+    }
+
+    /* На мобилке убираем тулбар */
+    .toolbar-wrapper {
+        display: none;
+    }
+}
+
+@media (max-width: 600px) {
+    .topbar-title {
+        max-width: 120px;
+        font-size: 13px;
+    }
+
+    .page-card {
+        padding: 28px 20px;
+    }
+
+    .page-title {
+        font-size: 22px;
+    }
+
+    .topbar-cart-info {
+        display: none !important;
+    }
+}
+
+
+/* =========================================================
+   MOBILE: Скрываем текст корзины, оставляем иконку
+   ========================================================= */
+@media (max-width: 600px) {
+    .topbar-cart-info {
+        display: none !important;
+    }
+}

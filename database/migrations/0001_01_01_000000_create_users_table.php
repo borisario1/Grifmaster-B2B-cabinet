@@ -11,12 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('b2b_users', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            // $table->string('name'); // В форме регистрации имени нет, можно сделать nullable или убрать
             $table->string('email')->unique();
+            $table->string('phone')->nullable(); // Добавляем, так как валидируем
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->string('role')->default('partner'); 
+            $table->string('status')->default('active');
             $table->rememberToken();
             $table->timestamps();
         });
@@ -42,7 +45,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('b2b_users');
         Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
     }

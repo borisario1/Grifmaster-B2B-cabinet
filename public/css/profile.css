@@ -1,0 +1,303 @@
+/* =========================================================
+   PROFILE PAGE
+   ========================================================= */
+
+/* ==== GRID (карточки профиля) ==== */
+.profile-view-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 22px;
+    margin-top: 15px;
+}
+
+/* ==== Карточка групп данных ==== */
+.profile-view-card {
+    background: #f6f9fc;
+    border: 1px solid #e5e8ef;
+    border-radius: 18px;
+    padding: 20px 22px;
+}
+
+/* ==== Заголовок мини-группы ==== */
+.profile-view-card .group-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 14px;
+    color: #0B466E;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ==== Строки данных ==== */
+.profile-view-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #edf0f3;
+    font-size: 15px;
+}
+
+.profile-view-row:last-child {
+    border-bottom: none;
+}
+
+.profile-view-row span {
+    color: #555;
+}
+
+.profile-view-row strong {
+    font-weight: 600;
+    color: #001F33;
+}
+
+/* ==== Основные секции профиля ==== */
+.profile-section {
+    background: #ffffff;
+    padding: 28px 32px;
+    border-radius: 22px;
+    border: 1px solid #e5e8ef;
+    margin-bottom: 28px;
+}
+
+.profile-section .section-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #001F33;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+/* ==== Форма редактирования (grid) ==== */
+.profile-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 22px 28px;
+    margin-top: 10px;
+}
+
+@media(max-width: 760px) {
+    .profile-view-grid {
+        grid-template-columns: 1fr;
+    }
+    .profile-form-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ==== Поля формы ==== */
+.profile-section .form-group label {
+    font-size: 14px;
+    color: #0B466E;
+    font-weight: 600;
+    margin-bottom: 6px;
+    display: block;
+}
+
+.profile-section .form-group input {
+    width: 100%;
+    padding: 11px 14px;
+    border-radius: 12px;
+    border: 1px solid #d7dce2;
+    font-size: 15px;
+    transition: .2s;
+}
+
+.profile-section .form-group input:focus {
+    border-color: #3295D1;
+    box-shadow: 0 0 0 3px rgba(50, 149, 209, .2);
+    outline: none;
+}
+
+/* ==== Кнопки ==== */
+.profile-save-btn,
+.profile-password-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 22px;
+    background: #0B466E;
+    color: white;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: .25s;
+    margin-top: 10px;
+}
+
+.profile-save-btn:hover,
+.profile-password-btn:hover {
+    background: #093a58;
+}
+
+/* ==== Сообщение о неполном профиле ==== */
+.profile-required-alert {
+    background: #fff3cd;
+    border: 1px solid #ffe49b;
+    padding: 16px 20px;
+    border-radius: 14px;
+    margin-bottom: 26px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    color: #856404;
+    font-size: 15px;
+}
+
+.profile-required-alert i {
+    font-size: 20px;
+    color: #aa8300;
+}
+
+/* ==== Сообщения успеха ==== */
+.info-message {
+    margin-top: 10px;
+}
+.info-required {
+    margin-bottom: 20px;
+}
+
+/* ============================
+   TOGGLE SWITCHES
+============================ */
+.toggle-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f6f9fc;
+    border: 1px solid #e5e8ef;
+    padding: 16px 20px;
+    border-radius: 16px;
+    margin-bottom: 14px;
+}
+
+.toggle-text {
+    display: flex;
+    flex-direction: column;
+    max-width: 80%;
+}
+
+.toggle-text strong {
+    font-size: 16px;
+    color: #001F33;
+    margin-bottom: 4px;
+    font-weight: 500;
+}
+
+.toggle-desc {
+    font-size: 14px;
+    color: #555;
+    line-height: 1.4;
+    font-weight: 300;
+}
+
+/* ---- switch ---- */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 48px;
+    height: 26px;
+}
+
+.switch input {
+    display: none;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    background-color: #d0d6dd;
+    border-radius: 34px;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    transition: .25s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    border-radius: 50%;
+    transition: .25s;
+}
+
+input:checked + .slider {
+    background-color: #3295D1;
+}
+
+input:checked + .slider:before {
+    transform: translateX(22px);
+}
+
+input:disabled + .slider {
+    background-color: #3294d1ab;
+    opacity: .7;
+    cursor: not-allowed;
+}
+
+/* ===============================
+   TABS
+=============================== */
+
+.tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 22px;
+    border-bottom: 1px solid #e5e8ef;
+    padding-bottom: 8px;
+}
+
+.tab-btn {
+    padding: 10px 22px;
+    font-size: 15px;
+    background: #f3f7fb;
+    border: 1px solid #d7dce2;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: .25s;
+    color: #001F33;
+}
+
+.tab-btn:hover {
+    background: #e3eef7;
+}
+
+.tab-btn.active {
+    background: #3295D1;
+    color: #fff;
+    border-color: #3295D1;
+    font-weight: 600;
+    /* box-shadow: 0 2px 6px rgba(50,149,209,0.35); */
+}
+
+.tab-section {
+    animation: fadein .25s ease;
+}
+
+@keyframes fadein {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+    .tabs {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .tab-btn {
+        flex: 1 1 auto;
+        text-align: center;
+        padding: 10px 14px;
+    }
+}

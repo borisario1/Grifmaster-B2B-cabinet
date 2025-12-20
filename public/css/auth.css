@@ -1,0 +1,208 @@
+/* ==== WRAPPER ==== */
+.auth-wrapper {
+    background: linear-gradient(135deg, #0B466E 0%, #001F33 70%);
+    min-height: 100vh;
+    padding: 20px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+/* ==== CLASSIC CARD ==== */
+.auth-card {
+    background:#fff;
+    width:100%;
+    max-width:480px;
+    padding:40px 45px;
+    border-radius:28px;
+    box-shadow:0 18px 40px rgba(0,0,0,0.25);
+}
+
+/* ==== GLASS CARD (Tilda-style) ==== */
+.auth-card-glass {
+    background:rgba(255,255,255,0.15);
+    backdrop-filter:blur(20px);
+    -webkit-backdrop-filter:blur(20px);
+    border-radius:30px;
+    padding:50px 55px;
+    width:100%;
+    max-width:520px;
+    color:#fff;
+    box-shadow:0 10px 40px rgba(0,0,0,0.25);
+    border:1px solid rgba(255,255,255,0.28);
+}
+
+/* ==== LOGO ==== */
+.auth-logo, .auth-logo-glass {
+    border-radius:50%;
+    margin-bottom:15px;
+}
+.auth-logo { width:95px; box-shadow:0 4px 12px rgba(0,0,0,0.15); }
+.auth-logo-glass { width:110px; margin-bottom:20px; box-shadow:0 0 18px rgba(255,255,255,0.3); }
+
+/* ==== TEXT ==== */
+.auth-title {
+    font-size:28px;
+    font-weight:700;
+    margin-bottom:15px;
+}
+.auth-subtitle {
+    font-size:18px;
+    font-weight:300;
+    opacity:0.80;
+    margin-bottom:30px;
+}
+
+/* White text inside glass */
+.auth-card-glass .auth-title,
+.auth-card-glass .auth-subtitle,
+.auth-card-glass label {
+    color:#fff;
+}
+
+/* ==== INPUTS ==== */
+.auth-input,
+.auth-input-glass {
+    border-radius:20px!important;
+    padding:14px 18px!important;
+    font-size:15px;
+}
+
+.auth-input {
+    border:1px solid #d6dce2;
+}
+.auth-input:focus {
+    border-color:#3295D1;
+    box-shadow:0 0 0 4px rgba(50,149,209,0.25);
+}
+
+.auth-input-glass {
+    background:rgba(255,255,255,0.25);
+    border:none;
+    color:#001F33!important;
+    font-size:16px;
+}
+.auth-input-glass::placeholder {
+    color:rgba(255,255,255,0.65);
+}
+
+/* ==== BUTTONS ==== */
+.auth-btn-primary,
+.auth-btn-glass {
+    border:none;
+    width:100%;
+    border-radius:30px!important;
+    padding:14px;
+    font-size:16px;
+    font-weight:500;
+    transition:0.25s;
+    color:#fff;
+}
+
+.auth-btn-primary { background:#3295D1; }
+.auth-btn-primary:hover { background:#0B466E; }
+
+.auth-btn-glass { background:#3295d1; }
+.auth-btn-glass:hover {
+    background:#001f33;
+    box-shadow:0 2px 6px rgba(0,11,48,0.25);
+}
+
+/* ==== ERROR ==== */
+.auth-error {
+    background:#ffe4e4;
+    border-left:4px solid #ff4a4a;
+    padding:12px;
+    border-radius:12px;
+    color:#b00000;
+    font-size:14px;
+    margin-bottom:20px;
+}
+
+/* ==== LINKS ==== */
+.auth-link {
+    color:#fff;
+    font-size:15px;
+    text-decoration:underline;
+    opacity:0.9;
+    transition:0.2s;
+}
+.auth-link:hover { opacity:1; }
+
+.politic_check span {
+    font-size:14px;
+    font-weight:400;
+    line-height: 1.15; /* компактно, но не впритык */
+    display: inline-block;
+}
+
+.auth-subtitle {
+    margin-bottom: 20px;
+}
+
+
+/* ==== TECH FOOTER ==== */
+.auth-tech-footer {
+    margin-top: 25px;
+    font-size: 13px;
+    text-align: center;
+    color: rgba(255,255,255,0.30);
+    line-height: 1.6;
+}
+
+.auth-tech-footer a {
+    color: rgba(255,255,255,0.40);
+    text-decoration: underline;
+    transition: 0.25s;
+}
+
+.auth-tech-footer a:hover {
+    color: rgba(255,255,255,0.80);
+}
+
+        .code-input-wrapper {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 25px;
+        }
+        .code-input {
+            width: 55px;
+            height: 70px;
+            font-size: 38px;
+            text-align: center;
+            border-radius: 12px;
+            border: 2px solid rgba(255,255,255,0.5);
+            background: rgba(255,255,255,0.15);
+            color: white;
+            outline: none;
+        }
+        .code-input:focus {
+            border-color: #fff;
+            background: rgba(255,255,255,0.25);
+        }
+        .disabled-btn {
+            opacity: .45;
+            cursor: not-allowed !important;
+            pointer-events: none;
+        }
+
+/* ===================== BROKEN LAMP — HARD FLICKER ===================== */
+@keyframes randomFlicker {
+    0%   { opacity: 1; }
+    3%   { opacity: 0; }
+    5%   { opacity: 1; }
+    7%   { opacity: 0; }
+    11%  { opacity: 1; }
+    13%  { opacity: .4; }
+    15%  { opacity: 1; }
+    18%  { opacity: 0; }
+    22%  { opacity: 1; }
+    100% { opacity: 1; }
+}
+
+.flash-text {
+    white-space: nowrap;
+    display: inline-block;
+    animation: randomFlicker 2.2s infinite steps(2, end);
+}

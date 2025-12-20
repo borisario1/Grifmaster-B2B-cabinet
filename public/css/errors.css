@@ -1,0 +1,30 @@
+.error-card {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.error-icon {
+    font-size: 60px;
+    color: #d9534f;
+    margin-bottom: 20px;
+}
+
+.error-title {
+    font-size: 34px;
+    color: #001F33;
+    margin-bottom: 10px;
+}
+
+.error-text {
+    font-size: 18px;
+    color: #444;
+    margin-bottom: 30px;
+    line-height: 1.55;
+}
+
+.error-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}

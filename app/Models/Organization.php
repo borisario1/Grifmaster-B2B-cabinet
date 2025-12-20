@@ -7,8 +7,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Organization extends Model
 {
-    use HasFactory; // Это нужно, чтобы работали фабрики (создание тестовых данных)
-
+    use HasFactory; // Это нужно, чтобы работали фабрики (создание тестовых данных)\
+    protected $table = 'b2b_organizations';
         protected $fillable = [
             'user_id',
             'name',
