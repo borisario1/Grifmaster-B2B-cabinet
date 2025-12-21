@@ -68,11 +68,9 @@ test('контроллер профиля возвращает страницу 
 });
 
 test('дашборд отображает ключевые группы меню для авторизованного пользователя', function () {
-    // 1. Создаем простого пользователя
     $user = \App\Models\User::factory()->create();
 
-    // 2. СОЗДАЕМ ЕМУ ПРОФИЛЬ в отдельной таблице b2b_user_profile
-    // Именно наличие этой записи проверяет Middleware 'check.profile'
+    // Создаем профиль, чтобы Middleware пропустил
     \App\Models\UserProfile::create([
         'user_id'    => $user->id,
         'last_name'  => 'Иванов',
@@ -80,19 +78,16 @@ test('дашборд отображает ключевые группы меню
         'birth_date' => '1990-01-01',
     ]);
 
-    // 3. Теперь заходим на дашборд
     $response = $this->actingAs($user)->get('/dashboard');
 
-    // Теперь статус будет 200, так как Middleware нашел профиль
     $response->assertStatus(200);
     
-    // Проверяем наличие заголовков блоков (из твоего b2b_menu.php)
+    // Проверяем актуальные заголовки с твоего скриншота
     $response->assertSee('Заказы и каталог');
-    $response->assertSee('Бизнес-инструменты');
+    $response->assertSee('Бизнес, организации и документы');
     $response->assertSee('Настройки и сервисы');
 
-    // Проверяем наличие конкретных пунктов меню
+    // Проверяем конкретные пункты
     $response->assertSee('Каталог');
-    $response->assertSee('Прайс-листы');
-    $response->assertSee('Мой профиль');
+    $response->assertSee('Организации');
 });

@@ -26,30 +26,24 @@ class CheckProfileComplete
         if (Auth::check()) {
             $user = Auth::user();
             
-            // Загружаем связанный профиль (отношение profile)
+            // Благодаря withDefault() в модели User, здесь всегда будет объект, а не null
             $profile = $user->profile;
 
-            // Обязательные поля
+            // Обязательные поля для доступа к системе
             $required = ['last_name', 'first_name', 'birth_date'];
-
             $isComplete = true;
 
-            // Если профиля вообще нет в базе
-            if (!$profile) {
-                $isComplete = false;
-            } else {
-                // Если профиль есть, проверяем поля именно в НЕМ ($profile), а не в $user
-                foreach ($required as $field) {
-                    if (empty($profile->$field)) {
-                        $isComplete = false;
-                        break;
-                    }
+            foreach ($required as $field) {
+                if (empty($profile->$field)) {
+                    $isComplete = false;
+                    break;
                 }
             }
 
-            // Если не заполнено и мы не на странице профиля — отправляем заполнять
+            // Если профиль "пустой" и пользователь пытается уйти с регистрации/профиля дальше в систему
             if (!$isComplete && !$request->is('profile*')) {
-                return redirect()->route('profile.edit')->with('complete_required', true);
+                return redirect()->route('profile.edit')
+                    ->with('complete_required', 'Пожалуйста, завершите заполнение профиля.');
             }
         }
 

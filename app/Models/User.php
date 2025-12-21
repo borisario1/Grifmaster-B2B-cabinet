@@ -61,6 +61,12 @@ class User extends Authenticatable
      */
     public function profile()
     {
-        return $this->hasOne(UserProfile::class, 'user_id');
+        // withDefault создает пустой объект в памяти, если записи в БД нет.
+        // Теперь $user->profile всегда будет объектом, а не null.
+        return $this->hasOne(UserProfile::class, 'user_id')->withDefault([
+            'last_name' => '',
+            'first_name' => '',
+            'birth_date' => null,
+        ]);
     }
 }

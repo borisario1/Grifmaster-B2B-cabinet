@@ -1,14 +1,17 @@
 {{-- 
     Название: register.blade.php
-    Дата-время: 20-12-2025 23:30
-    Описание: Страница первичной регистрации. Сбор email, телефона и пароля.
+    Дата-время: 21-12-2025 19:45
+    Описание: Страница первичной регистрации. 
+    Данные брендинга тянутся из b2b.php.
 --}}
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Регистрация — Grifmaster B2B</title>
+    {{-- Используем системное название из конфига --}}
+    <title>Регистрация — {{ config('b2b.app_name') }}</title>
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/auth.css') }}">
 </head>
@@ -17,13 +20,15 @@
 <div class="auth-wrapper d-flex flex-column align-items-center justify-content-center">
     <div class="auth-card-glass">
         <div class="text-center mb-4">
-            <img src="https://qr.grifmaster.ru/uploads/img/logo_circle.jpg" class="auth-logo-glass" alt="Grifmaster">
+            {{-- Ссылка на логотип из конфига --}}
+            <img src="{{ config('b2b.branding.fav_icon') }}" class="auth-logo-glass" alt="{{ config('b2b.app_name') }}">
+            
             <h3 class="auth-title">Регистрация</h3>
             <p class="auth-subtitle">Создание аккаунта партнёра</p>
         </div>
 
         @if ($errors->any())
-            <div class="auth-error mb-3">
+            <div class="auth-error mb-3 text-center">
                 @foreach ($errors->all() as $error)
                     <div>{{ $error }}</div>
                 @endforeach
@@ -39,7 +44,7 @@
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Телефон (+7 XXX ...)</label>
+                <label class="form-label">Телефон (+7 900 000-00-00)</label>
                 <input type="text" class="form-control auth-input-glass" name="phone" id="phoneMask" value="{{ old('phone') }}" required>
             </div>
 
@@ -62,10 +67,15 @@
     </div>
 </div>
 
-{{-- Подключаем маску телефона, если она была в проекте --}}
+{{-- Подключаем маску телефона --}}
 <script src="https://unpkg.com/imask"></script>
 <script>
-    IMask(document.getElementById('phoneMask'), { mask: '+{7} (000) 000-00-00' });
+    document.addEventListener("DOMContentLoaded", function() {
+        const phoneEl = document.getElementById('phoneMask');
+        if (phoneEl) {
+            IMask(phoneEl, { mask: '+{7} (000) 000-00-00' });
+        }
+    });
 </script>
 
 </body>

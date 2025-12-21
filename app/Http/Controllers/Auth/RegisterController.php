@@ -15,100 +15,132 @@ use App\Services\MailService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
 class RegisterController extends Controller
 {
-    /**
-     * Показать форму регистрации
-     */
-    public function showRegister()
-    {
-        return view('auth.register');
-    }
+    public function showRegister() { return view('auth.register'); }
 
     /**
-     * Обработка данных формы и отправка кода
+     * Обработка регистрации с учетом отказоустойчивости почты
      */
     public function register(Request $request)
     {
         $request->validate([
-        'email' => 'required|email|unique:b2b_users,email',
-        'phone' => 'required',
-        'password' => 'required|min:8|confirmed',
+            'email' => 'required|email|unique:b2b_users,email',
+            'phone' => 'required',
+            'password' => 'required|min:8|confirmed',
         ]);
 
         $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-        
-        // Очистка старых попыток этого email и запись в b2b_users_temp
-        DB::table('b2b_users_temp')->where('email', $request->email)->delete();
-        
-        DB::table('b2b_users_temp')->insert([
-            'email' => $request->email,
-            'phone' => $request->phone,
-            'password_hash' => Hash::make($request->password),
-            'code' => $code,
-            'created_at' => now(),
-        ]);
+        $passwordHash = Hash::make($request->password);
 
-        // Отправка через наш MailService
-        $html = view('emails.register_confirm', ['code' => $code])->render();
-        
-        // Попытка отправки через внешний API
-        $sent = MailService::send($request->email, "Код подтверждения — Grifmaster B2B", $html);
-
-        if (!$sent) {
-            // Если письмо не ушло, возвращаем ошибку, чтобы юзер не ждал зря
-            return back()->withErrors(['email' => 'Ошибка отправки письма. Пожалуйста, обратитесь в поддержку.']);
+        // 1. Проверяем глобальный конфиг (мгновенная регистрация)
+        if (config('b2b.registration_direct')) {
+            return $this->finalizeRegistration($request->email, $request->phone, $passwordHash, true);
         }
-        // Сохраняем email в сессию, чтобы знать, кого проверять на странице verify
-        session(['register_email' => $request->email]);
 
+        // 2. Временная запись для верификации
+        DB::table('b2b_users_temp')->updateOrInsert(
+            ['email' => $request->email],
+            [
+                'phone' => $request->phone,
+                'password_hash' => $passwordHash,
+                'code' => $code,
+                'created_at' => now(),
+            ]
+        );
+
+        // 3. Попытка отправки письма
+        try {
+            $html = view('emails.register_confirm', ['code' => $code])->render();
+            $sent = MailService::send($request->email, "Код подтверждения — Grifmaster B2B", $html);
+        } catch (\Exception $e) {
+            $sent = false; // Перехватываем ошибки соединения/VPN
+        }
+
+        // НОВЫЙ НЮАНС: Если письмо не ушло — создаем аккаунт сразу, но без отметки о верификации
+        if (!$sent) {
+            return $this->finalizeRegistration($request->email, $request->phone, $passwordHash, false);
+        }
+
+        session(['register_email' => $request->email]);
         return redirect()->route('register.verify');
     }
 
     /**
-     * Страница ввода кода (твой verify.php)
-     */
-    public function showVerify()
-    {
-        if (!session('register_email')) return redirect()->route('register');
-        return view('auth.verify', ['email' => session('register_email')]);
-    }
-
-    /**
-     * Финальная проверка кода и создание юзера
+     * Финальный шаг верификации (ручной ввод кода)
      */
     public function verify(Request $request)
     {
-        $email = session('register_email');
+        $email = session('register_email') ?? auth()->user()?->email;
+
+        if (!$email) {
+            return redirect()->route('login');
+        }
+
         $tempUser = DB::table('b2b_users_temp')->where('email', $email)->first();
 
         if (!$tempUser || $tempUser->code !== $request->code) {
             return back()->withErrors(['code' => 'Неверный код подтверждения']);
         }
 
-        // Транзакция: создаем юзера и удаляем временные данные
-        DB::transaction(function () use ($tempUser) {
-            // В методе verify()
-            $user = User::create([
-                'email' => $tempUser->email,
-                'phone' => $tempUser->phone,
-                'password' => $tempUser->password_hash,
-                'role' => 'partner',
-                'status' => 'active',
-            ]);
+        // ТЕПЕРЬ: Если юзера нет, создаем его через finalizeRegistration
+        $user = User::where('email', $tempUser->email)->first();
+        
+        if (!$user) {
+            return $this->finalizeRegistration(
+                $tempUser->email, 
+                $tempUser->phone, 
+                $tempUser->password_hash, 
+                true
+            );
+        }
+
+        // Если юзер уже был (отказоустойчивый путь), просто подтверждаем
+        DB::transaction(function () use ($tempUser, $user) {
+            $user->update(['email_verified_at' => now()]);
             DB::table('b2b_users_temp')->where('email', $tempUser->email)->delete();
-            
-            // Авторизуем пользователя
-            auth()->login($user);
         });
 
         return view('auth.success', [
-            'title' => 'Готово!',
-            'message' => 'Ваш аккаунт успешно создан! Сейчас вы будете перенаправлены в профиль.',
-            'redirect_to' => route('profile.edit'),
+            'title' => 'Почта подтверждена!',
+            'message' => 'Спасибо! Ваш Email успешно подтвержден.',
+            'redirect_to' => route('dashboard'),
             'delay' => 3
+        ]);
+    }
+
+    /**
+     * Метод "под ключ" для создания юзера
+     * @param bool $isVerified - проставлять ли дату подтверждения
+     */
+    private function finalizeRegistration($email, $phone, $passwordHash, $isVerified = false)
+    {
+        $user = DB::transaction(function () use ($email, $phone, $passwordHash, $isVerified) {
+            $user = User::create([
+                'email' => $email,
+                'phone' => $phone,
+                'password' => $passwordHash,
+                'role' => 'partner',
+                'status' => 'active',
+                'email_verified_at' => $isVerified ? now() : null, // Вот наш флаг
+            ]);
+
+            DB::table('b2b_users_temp')->where('email', $email)->delete();
+            return $user;
+        });
+
+        auth()->login($user);
+
+        $message = $isVerified 
+            ? 'Ваш аккаунт успешно создан!' 
+            : 'Аккаунт создан, но возникли проблемы с отправкой письма подтверждения. Вы можете начать работу, но позже подтвердите Email.';
+
+        return view('auth.success', [
+            'title' => 'Готово!',
+            'message' => $message,
+            'redirect_to' => route('profile.edit'),
+            'delay' => 4
         ]);
     }
 }

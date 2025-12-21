@@ -36,36 +36,25 @@ Route::middleware('guest')->group(function () {
 
 
 /**
- * Название: Группа маршрутов Auth (Авторизованные)
- * Описание: Защищенная область. Включает проверку заполненности профиля.
+ * Название: Группа маршрутов Auth (Авторизованные + Проверенные)
+ * Описание: Сюда пускаем только тех, кто вошел И заполнил профиль.
  */
 Route::middleware(['auth', 'check.profile'])->group(function () {
-    
-    // Главный экран партнера (Dashboard)
     Route::get('/dashboard', function () {
-        $path = base_path('config/b2b_menu.php');
-        
-        // Проверка файла, чтобы не падать с 500
-        $menu = file_exists($path) ? require $path : [];
-
-        return view('dashboard', ['menu' => $menu]);
-    })->name('dashboard')->middleware(['auth', 'check.profile']);
-
-    // Маршрут для выхода
+            return view('dashboard', [
+                'menu' => config('b2b_menu')
+            ]);
+        })->name('dashboard');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });
 
 /**
- * Название: Исключения профиля (Auth)
- * Описание: Маршруты для заполнения данных профиля. Доступны всем авторизованным.
+ * Название: Исключения профиля
+ * Описание: Доступно всем залогиненным (даже с пустым профилем), 
+ * чтобы они могли этот профиль заполнить или подтвердить почту.
  */
 Route::middleware('auth')->group(function () {
-    // Отображение страницы профиля (где форма заполнения)
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    
-    // Сохранение данных профиля
     Route::post('/profile/save', [ProfileController::class, 'update'])->name('profile.update');
-    
-    // Сохранение (смена) пароля
     Route::post('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
 });
