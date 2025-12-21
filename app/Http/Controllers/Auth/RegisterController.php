@@ -104,6 +104,11 @@ class RegisterController extends Controller
             auth()->login($user);
         });
 
-        return view('auth.register_success', ['ok_message' => 'Ваш аккаунт успешно создан!']);
+        return view('auth.success', [
+            'title' => 'Готово!',
+            'message' => 'Ваш аккаунт успешно создан! Сейчас вы будете перенаправлены в профиль.',
+            'redirect_to' => route('profile.edit'),
+            'delay' => 3
+        ]);
     }
 }

@@ -17,6 +17,11 @@ use Mockery;
 
 uses(TestCase::class, RefreshDatabase::class);
 
+beforeEach(function () {
+    // Отключает вообще все проверки CSRF для этого файла тестов
+    $this->withoutMiddleware(); 
+});
+
 test('пользователь может инициировать регистрацию и данные сохраняются во временной таблице', function () {
     /**
      * ГАРАНТИРОВАННЫЙ MOCK:

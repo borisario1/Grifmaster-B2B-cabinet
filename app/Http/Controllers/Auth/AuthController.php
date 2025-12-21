@@ -31,25 +31,24 @@ class AuthController extends Controller
      * проверяет их по базе данных и создает сессию при успехе.
      */
     public function login(Request $request) {
-        // Валидация входных данных
         $credentials = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required'],
         ]);
 
-        // Попытка аутентификации
         if (Auth::attempt($credentials)) {
-            // Регенерация сессии для защиты от фиксации сессии
             $request->session()->regenerate();
-            
-            // Перенаправление на dashboard или на страницу, куда пользователь шел изначально
-            return redirect()->intended('dashboard');
+
+            // На страницу успеха со спиннером
+            return view('auth.success', [
+                'title' => 'Авторизация успешна',
+                'message' => 'Добро пожаловать! Загружаем данные...',
+                'redirect_to' => route('dashboard'), // Спиннер перекинет сюда через 2 сек
+                'delay' => 2
+            ]);
         }
 
-        // Возврат назад с ошибкой при неудаче
-        return back()->withErrors([
-            'email' => 'Неверный логин или пароль.',
-        ])->onlyInput('email');
+        return back()->withErrors(['email' => 'Неверный логин или пароль.'])->onlyInput('email');
     }
 
     /**

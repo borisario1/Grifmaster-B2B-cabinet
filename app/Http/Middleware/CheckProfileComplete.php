@@ -17,20 +17,39 @@ use Illuminate\Support\Facades\Auth;
 class CheckProfileComplete
 {
     /**
-     * Handle an incoming request.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
-     * @return \Symfony\Component\HttpFoundation\Response
+     * Название: CheckProfileComplete -> handle
+     * Дата-время: 21-12-2025 11:55
+     * Описание: Проверка заполненности обязательных полей профиля.
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Если пользователь авторизован
         if (Auth::check()) {
-            // Проверяем наличие связи с профилем (мы её сейчас добавим в модель User)
-            // И исключаем бесконечный редирект, если пользователь уже на странице заполнения
-            if (!Auth::user()->profile && !$request->is('profile/complete*')) {
-                return redirect()->route('profile.complete');
+            $user = Auth::user();
+            
+            // Загружаем связанный профиль (отношение profile)
+            $profile = $user->profile;
+
+            // Обязательные поля
+            $required = ['last_name', 'first_name', 'birth_date'];
+
+            $isComplete = true;
+
+            // Если профиля вообще нет в базе
+            if (!$profile) {
+                $isComplete = false;
+            } else {
+                // Если профиль есть, проверяем поля именно в НЕМ ($profile), а не в $user
+                foreach ($required as $field) {
+                    if (empty($profile->$field)) {
+                        $isComplete = false;
+                        break;
+                    }
+                }
+            }
+
+            // Если не заполнено и мы не на странице профиля — отправляем заполнять
+            if (!$isComplete && !$request->is('profile*')) {
+                return redirect()->route('profile.edit')->with('complete_required', true);
             }
         }
 
