@@ -21,9 +21,18 @@ class UserProfile extends Model
     // Указываем атрибуты таблицы
     protected $fillable = [
         'user_id', 'first_name', 'last_name', 'middle_name', 
-        'birth_date', 'full_name', 'job_title', 'work_phone', 'messenger'
+        'birth_date', 'full_name', 'job_title', 'work_phone', 'messenger',
+        'notify_general', 'notify_news', 'notify_orders', 'notify_ticket'
     ];
 
+    protected $casts = [
+        // Это гарантирует, что при обращении $profile->notify_news мы получим boolean, а не 0 или 1
+        'notify_general' => 'boolean',
+        'notify_news'    => 'boolean',
+        'notify_orders'  => 'boolean',
+        'notify_ticket'  => 'boolean',
+    ];
+    
     /**
      * Обратная связь: профиль принадлежит пользователю
      */

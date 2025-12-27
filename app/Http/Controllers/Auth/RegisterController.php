@@ -68,6 +68,23 @@ class RegisterController extends Controller
     }
 
     /**
+     * Отображение страницы ввода кода (GET /verify)
+     * ДОБАВЛЕН ЭТОТ МЕТОД
+     */
+    public function showVerify()
+    {
+        $email = session('register_email');
+
+        // Защита: если сессия истекла или хакер пытается зайти напрямую без регистрации
+        if (!$email) {
+            return redirect()->route('register');
+        }
+
+        // Передаем email во вьюху, так как verify.blade.php ожидает {{ $email }}
+        return view('auth.verify', ['email' => $email]);
+    }
+
+    /**
      * Финальный шаг верификации (ручной ввод кода)
      */
     public function verify(Request $request)

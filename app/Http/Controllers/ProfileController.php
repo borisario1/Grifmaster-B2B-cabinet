@@ -77,4 +77,27 @@ class ProfileController extends Controller
             'delay' => 2
         ]);
     }
+
+    /**
+     * Функция изменения настроек профиля
+     * Дата-время: 27-12-2025 20:18
+     */
+    public function updateNotification(Request $request)
+    {
+        // Валидация: разрешаем менять только конкретные поля
+        $validated = $request->validate([
+            'name' => 'required|in:notify_general,notify_news,notify_orders,notify_ticket',
+            'value' => 'required|boolean', // Принимаем true/false или 1/0
+        ]);
+
+        // Получаем профиль текущего пользователя
+        $profile = $request->user()->profile;
+
+        // Обновляем конкретное поле (динамически)
+        $profile->update([
+            $validated['name'] => $validated['value']
+        ]);
+
+        return response()->json(['success' => true]);
+    }
 }

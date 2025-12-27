@@ -12,13 +12,16 @@ use App\Services\MailService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Tests\TestCase;
 use Mockery;
 
 uses(TestCase::class, RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->withoutMiddleware(); 
+    // ВАЖНО: Отключаем ТОЛЬКО проверку токена.
+    // Если отключить всё (withoutMiddleware()), то переменная $errors исчезнет из вьюх.
+    $this->withoutMiddleware(ValidateCsrfToken::class);
 });
 
 test('пользователь инициирует регистрацию, код уходит и данные сохраняются в temp', function () {
@@ -93,4 +96,15 @@ test('пользователь успешно завершает регистр�
     $this->assertDatabaseHas('b2b_users', [
         'email' => 'verify@grifmaster.ru',
     ]);
+});
+
+test('страница ввода кода открывается корректно (GET /verify)', function () {
+    // Имитируем, что в сессии есть email
+    session(['register_email' => 'test@example.com']);
+
+    // Теперь, когда middleware включены, $errors будет доступна во вьюхе
+    $response = $this->get(route('register.verify')); 
+
+    $response->assertStatus(200);
+    $response->assertViewIs('auth.verify');
 });

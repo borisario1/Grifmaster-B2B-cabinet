@@ -87,10 +87,72 @@
         </div>
 
         {{-- ВКЛАДКА 2 — УВЕДОМЛЕНИЯ --}}
-        <div class="tab-section" id="tab-notify" style="display:none;">
-            <div class="section-title"><i class="bi bi-bell"></i> Настройки уведомлений</div>
-            <p class="text-muted">Данный раздел находится в разработке и будет доступен в ближайшем обновлении.</p>
-        </div>
+                <div class="tab-section" id="tab-notify" style="display:none;">
+
+                    <div class="section-title">
+                        <i class="bi bi-bell"></i> Настройки Email уведомлений
+                    </div>
+
+                    <div class="toggle-row">
+                        <div class="toggle-text">
+                            <strong>Общие уведомления</strong>
+                            <div class="toggle-desc">Системные сообщения о работе личного кабинета и новых функциях.</div>
+                        </div>
+                        <label class="switch">
+                            <input class="notify-toggle" type="checkbox" name="notify_general"
+                                {{ $user->profile->notify_general ? 'checked' : '' }}>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="toggle-row">
+                        <div class="toggle-text">
+                            <strong>Скидки, акции и новости</strong>
+                            <div class="toggle-desc">Сообщения о скидках, временных акциях и изменениях в ассортименте.</div>
+                        </div>
+                        <label class="switch">
+                            <input class="notify-toggle" type="checkbox" name="notify_news"
+                                {{ $user->profile->notify_news ? 'checked' : '' }}>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="toggle-row">
+                        <div class="toggle-text">
+                            <strong>Заказы и документы</strong>
+                            <div class="toggle-desc">Уведомления по заказам, отгрузкам и документам (счета, акты и договора).</div>
+                        </div>
+                        <label class="switch">
+                            <input class="notify-toggle" type="checkbox" name="notify_orders"
+                                {{ $user->profile->notify_orders ? 'checked' : '' }}>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="toggle-row">
+                        <div class="toggle-text">
+                            <strong>Обращения и заявки</strong>
+                            <div class="toggle-desc">Ответы по вашим заявкам, обращениям, рекламациям.</div>
+                        </div>
+                        <label class="switch">
+                            <input class="notify-toggle" type="checkbox" name="notify_ticket"
+                                {{ $user->profile->notify_ticket ? 'checked' : '' }}>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="toggle-row">
+                        <div class="toggle-text">
+                            <strong>Сообщения менеджера</strong>
+                            <div class="toggle-desc">Важные сообщения от менеджера или сотрудника технической поддержки. Должно быть включено.</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" checked disabled>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                </div>
 
         {{-- ВКЛАДКА 3 — ПАРОЛЬ --}}
         <div class="tab-section" id="tab-password" style="display:none;">
@@ -114,19 +176,50 @@
         </div>
     </div>
 
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-    const tabs = document.querySelectorAll(".tab-btn");
-    const sections = document.querySelectorAll(".tab-section");
+        {{-- СКРИПТЫ --}}
+    <script>
+    document.addEventListener("DOMContentLoaded", () => {
+        // Логика переключения табов
+        const tabs = document.querySelectorAll(".tab-btn");
+        const sections = document.querySelectorAll(".tab-section");
 
-    tabs.forEach(btn => {
-        btn.addEventListener("click", () => {
-            const target = btn.dataset.tab;
-            tabs.forEach(t => t.classList.remove("active"));
-            btn.classList.add("active");
-            sections.forEach(sec => sec.style.display = sec.id === target ? "block" : "none");
+        tabs.forEach(btn => {
+            btn.addEventListener("click", () => {
+                const target = btn.dataset.tab;
+                tabs.forEach(t => t.classList.remove("active"));
+                btn.classList.add("active");
+                sections.forEach(sec => sec.style.display = sec.id === target ? "block" : "none");
+            });
+        });
+
+        // Логика тумблеров (AJAX сохранение)
+        document.querySelectorAll(".notify-toggle").forEach(sw => {
+            sw.addEventListener("change", function () {
+                const data = {
+                    name: this.name,
+                    value: this.checked ? 1 : 0
+                };
+
+                fetch("{{ route('profile.notify') }}", {
+                    method: "POST",
+                    headers: { 
+                        "Content-Type": "application/json",
+                        "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        alert('Ошибка сохранения настройки. Возможно, у вас нет прав на изменение этого поля.');
+                        this.checked = !this.checked;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    this.checked = !this.checked;
+                });
+            });
         });
     });
-});
-</script>
+    </script>
 @endsection

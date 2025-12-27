@@ -45,7 +45,11 @@ Route::middleware(['auth', 'check.profile'])->group(function () {
                 'menu' => config('b2b_menu')
             ]);
         })->name('dashboard');
+        
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+    // Роут для AJAX переключения (PATCH или POST) - Настройки уведомлений в профиле
+    Route::post('/profile/notify', [ProfileController::class, 'updateNotification'])->name('profile.notify');
 });
 
 /**
