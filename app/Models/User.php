@@ -33,7 +33,7 @@ class User extends Authenticatable
         'password',
         'role',
         'status',
-        //'selected_org_id',
+        'selected_org_id',
     ];
 
     /**

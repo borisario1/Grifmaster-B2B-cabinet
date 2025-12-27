@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\OrganizationController;
 
 /**
  * Название: Базовые редиректы
@@ -50,6 +51,16 @@ Route::middleware(['auth', 'check.profile'])->group(function () {
 
     // Роут для AJAX переключения (PATCH или POST) - Настройки уведомлений в профиле
     Route::post('/profile/notify', [ProfileController::class, 'updateNotification'])->name('profile.notify');
+    
+    // ОРГАНИЗАЦИИ 
+    // 1. AJAX поиск (ставим до resource, чтобы не конфликтовало с show)
+    Route::post('/organizations/lookup', [OrganizationController::class, 'lookup'])->name('organizations.lookup');
+    // 2. Выбор организации (select)
+    Route::get('/organizations/{organization}/select', [OrganizationController::class, 'select'])->name('organizations.select');
+    // 3. Стандартные действия (index, create, store, destroy, show)
+    Route::resource('organizations', OrganizationController::class);
+
+
 });
 
 /**

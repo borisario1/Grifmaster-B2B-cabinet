@@ -16,7 +16,7 @@ return [
     // Контакты поддержки (выводятся в футере)
     'support' => [
         'name'  => 'Борис Гусев',
-        'email' => '232@grifmaster.ru',
+        'email' => '<a target="_blank" href="mailto:232@grifmaster.ru">232@grifmaster.ru</a>',
     ],
 
     // Интеграция с Webasyst (Заказы, Склад)
