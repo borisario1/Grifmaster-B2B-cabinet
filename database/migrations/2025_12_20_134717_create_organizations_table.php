@@ -32,7 +32,7 @@ return new class extends Migration
             $table->enum('type', ['ip', 'org'])->default('org');
             $table->string('ogrn', 20)->nullable();
             $table->string('address')->nullable();
-            $table->boolean('is_deleted')->default(false); 
+            $table->softDeletes();
             
             $table->timestamps();
         });
@@ -56,6 +56,7 @@ return new class extends Migration
             $table->string('name_short')->nullable(); 
             $table->datetime('registered_at')->nullable();
             $table->text('address')->nullable();
+            $table->softDeletes();
             
             $table->timestamps();
         });

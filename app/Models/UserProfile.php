@@ -10,12 +10,15 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class UserProfile extends Model
 {
-    // Явно указываем таблицу из твоего дампа
-    protected $table = 'b2b_user_profile';
+    use SoftDeletes;
 
+    // Явно указываем таблицу
+    protected $table = 'b2b_user_profile';
+    // Указываем атрибуты таблицы
     protected $fillable = [
         'user_id', 'first_name', 'last_name', 'middle_name', 
         'birth_date', 'full_name', 'job_title', 'work_phone', 'messenger'

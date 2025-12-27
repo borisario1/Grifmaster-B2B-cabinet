@@ -21,6 +21,8 @@ return new class extends Migration
             $table->string('role')->default('partner'); 
             $table->string('status')->default('active');
             $table->rememberToken();
+            $table->softDeletes();
+            
             $table->timestamps();
         });
 

@@ -25,6 +25,8 @@ return new class extends Migration
             $table->string('job_title', 255)->nullable();
             $table->string('work_phone', 50)->nullable();
             $table->string('messenger', 100)->nullable();
+            $table->softDeletes();
+            
             $table->timestamps(); // Laravel добавит created_at и updated_at
         });
     }

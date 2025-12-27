@@ -12,10 +12,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, SoftDeletes;
 
     /**
      * Имя таблицы в БД
@@ -29,10 +30,10 @@ class User extends Authenticatable
     protected $fillable = [
         'email',
         'phone',
-        'password', // В Laravel это поле для хеша, по умолчанию 'password'
+        'password',
         'role',
         'status',
-        'selected_org_id',
+        //'selected_org_id',
     ];
 
     /**
@@ -50,7 +51,7 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed', // Laravel автоматически хеширует пароль при сохранении
+            'password' => 'hashed',
         ];
     }
 
@@ -66,7 +67,12 @@ class User extends Authenticatable
         return $this->hasOne(UserProfile::class, 'user_id')->withDefault([
             'last_name' => '',
             'first_name' => '',
-            'birth_date' => null,
         ]);
+    }
+
+    // Добавим связь: У юзера может быть много организаций
+    public function organizations()
+    {
+        return $this->hasMany(Organization::class, 'user_id');
     }
 }
