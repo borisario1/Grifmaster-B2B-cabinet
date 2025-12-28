@@ -81,6 +81,29 @@
                 © {{ date('Y') }} Grifmaster<br>
                 Версия приложения: {{ config('b2b.version') }}, обновлено: {{ config('b2b.updated') }}<br>
                 Поддержка: {{ config('b2b.support.name') }} - {!! config('b2b.support.email') !!}
+
+                {{-- Включим дебаг режим только в режиме разработки --}}
+                @if(config('app.debug') && config('debugbar.debug_footer'))
+                    <div class="debug-footer-info" style="background: #fffacd; border-color: #ffd700; border: 1px solid; color: #d76e00; padding: 10px; font-family: monospace; font-size: 12px; text-align: center;">
+                        @php
+                            // Проверяем наличие константы, чтобы тесты не падали
+                            $startTime = defined('LARAVEL_START') ? LARAVEL_START : microtime(true);
+                            $executionTime = round(microtime(true) - $startTime, 3);
+                            
+                            // Запросы к БД
+                            $queries = \Illuminate\Support\Facades\DB::getQueryLog();
+                            $queriesCount = count($queries);
+                            
+                            // Использование памяти
+                            $memory = round(memory_get_usage() / 1024 / 1024, 2);
+                        @endphp
+
+                        [DEBUG MODE ON] 
+                        — Время: <strong>{{ $executionTime }} сек.</strong> 
+                        — БД Запросы: <strong>{{ $queriesCount }}</strong> 
+                        — Память: <strong>{{ $memory }} МБ</strong>
+                    </div>
+                @endif
             </div>
         </div>
     </div>

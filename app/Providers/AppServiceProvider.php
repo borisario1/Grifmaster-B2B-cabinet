@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\DB;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -20,6 +21,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Включаем логирование запросов только для отладки
+        if (config('app.debug') && config('debugbar.debug_footer')) {
+            \Illuminate\Support\Facades\DB::enableQueryLog();
+        }
+        
         // Если запущены тесты
         if (app()->runningUnitTests()) {
             

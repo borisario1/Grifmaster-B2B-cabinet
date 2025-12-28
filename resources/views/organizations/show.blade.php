@@ -227,7 +227,4 @@
     <br>
     <a href="{{ route('organizations.index') }}" class="btn-link-back">← Назад</a>
     
-    <div class="auth-tech-footer mt-4 text-center" style="opacity:0.6; font-size:0.85rem; margin-top:40px;">
-         © {{ date('Y') }} {{ config('b2b.app_name') }}
-    </div>
 @endsection

@@ -142,11 +142,7 @@
         <a href="{{ route('dashboard') }}" class="btn-link-back">← Вернуться в кабинет</a>
 
     @endif
-
-    <div class="auth-tech-footer mt-4 text-center" style="opacity: 0.6; font-size: 0.85rem;">
-         © {{ date('Y') }} {{ config('b2b.app_name') }}
-    </div>
-
+    
 {{-- JS Скрипты --}}
 <script>
 function selectOrg(url) {
