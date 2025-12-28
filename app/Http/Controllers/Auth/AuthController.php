@@ -36,14 +36,23 @@ class AuthController extends Controller
             'password' => ['required'],
         ]);
 
-        if (Auth::attempt($credentials)) {
-            $request->session()->regenerate();
+        // Извлекаем значение чекбокса "remember". 
+        // Если галочка стоит, Laravel установит сессию на очень долгий срок.
+        $remember = $request->has('remember');
 
-            // На страницу успеха со спиннером
+        if (Auth::attempt($credentials, $remember)) { // Передаем $remember вторым параметром
+            $request->session()->regenerate();
+            
+            // Обновление информации о последнем входе
+            $user = Auth::user();
+            $user->previous_login = $user->last_login;
+            $user->last_login = now();
+            $user->save();
+
             return view('auth.success', [
                 'title' => 'Авторизация успешна',
                 'message' => 'Добро пожаловать! Загружаем данные...',
-                'redirect_to' => route('dashboard'), // Спиннер перекинет сюда через 2 сек
+                'redirect_to' => route('dashboard'),
                 'delay' => 2
             ]);
         }
@@ -69,5 +78,17 @@ class AuthController extends Controller
         
         return redirect('/');
     }
-
+    
+    /**
+     * Название: logoutGet
+     * Описание: Обработка небезопасного перехода на страницу выхода.
+     */
+    public function logoutGet() {
+        return view('auth.success', [
+            'title' => 'Ошибка доступа',
+            'message' => 'Прямой переход по ссылке невозможен в целях безопасности. Возвращаемся...',
+            'redirect_to' => route('dashboard'),
+            'delay' => 3
+        ]);
+    }
 }

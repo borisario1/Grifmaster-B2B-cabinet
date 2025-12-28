@@ -348,6 +348,7 @@ body {
 .info-message {
     background: #eaf4ff;
     border: 1px solid #cfe4ff;
+    font-size: 18px;
     color: #003b66;
     padding: 14px 18px;
     border-radius: 14px;
@@ -357,18 +358,30 @@ body {
 
     display: flex;
     align-items: flex-start;
-    gap: 10px;
+    gap: 6px;
 }
 
 .info-message:before {
     content: "\f431"; /* icon: info-circle-fill */
     font-family: "bootstrap-icons";
-    font-size: 18px;
     flex-shrink: 0;
     margin-top: 1px;
     color: #0b466e;
 }
 
+/* Ссылка внутри информационного сообщения */
+.info-message a {
+    color: #001F33;
+    font-weight: 500;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    transition: all 0.2s ease;
+}
+
+.info-message a:hover {
+    color: #3295D1;
+    text-decoration-color: #3295D1;
+}
 /* =========================================================
    TOOLBAR MENU
    ========================================================= */

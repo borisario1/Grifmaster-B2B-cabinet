@@ -24,15 +24,22 @@
             </div>
             
             <div class="topbar-right">
+                {{-- Ссылка на профиль --}}
                 <a href="{{ route('profile.edit') }}" class="topbar-icon" title="Мой профиль">
                     <i class="bi bi-person-circle"></i>
                 </a>
                 
-                <form action="{{ route('logout') }}" method="POST" style="display:inline;">
+                {{-- Кнопка выхода, стилизованная как иконка --}}
+                <a href="#" 
+                class="topbar-icon" 
+                title="Выйти"
+                onclick="event.preventDefault(); openModal('universalConfirm', () => { document.getElementById('logout-form').submit(); }, 'Выход из системы', 'Вы действительно хотите завершить текущую сессию и выйти из личного кабинета?')">
+                    <i class="bi bi-box-arrow-right"></i>
+                </a>
+
+                {{-- Скрытая форма для отправки POST-запроса --}}
+                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
                     @csrf
-                    <button type="submit" class="topbar-icon" style="background:none; border:none; color:white; cursor:pointer;">
-                        <i class="bi bi-box-arrow-right"></i>
-                    </button>
                 </form>
 
                 {{-- Кнопка бургера для мобилок --}}
@@ -112,5 +119,15 @@
     </script>
 
     @stack('scripts')
+
+    {{-- Универсальное модальное окно (всегда под рукой) --}}
+    <x-modal-confirm 
+        id="universalConfirm" 
+        title="Подтвердите действие" 
+        icon="bi-exclamation-circle"
+        btnClass="btn-primary"
+    >
+        Вы уверены, что хотите продолжить?
+    </x-modal-confirm>
 </body>
 </html>

@@ -112,7 +112,16 @@
                         </a>
 
                         {{-- Кнопка Удалить --}}
-                        <a class="org-action delete" href="#" onclick="deleteOrg(event, '{{ $org->id }}')">
+                        <a class="org-action delete" href="#" 
+                        onclick="event.stopPropagation(); event.preventDefault(); 
+                        openModal(
+                            'universalConfirm', 
+                            () => { document.getElementById('delete-form-{{ $org->id }}').submit(); }, 
+                            'Удаление организации', 
+                            'Вы уверены, что хотите удалить «{{ $org->name }}»? Это действие нельзя будет отменить.', 
+                            5, 
+                            'Да, удалить'
+                        )">
                             <i class="bi bi-trash"></i> Удалить
                         </a>
                         
@@ -142,15 +151,6 @@
 <script>
 function selectOrg(url) {
     window.location.href = url;
-}
-
-function deleteOrg(event, id) {
-    event.stopPropagation();
-    event.preventDefault();
-    
-    if(confirm('Удалить эту организацию?')) {
-        document.getElementById('delete-form-' + id).submit();
-    }
 }
 </script>
 @endsection

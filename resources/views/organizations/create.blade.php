@@ -83,6 +83,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const errorBlock = document.getElementById("js-error");
     const resultsBlock = document.getElementById("search_results");
     
+    // КЭШ: защищаем кошелек и сервер от повторных кликов
+    const searchCache = {};
+    let currentSuggestions = [];
+
     const fields = {
         inn: document.getElementById("inn"),
         name: document.getElementById("name"),
@@ -92,16 +96,24 @@ document.addEventListener("DOMContentLoaded", () => {
         raw: document.getElementById("dadata_raw")
     };
 
-    let currentSuggestions = [];
+    // Маска: только цифры, макс 12
+    inp.addEventListener("input", function() {
+        this.value = this.value.replace(/\D/g, '').substring(0, 12);
+    });
 
     btn.addEventListener("click", findOrg);
-    inp.addEventListener("keypress", (e) => { if(e.key === "Enter") { e.preventDefault(); findOrg(); } });
+    inp.addEventListener("keypress", (e) => { 
+        if(e.key === "Enter") { 
+            e.preventDefault(); 
+            findOrg(); 
+        } 
+    });
 
     function showError(msg) {
         errorBlock.textContent = msg;
         errorBlock.style.display = 'block';
         block.style.display = 'none';
-        resultsBlock.style.display = 'none'; // Скрываем результаты при ошибке
+        resultsBlock.style.display = 'none';
     }
 
     function clearError() {
@@ -112,11 +124,18 @@ document.addEventListener("DOMContentLoaded", () => {
     async function findOrg() {
         let inn = inp.value.trim();
         clearError();
-        resultsBlock.style.display = 'none'; // Очищаем список перед новым поиском
+        resultsBlock.style.display = 'none';
 
-        if(!inn) { 
-            showError("Введите ИНН"); 
-            return; 
+        if (inn.length !== 10 && inn.length !== 12) {
+            showError("ИНН должен содержать 10 (ООО) или 12 (ИП) цифр.");
+            return;
+        }
+
+        // Если уже искали этот ИНН - берем из памяти мгновенно
+        if (searchCache[inn]) {
+            console.log("Взято из кэша");
+            handleResponse(searchCache[inn], inn);
+            return;
         }
 
         setLoading(true);
@@ -124,35 +143,21 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             let response = await fetch("{{ route('organizations.lookup') }}", {
                 method: "POST",
-                headers: { "Content-Type": "application/json", "X-CSRF-TOKEN": "{{ csrf_token() }}" },
+                headers: { 
+                    "Content-Type": "application/json", 
+                    "X-CSRF-TOKEN": "{{ csrf_token() }}" 
+                },
                 body: JSON.stringify({ inn: inn })
             });
 
             let data = await response.json();
             setLoading(false);
 
-            if (!data.ok) {
-                showError(data.error || "Ошибка сервера");
-                enableManualMode(inn);
-                return;
+            if (data.ok) {
+                searchCache[inn] = data; // Запоминаем результат
             }
-
-            if (!data.suggestions || !data.suggestions.length) {
-                showError("Организации с таким ИНН не найдены.");
-                enableManualMode(inn);
-                return;
-            }
-
-            // --- ВЫБОР ---
-            if (data.suggestions.length === 1) {
-                // Один вариант - сразу заполняем
-                fillFields(data.suggestions[0].data, data.suggestions[0], true);
-                block.style.display = "block";
-            } else {
-                // Много вариантов - ПОКАЗЫВАЕМ СПИСОК
-                currentSuggestions = data.suggestions; 
-                renderResultsList(data.suggestions);
-            }
+            
+            handleResponse(data, inn);
 
         } catch(e) {
             console.error(e);
@@ -162,83 +167,66 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // Рендеринг списка (вместо модалки)
+    function handleResponse(data, inn) {
+        if (!data.ok) {
+            showError(data.error || "Ошибка сервера");
+            enableManualMode(inn);
+            return;
+        }
+
+        if (!data.suggestions || !data.suggestions.length) {
+            showError("Организации с таким ИНН не найдены.");
+            enableManualMode(inn);
+            return;
+        }
+
+        // Сохраняем предложения глобально для функции клика по списку
+        currentSuggestions = data.suggestions;
+
+        if (data.suggestions.length === 1) {
+            fillFields(data.suggestions[0].data, data.suggestions[0], true);
+            block.style.display = "block";
+        } else {
+            renderResultsList(data.suggestions);
+        }
+    }
+
     function renderResultsList(suggestions) {
         resultsBlock.innerHTML = '';
+        resultsBlock.style.display = 'block';
         
-        // Заголовок списка
         const header = document.createElement('div');
         header.className = 'list-group-item list-group-item-light fw-bold';
-        header.textContent = 'Выберите организацию:';
-        header.style.background = '#f8f9fa';
+        header.textContent = 'Найдено несколько филиалов. Выберите нужный:';
         header.style.padding = '10px 15px';
-        header.style.borderBottom = '1px solid #ddd';
         resultsBlock.appendChild(header);
 
         suggestions.forEach((item, index) => {
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.className = "list-group-item list-group-item-action";
-            btn.style.width = '100%';
-            btn.style.textAlign = 'left';
-            btn.style.padding = '10px 15px';
-            btn.style.border = 'none';
-            btn.style.borderBottom = '1px solid #eee';
-            btn.style.background = '#fff';
-            btn.style.cursor = 'pointer';
-
-            // Наведение мыши
-            btn.onmouseover = () => btn.style.background = '#f0f0f0';
-            btn.onmouseout = () => btn.style.background = '#fff';
+            const btnItem = document.createElement('button');
+            btnItem.type = 'button';
+            btnItem.className = "list-group-item list-group-item-action";
+            btnItem.style.textAlign = 'left';
             
-            const kppInfo = item.data.kpp ? ` (КПП: ${item.data.kpp})` : '';
-            const statusInfo = item.data.state && item.data.state.status !== 'ACTIVE' ? ' <span style="color:red">[НЕ АКТИВНА]</span>' : '';
-            const addrInfo = item.data.address && item.data.address.value ? `<div style='font-size:0.85em; color:#666; margin-top:2px;'>${item.data.address.value}</div>` : '';
+            const kpp = item.data.kpp ? ` (КПП: ${item.data.kpp})` : '';
+            btnItem.innerHTML = `<strong>${item.value}</strong>${kpp}<br><small>${item.data.address.value}</small>`;
             
-            btn.innerHTML = `<strong>${item.value}</strong>${kppInfo}${statusInfo}${addrInfo}`;
-            
-            btn.onclick = (e) => {
+            btnItem.onclick = (e) => {
                 e.preventDefault();
                 fillFields(currentSuggestions[index].data, currentSuggestions[index], true);
                 block.style.display = "block";
-                resultsBlock.style.display = 'none'; // Скрываем список после выбора
+                resultsBlock.style.display = 'none';
             };
-            resultsBlock.appendChild(btn);
-        });
-
-        resultsBlock.style.display = 'block';
-    }
-
-    function enableManualMode(innValue) {
-        block.style.display = "block";
-        fields.inn.value = innValue;
-        fields.name.value = "";
-        fields.kpp.value = "";
-        fields.ogrn.value = "";
-        fields.address.value = "";
-        fields.raw.value = "";
-
-        Object.values(fields).forEach(el => {
-            if(el && el.type !== 'hidden') {
-                el.readOnly = false;
-                el.style.backgroundColor = "";
-            }
+            resultsBlock.appendChild(btnItem);
         });
     }
 
     function fillFields(d, suggestion, lock = true) {
         clearError(); 
-
         fields.inn.value = d.inn || suggestion.data.inn || inp.value;
         fields.name.value = suggestion.value; 
         fields.kpp.value = d.kpp || "";
         fields.ogrn.value = d.ogrn || "";
-        
-        let addr = "";
-        if (d.address && d.address.value) addr = d.address.value;
-        else if (d.address && d.address.data && d.address.data.source) addr = d.address.data.source;
-        fields.address.value = addr;
-        
+        fields.address.value = d.address ? d.address.value : "";
         fields.raw.value = JSON.stringify(d);
 
         if (lock) {
@@ -251,10 +239,29 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    function setLoading(state) {
-        btn.disabled = state;
-        btn.innerText = state ? "..." : "Найти";
+    function enableManualMode(innValue) {
+        block.style.display = "block";
+        fields.inn.value = innValue;
+        Object.values(fields).forEach(el => {
+            if(el && el.type !== 'hidden') {
+                el.readOnly = false;
+                el.style.backgroundColor = "";
+                el.value = (el === fields.inn) ? innValue : "";
+            }
+        });
     }
+
+    function setLoading(state) {
+            btn.disabled = state;
+            if (state) {
+                // Устанавливаем фиксированную ширину перед сменой текста, чтобы кнопка не дергалась
+                btn.style.width = btn.offsetWidth + 'px';
+                btn.innerHTML = '<div class="loader-spinner"></div> ...';
+            } else {
+                btn.style.width = ''; // Возвращаем автоматическую ширину
+                btn.innerHTML = "Найти";
+            }
+        }
 });
 </script>
 @endsection

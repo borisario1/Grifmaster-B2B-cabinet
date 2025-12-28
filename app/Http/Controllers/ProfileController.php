@@ -12,6 +12,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Carbon\Carbon;
 
 class ProfileController extends Controller
 {
@@ -20,8 +21,33 @@ class ProfileController extends Controller
      */
     public function edit()
     {
-        // Передаем текущего юзера в шаблон
-        return view('auth.profile', ['user' => Auth::user()]);
+        $user = Auth::user()->load('profile');
+
+        $roleNames = [
+            'admin'   => 'Администратор',
+            'manager' => 'Менеджер',
+            'partner' => 'Партнёр'
+        ];
+        
+        $roleName = $roleNames[$user->role] ?? $user->role;
+        $registrationDate = Carbon::parse($user->created_at)->format('d.m.Y');
+        
+        $lastLogin = $user->last_login 
+            ? Carbon::parse($user->last_login)->timezone('Europe/Moscow')->format('d.m.Y в H:i')
+            : 'данные отсутствуют';
+
+        // Определяем переменную строго как $birthDate
+        $birthDate = optional($user->profile)->birth_date 
+            ? Carbon::parse($user->profile->birth_date)->format('d.m.Y') 
+            : '—';
+
+        return view('auth.profile', [
+            'user'             => $user,
+            'roleName'         => $roleName,
+            'registrationDate' => $registrationDate,
+            'lastLogin'        => $lastLogin,
+            'birthDate'        => $birthDate
+        ]);
     }
 
     /**

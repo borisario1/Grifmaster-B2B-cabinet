@@ -12,6 +12,7 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\OrganizationController;
+use App\Http\Controllers\DashboardController;
 
 /**
  * Название: Базовые редиректы
@@ -41,13 +42,15 @@ Route::middleware('guest')->group(function () {
  * Описание: Сюда пускаем только тех, кто вошел И заполнил профиль.
  */
 Route::middleware(['auth', 'check.profile'])->group(function () {
-    Route::get('/dashboard', function () {
-            return view('dashboard', [
-                'menu' => config('b2b_menu')
-            ]);
-        })->name('dashboard');
-        
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+    // Если кто-то пытается зайти на logout через строку браузера (GET) - сразу кинем на главную
+    // Route::get('/logout', function () {return redirect()->route('dashboard');});
+
+    // Либо этот альт вариант. Мне больше нравится.
+    Route::get('/logout', [AuthController::class, 'logoutGet']);
 
     // Роут для AJAX переключения (PATCH или POST) - Настройки уведомлений в профиле
     Route::post('/profile/notify', [ProfileController::class, 'updateNotification'])->name('profile.notify');

@@ -3,17 +3,41 @@
 @section('title', 'Дашборд — ' . config('b2b.app_name'))
 
 @section('content')
+
+    {{-- ПОДГОТОВКА ДАННЫХ --}}
+    @php
+        $user = Auth::user();
+        $profile = $user->profile; // Связь с таблицей user_profiles
+
+        $roleName = match($user->role) {
+            'admin'   => 'Администратор',
+            'manager' => 'Менеджер',
+            default   => 'Партнёр', // Для role = 'partner' или пустого
+        };
+
+        // Используем Carbon для красивого формата "28.12.2025 в 14:30"
+        $lastLogin = $user->last_login 
+            ? \Carbon\Carbon::parse($user->last_login)->timezone('Europe/Moscow')->format('d.m.Y в H:i') 
+            : 'Только что';
+    @endphp
+
+    {{-- ЗАГОЛОВОК --}}
     <h1 class="page-title">
-        Добро пожаловать{{ Auth::user()->company ? ', ' . Auth::user()->company : '' }}!
+        Здравствуйте, {{ $profile->first_name }} {{ $profile->middle_name }}!
     </h1>
 
-    <p class="page-subtitle">
-        Роль: <strong>{{ Auth::user()->role ?: 'partner' }}</strong>
-    </p>
+    {{-- ИНФО-БЛОК --}}
+    <div style="margin-bottom: 10px; margin-top: 10px; line-height: 1.4; color: #001F33;">
+        {{-- Используем переменные, переданные из контроллера --}}
+        <div>Последний раз вы заходили: <strong>{{ $lastLoginText }}</strong></div>
+        <div>Уровень доступа к сервису: <strong>{{ $roleName }}</strong></div>
+    </div>
    
-    {{-- Вывод уведомления о статусе организации --}}
+    {{-- Вывод уведомления о статусе организации (если есть) --}}
     @if(isset($org_status) && !empty($org_status['text']))
-        <div class="info-message">{{ $org_status['text'] }}</div>
+        <div class="info-message">
+            {!! $org_status['text'] !!} {{-- Используем {!! !!} вместо {{ }} --}}
+        </div>
     @endif
 
     {{-- ============================
@@ -55,16 +79,30 @@
     <div class="dash-block-grid">
         @foreach($menu as $item)
             @if($item['group'] === 'settings' && in_array('dashboard', $item['show_in']))
+                
                 @php
-                    // Проверяем на Logout для красной карточки, как в оригинале
-                    $isLogout = ($item['url'] === '/partners-area/logout');
+                    // Максимально широкая проверка на Logout, чтобы точно поймать нужный пункт
+                    $isLogout = str_contains($item['url'], 'logout');
                 @endphp
-                <a href="{{ $item['url'] }}" 
-                   class="dash-card {{ $isLogout ? 'dash-card-red' : '' }}">
+
+                <a href="{{ $isLogout ? route('logout') : $item['url'] }}" 
+                   class="dash-card {{ $isLogout ? 'dash-card-red' : '' }}"
+                   @if($isLogout) 
+                     onclick="event.preventDefault(); openModal('universalConfirm', () => { document.getElementById('logout-form-dash').submit(); }, 'Выход из системы', 'Вы действительно хотите завершить текущую сессию и выйти из личного кабинета?')"
+                   @endif>
+                    
                     <i class="bi {{ $item['icon'] }}"></i>
                     <div class="dash-card-title">{{ $item['title'] }}</div>
                     <div class="dash-card-desc">{{ $item['desc'] }}</div>
                 </a>
+
+                {{-- Создаем форму только если это пункт Logout --}}
+                @if($isLogout)
+                    <form id="logout-form-dash" action="{{ route('logout') }}" method="POST" class="d-none">
+                        @csrf
+                    </form>
+                @endif
+
             @endif
         @endforeach
     </div>

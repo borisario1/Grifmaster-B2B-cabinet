@@ -40,7 +40,7 @@
         @endif
 
         <form method="POST" action="{{ route('login.post') }}">
-            @csrf {{-- Защита от CSRF-атак, обязательна в Laravel --}}
+            @csrf 
 
             <div class="mb-3">
                 <label class="form-label">Email</label>
@@ -50,6 +50,14 @@
             <div class="mb-4">
                 <label class="form-label">Пароль</label>
                 <input type="password" class="form-control auth-input-glass" name="password" required>
+            </div>
+
+            {{-- Блок "Запомнить меня" --}}
+            <div class="mb-4 form-check">
+                <input type="checkbox" class="form-check-input" name="remember" id="remember" checked>
+                <label class="form-check-label text-white" for="remember">
+                    Запомнить меня
+                </label>
             </div>
 
             <button type="submit" class="auth-btn-glass">Войти</button>

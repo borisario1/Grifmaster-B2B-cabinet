@@ -27,21 +27,66 @@
     <div class="profile-section">
         <div class="section-title"><i class="bi bi-person-badge"></i> Личные данные</div>
         <div class="profile-view-grid">
+            
+            {{-- БЛОК: Авторизация --}}
             <div class="profile-view-card">
                 <div class="group-title"><i class="bi bi-shield-lock"></i> Авторизация</div>
-                <div class="profile-view-row"><span>Email (логин)</span> <strong>{{ $user->email }}</strong></div>
-                <div class="profile-view-row"><span>Телефон при регистрации</span> <strong>{{ $user->phone }}</strong></div>
-                <div class="profile-view-row"><span>Дата регистрации</span> <strong>{{ $user->created_at }}</strong></div>
+                
+                <div class="profile-view-row">
+                    <span>Email (логин)</span> 
+                    <strong>{{ $user->email }}</strong>
+                </div>
+                
+                <div class="profile-view-row">
+                    <span>Уровень доступа</span> 
+                    <strong class="text-primary">{{ $roleName }}</strong>
+                </div>
+
+                <div class="profile-view-row">
+                    <span>Дата регистрации</span> 
+                    <strong>{{ $registrationDate }}</strong>
+                </div>
+
+                <div class="profile-view-row">
+                    <span>Последний вход</span> 
+                    <strong>{{ $lastLogin }}</strong>
+                </div>
+                
+                @if($user->phone)
+                <div class="profile-view-row">
+                    <span>Телефон при регистрации</span> 
+                    <strong>{{ $user->phone }}</strong>
+                </div>
+                @endif
             </div>
 
+            {{-- БЛОК: Основные данные --}}
             <div class="profile-view-card">
                 <div class="group-title"><i class="bi bi-person"></i> Основные данные</div>
-                <div class="profile-view-row"><span>ФИО</span> 
-                    <strong>{{ $user->profile->last_name ?? '—' }} {{ $user->profile->first_name ?? '' }} {{ $user->profile->middle_name ?? '' }}</strong>
+                
+                <div class="profile-view-row">
+                    <span>ФИО</span> 
+                    <strong>
+                        {{ $user->profile->last_name ?? '—' }} 
+                        {{ $user->profile->first_name ?? '' }} 
+                        {{ $user->profile->middle_name ?? '' }}
+                    </strong>
                 </div>
-                <div class="profile-view-row"><span>Дата рождения</span> <strong>{{ $user->profile->birth_date ?? '—' }}</strong></div>
-                <div class="profile-view-row"><span>Рабочий номер</span> <strong>{{ $user->profile->work_phone ?? '—' }}</strong></div>
-                <div class="profile-view-row"><span>Мессенджер</span> <strong>{{ $user->profile->messenger ?? '—' }}</strong></div>
+                
+                <div class="profile-view-row">
+                    <span>Дата рождения</span> 
+                    <strong>{{ $birthDate }}</strong>
+                </div>
+                
+                <div class="profile-view-row">
+                    <span>Рабочий номер</span> 
+                    <strong>{{ $user->profile->work_phone ?? '—' }}</strong>
+                </div>
+                
+                <div class="profile-view-row">
+                    <span>Мессенджер</span> 
+                    <strong>{{ $user->profile->messenger ?? '—' }}</strong>
+                </div>
             </div>
         </div>
     </div>

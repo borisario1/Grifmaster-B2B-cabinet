@@ -398,3 +398,27 @@
 .auth-tech-footer a:hover {
     color: rgba(255,255,255,0.80);
 }
+
+/* Анимация вращения */
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Стили для иконки загрузки внутри кнопки */
+.loader-spinner {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 0.8s linear infinite;
+    vertical-align: middle;
+}
+
+/* Визуальная блокировка кнопки */
+.btn-primary:disabled {
+    cursor: not-allowed;
+    background-color: #3294d163 !important; /* Светлее основного синего */
+    border-color: #ccc !important;
+}
