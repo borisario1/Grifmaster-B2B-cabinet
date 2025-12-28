@@ -26,9 +26,10 @@ class OrganizationController extends Controller
         $user = Auth::user();
 
         // Загружаем организации.
-        // Сортировка: сначала выбранная, потом новые.
+        // Сортировка: сначала выбранная, потом новые. (раскомментировать 2 строки ->orderByRaw)
+        // Пока временно без сортировок организаций. ->get();
         $organizations = $user->organizations()
-            ->orderByRaw("id = ? DESC", [$user->selected_org_id])
+            //->orderByRaw("id = ? DESC", [$user->selected_org_id])
             ->latest()
             ->get();
 

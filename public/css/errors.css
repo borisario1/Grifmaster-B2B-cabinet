@@ -4,18 +4,21 @@
 }
 
 .error-icon {
+    text-align: center;
     font-size: 60px;
     color: #d9534f;
     margin-bottom: 20px;
 }
 
 .error-title {
+    text-align: center;
     font-size: 34px;
     color: #001F33;
     margin-bottom: 10px;
 }
 
 .error-text {
+    text-align: center;
     font-size: 18px;
     color: #444;
     margin-bottom: 30px;
