@@ -63,6 +63,8 @@ Route::middleware(['auth', 'check.profile'])->group(function () {
     // 3. Стандартные действия (index, create, store, destroy, show)
     Route::resource('organizations', OrganizationController::class);
 
+    // Каталог товаров
+    Route::get('/store', [App\Http\Controllers\StoreController::class, 'index'])->name('store.index');
 
 });
 

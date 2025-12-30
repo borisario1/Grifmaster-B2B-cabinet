@@ -53,6 +53,8 @@ class AppServiceProvider extends ServiceProvider
             $view->with('menu', config('b2b_menu', []));
         });
 
+        // Принудительно используем Bootstrap стили для пагинации
+        \Illuminate\Pagination\Paginator::useBootstrapFive();
     }
 
     /**

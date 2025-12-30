@@ -73,8 +73,8 @@
         </div>
     </div>
 
-    <div class="page-wrapper">
-        <div class="page-card">
+    <div class="page-wrapper {{ (isset($wideLayout) && $wideLayout) ? 'wide' : '' }}">
+        <div class="page-card {{ (isset($wideLayout) && $wideLayout) ? 'wide' : '' }}">
             @yield('content')
             
             <div class="dashboard-footer">

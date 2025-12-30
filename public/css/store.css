@@ -1,10 +1,28 @@
 /* =========================================================
+   GLOBAL VARIABLES
+   ========================================================= */
+:root {
+    --radius: 30px;         /* Для крупных внешних блоков */
+    --min_radius: 15px;     /* Для таблиц и панелей фильтров */
+    --xmin_radius: 12px;    /* Для карточек товаров и пагинации */
+    --xxmin_radius: 8px;    /* Для инпутов и бейджей */
+}
+
+button, .btn, .btn-primary, .btn-default, .btn-light, .btn-secondary, .btn-big {
+    font-weight: 300 !important;
+    text-decoration: none;
+    border-radius: var(--xmin_radius);
+    transition: 0.2s ease;
+}
+
+/* =========================================================
    STORE TABLE
    ========================================================= */
 
 .store-table-wrapper {
     overflow-x: auto;
     margin-top: 25px;
+    border-radius: var(--min_radius);
 }
 
 .store-table {
@@ -12,7 +30,8 @@
     border-collapse: collapse;
     font-size: 15px;
     background: #fff;
-    border-radius: 18px;
+    border-radius: var(--min_radius);
+    overflow: hidden; /* Чтобы фон th не вылезал за радиус */
 }
 
 .store-table thead th {
@@ -34,14 +53,15 @@
     color: #0B466E;
 }
 
-/* Фото */
+/* Фото товара */
 .store-img {
     width: 72px;
     height: 72px;
     object-fit: contain;
-    border-radius: 12px;
+    border-radius: var(--xmin_radius);
     background: #fff;
     display: block;
+    border: 1px solid #f0f0f0;
 }
 
 .store-img.placeholder {
@@ -70,8 +90,9 @@
     width: 60px;
     padding: 8px 10px;
     border: 1px solid #d7dce2;
-    border-radius: 10px;
+    border-radius: var(--xxmin_radius);
     font-size: 14px;
+    transition: 0.2s;
 }
 
 .store-qty-input:focus {
@@ -84,12 +105,84 @@
 .btn-sm {
     padding: 8px 14px !important;
     font-size: 14px !important;
-    border-radius: 14px !important;
+    border-radius: var(--xxmin_radius) !important;
 }
 
 /* =========================================================
-   WIDE LAYOUT FOR STORE PAGES
+   Сортировка и иконки
    ========================================================= */
+
+/* Стили для иконок сортировки */
+th.sort i {
+    margin-left: 4px;
+    transition: 0.2s;
+}
+
+/* Когда активна сортировка по возрастанию */
+th.sort.asc i {
+    opacity: 1 !important;
+    color: #3295D1;
+    transform: rotate(180deg); /* Поворачиваем стрелку */
+}
+
+/* Когда активна сортировка по убыванию */
+th.sort.desc i {
+    opacity: 1 !important;
+    color: #3295D1;
+    transform: rotate(0deg);
+}
+
+/* Подсветка заголовка при наведении */
+.store-table thead th.sort:hover {
+    background: #e2eaf2;
+    color: #0B466E;
+}
+
+/* =========================================================
+   STORE FILTERS & SEARCH
+   ========================================================= */
+
+.store-filter-panel {
+    padding: 24px; 
+    background: #f8f9fa; 
+    border: 1px solid #e5e8ef; 
+    border-radius: var(--min_radius);
+    margin-bottom: 25px;
+}
+
+.store-filter-label {
+    font-size: 14px;
+    font-weight: 700;
+    color: #001F33;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.store-filter-panel .store-qty-input {
+    width: 100%;
+    height: 42px;
+}
+
+/* Фикс кнопок фильтрации */
+.filter-actions {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+}
+
+.btn-reset {
+    background: #6c757d !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white !important;
+    border-radius: var(--xxmin_radius) !important;
+}
+
+/* =========================================================
+   LAYOUTS & CARDS
+   ========================================================= */
+
 .page-wrapper.wide {
     max-width: 1500px;
     padding: 40px 20px 60px;
@@ -100,475 +193,91 @@
     max-width: 1400px;
     width: 100%;
     margin: 0 auto; 
-}
-
-/* =========================================================
-   CART PAGE — EXTRA DESIGN
-   ========================================================= */
-
-.card-info button.btn-big {
-    margin-top: 18px;
-}
-
-.store-table td:last-child {
-    width: 60px;
-    text-align: right;
-}
-
-.store-table td form {
-    margin: 0;
-}
-
-/* ================================
-   CART LAYOUT — TWO COLUMNS
-================================ */
-.cart-flex-layout {
-    display: flex;
-    gap: 40px;
-    align-items: flex-start;
-    margin-top: 25px;
-}
-
-.cart-left {
-    flex: 1;
-}
-
-.cart-right {
-    width: 320px;
-    position: sticky;
-    top: 120px;
-}
-
-/* Панель ИТОГО */
-.cart-summary-under {
-    width: 100%;
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 25px;
+    border-radius: var(--radius);
 }
 
 .cart-summary-block {
     background: #fff;
-    border-radius: 18px;
+    border-radius: var(--min_radius);
     padding: 22px 26px;
     width: 340px;
     box-shadow: 0 4px 16px rgba(0,0,0,0.07);
 }
 
-.cart-summary-title {
-    font-size: 20px;
-    font-weight: 700;
-    margin-bottom: 12px;
-    color: #001F33;
-}
-
-.cart-summary-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px 0;
-    font-size: 15px;
-}
-
-.cart-summary-row.total {
-    font-size: 18px;
-    font-weight: 700;
-    margin-top: 10px;
-    padding-top: 14px;
-    border-top: 1px solid #dfe5ec;
-}
-
-
-/* =========================================================
-   ORDERS LIST
-   ========================================================= */
-
-.order-list {
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-}
-
-.order-card {
+.order-card, .order-block {
     background: #f6f9fc;
     border: 1px solid #e5e8ef;
-    border-radius: 18px;
+    border-radius: var(--min_radius);
     padding: 18px 22px;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
     transition: 0.25s;
 }
 
-.order-card:hover {
-    background: #e9f3fb;
-    border-color: #cfd8e3;
-    transform: translateY(-2px);
-}
-
-.order-left {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.order-title {
-    font-size: 18px;
-    font-weight: 700;
-    color: #001F33;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.order-sub {
-    font-size: 14px;
-    color: #444;
-    line-height: 1.55;
-}
-
-.order-right {
-    display: flex;
-    flex-direction: column;
-    text-align: right;
-    gap: 6px;
-}
-
-.order-status {
+.order-status, .status-badge {
     font-size: 13px;
     padding: 4px 10px;
-    border-radius: 12px;
+    border-radius: var(--xxmin_radius);
     font-weight: 600;
     display: inline-block;
 }
 
+/* Статусные цвета */
 .order-status.new       { background:#d1ebff; color:#005b8f; }
 .order-status.processing { background:#fff0c2; color:#8a6d00; }
 .order-status.done       { background:#d6f5d6; color:#206020; }
 .order-status.cancel     { background:#ffe4e4; color:#a30000; }
 
-.order-open {
-    color: #3295D1;
-    font-size: 15px;
-    text-decoration: none;
-    transition: 0.2s;
-}
-
-.order-open:hover {
-    color: #0B466E;
-}
-
-
-/* ==== Блок просмотра заказа ==== */
-.order-block {
-    background:#f7f9fc;
-    border:1px solid #e5e8ef;
-    border-radius:20px;
-    padding:22px 26px;
-    margin-bottom:30px;
-}
-
-.order-block-title {
-    font-size:22px;
-    font-weight:700;
-    color:#001F33;
-    margin-bottom:12px;
-    display:flex;
-    align-items:center;
-    gap:8px;
-}
-
-.order-info-row {
-    margin-bottom:10px;
-    font-size:15px;
-    line-height:1.55;
-}
-
-.order-status {
-    display:inline-block;
-    padding:6px 12px;
-    border-radius:14px;
-    font-size:14px;
-    font-weight:600;
-    margin-top:4px;
-}
-
-/* статусные цвета */
-.status-new { background:#e8f1ff; color:#0b4a9e; }
-.status-processing { background:#fff3d6; color:#8e6100; }
-.status-done { background:#d9f7e4; color:#0d8144; }
-.status-cancel { background:#ffe2e0; color:#c0392b; }
-
-/* таблица позиций */
-.order-items {
-    width:100%;
-    border-collapse:collapse;
-    margin-top:15px;
-    font-size:15px;
-}
-.order-items th {
-    text-align:left;
-    padding:12px 8px;
-    background:#eef3f8;
-    border-bottom:1px solid #d7dde5;
-}
-.order-items td {
-    padding:12px 8px;
-    border-bottom:1px solid #e3e8ee;
-}
-.order-img {
-    width:80px;
-    border-radius:10px;
-    background:#fff;
-}
-
-.order-items th,
-.order-items td {
-    white-space: nowrap; /* запрет переноса во всей таблице */
-}
-
-.order-items td:nth-child(4), /* Кол-во */
-.order-items td:nth-child(5), /* Цена */
-.order-items td:nth-child(6)  /* Сумма */
-{
-    text-align: right;
-    min-width: 90px;
-}
-
-.order-items th:nth-child(4),
-.order-items th:nth-child(5),
-.order-items th:nth-child(6) {
-    text-align: right;
-    min-width: 90px;
-}
-
-/* Чтобы название не растягивало всё */
-.order-items td:nth-child(3) {
-    white-space: normal;
-    max-width: 350px;
-}
-
-
-/* история */
-.history-table {
-    width:100%;
-    border-collapse:collapse;
-    margin-top:12px;
-    font-size:14px;
-}
-.history-table th {
-    background:#eef3f8;
-    padding:10px;
-    border-bottom:1px solid #d7dde5;
-    text-align:left;
-}
-.history-table td {
-    padding:10px;
-    border-bottom:1px solid #e3e8ee;
-}
-
-.btn-back, .link-back {
-    display:inline-block;
-    margin-top:25px;
-    color:#3295D1;
-    font-size:16px;
-    text-decoration:underline;
-}
-.btn-back:hover, .link-back:hover { color:#0B466E; }
-
-/* Статусы заказов */
-.status-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    border-radius: 12px;
-    font-size: 14px;
-    font-weight: 600;
-    background: #e9ecef;
-    border: 1px solid #ced4da;
-    color: #343a40;
-}
-
-.status-badge i {
-    font-size: 16px;
-}
-
-.status-badge.status-unknown {
-    background: #e2e3e5;
-    border-color: #d3d6d8;
-    color: #6c757d;
-}
-
-.order-timeline {
-    display: flex;
-    overflow-x: auto;
-    padding: 20px 5px;
-    gap: 35px;
-    position: relative;
-}
-
-.tl-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 120px;
-    text-align: center;
-    position: relative;
-    flex-shrink: 0;
-}
-
+/* Тултипы и таймлайн */
 .tl-dot {
     width: 26px;
     height: 26px;
-    border-radius: 50%;
+    border-radius: 50%; /* Всегда круг */
     background: #d7dce2;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #6c7a86;
-    font-size: 14px;
-    border: 2px solid transparent;
     margin-bottom: 8px;
 }
-
-.tl-label {
-    font-size: 13px;
-    color: #374151;
-}
-
-/* --- DONE (пройден) --- */
-.tl-done .tl-dot {
-    background: #d1fae5;
-    border-color: #10b981;
-    color: #059669;
-}
-
-.tl-done .tl-label {
-    color: #047857;
-}
-
-/* --- ТЕКУЩИЙ --- */
-.tl-current .tl-dot {
-    background: #bfdbfe;
-    border-color: #2563eb;
-    color: #1d4ed8;
-    transform: scale(1.2);
-}
-
-.tl-current .tl-label {
-    font-weight: 600;
-    color: #1d4ed8;
-}
-
-/* --- БУДУЩИЙ --- */
-.tl-future .tl-dot {
-    background: #e5e7eb;
-    color: #9ca3af;
-}
-
-.tl-future .tl-label {
-    color: #9ca3af;
-}
-
-/* Адаптив */
-@media (max-width: 600px) {
-    .tl-item {
-        width: 95px;
-    }
-    .tl-label {
-        font-size: 12px;
-    }
-}
-
-/* =========================================================
-   ORDER SUCCESS PAGE
-   ========================================================= */
 
 .order-success-box {
     background: #e9f9ee;
     border: 1px solid #d0efd8;
     color: #0c6b2f;
-    border-radius: var(--radius);
+    border-radius: var(--min_radius);
     padding: 22px 26px;
     margin-top: 20px;
 }
 
-.order-success-title {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 18px;
-    font-weight: 700;
-}
-
-.order-success-title i {
-    font-size: 26px;
-}
-
-.order-success-text {
-    margin-top: 12px;
-    font-size: 16px;
-    color: #1b5e36;
-    line-height: 1.55;
-}
-
-.order-success-actions {
-    margin-top: 30px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 14px;
-}
-
-
-/* =========================================================
-   CART PROMO PREVIEW
-   ========================================================= */
 .cart-info-promo {
     background: #f0f7ff;
     border: 1px solid #d0e4ff;
     padding: 25px;
-    border-radius: 12px;
+    border-radius: var(--min_radius);
     margin-bottom: 25px;
-    text-align: left;
 }
 
-.cart-info-title {
-    font-size: 20px;
-    font-weight: 700;
-    color: #0B466E;
-    margin-bottom: 8px;
-    display: flex;
+/* Оформление кнопок фильтра */
+.brand-tag {
+    /* Фиксируем выравнивание */
+    display: inline-flex !important; 
     align-items: center;
-    gap: 8px;
+    justify-content: center;
+    
+    /* Текст в одну строку, без переносов */
+    white-space: nowrap;
+    overflow: hidden;
+    
+    /* Сбрасываем внутренние высоты, которые могут толкать текст вниз */
+    line-height: 1 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    
+    /* Вертикальное выравнивание в строке */
+    vertical-align: middle;
 }
 
-.cart-info-sub {
-    font-size: 15px;
-    margin-bottom: 15px;
-}
-
-.cart-info-box {
-    background: #fff;
-    border-radius: 10px;
-    padding: 15px;
-    border: 1px solid #e2e6ea;
-    margin-bottom: 20px;
-}
-
-.cart-info-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 6px 0;
-    font-size: 15px;
-}
-
-.cart-info-row.total {
-    font-size: 17px;
-    font-weight: 700;
-}
-
-.cart-info-buttons {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
+/* Состояние кнопки бренда, когда она недоступна для выбора */
+.brand-tag.disabled {
+    opacity: 0.7;
+    pointer-events: none; /* Запрещаем клик */
+    background: #f8f9fa !important;
+    border-color: #d6d5d5 !important;
+    color: #adb5bd !important;
+    box-shadow: none !important;
 }

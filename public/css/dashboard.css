@@ -2,20 +2,18 @@
    GLOBAL VARIABLES
    ========================================================= */
 :root {
-    --radius: 30px;
-    --min_radius: 15px;
+    --radius: 30px;         /* Для крупных внешних блоков */
+    --min_radius: 15px;     /* Для таблиц и панелей фильтров */
+    --xmin_radius: 12px;    /* Для карточек товаров и пагинации */
+    --xxmin_radius: 8px;    /* Для инпутов и бейджей */
 }
 
-button,
-.btn,
-.btn-primary,
-.btn-default,
-.btn-secondary,
-.btn-big {
-    font-weight: 400 !important;
+button, .btn, .btn-primary, .btn-default, .btn-light, .btn-secondary, .btn-big {
+    font-weight: 300 !important;
     text-decoration: none;
+    border-radius: var(--xmin_radius);
+    transition: 0.2s ease;
 }
-
 
 /* =========================================================
    GLOBAL RESET + BOX MODEL
