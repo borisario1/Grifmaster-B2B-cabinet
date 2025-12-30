@@ -58,4 +58,17 @@ class Product extends Model
 
         return round($this->price * (100 - $discountPercent) / 100, 2);
     }
+
+    /**
+     * Явно указываем типы
+     */
+    protected function casts(): array
+    {
+        return [
+            'last_synced_at' => 'datetime',
+            'price' => 'decimal:2',
+            'free_stock' => 'integer',
+        ];
+    }
+
 }

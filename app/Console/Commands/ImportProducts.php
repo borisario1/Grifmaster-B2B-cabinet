@@ -25,8 +25,9 @@ class ImportProducts extends Command
         $csvUrl = "http://data.grifmaster.ru/files/dq9/data/products.csv";
         
         try {
-            $content = file_get_contents($csvUrl);
-            if (!$content) throw new \Exception("Не удалось скачать файл.");
+            $response = \Illuminate\Support\Facades\Http::get($csvUrl);
+            if ($response->failed()) throw new \Exception("Не удалось скачать файл.");
+            $content = $response->body();
 
             $rows = explode("\n", $content);
             $count = 0;
@@ -51,6 +52,7 @@ class ImportProducts extends Command
                         'product_category' => $data[12] ?? null,
                         'collection'       => $data[13] ?? null,
                         'image_filename'   => $data[14] ?? null,
+                        'last_synced_at'   => now(), // Фиксируем время обновления
                     ]
                 );
                 $count++;

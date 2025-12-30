@@ -20,8 +20,8 @@ return new class extends Migration
             $table->string('article', 100)->unique(); // Артикул (ключ для синхронизации)
             $table->string('name');
             $table->string('brand', 100)->index();
-            $table->string('product_type')->nullable();
-            $table->string('product_category')->nullable();
+            $table->string('product_type')->nullable()->index(); // Добавил индекс
+            $table->string('product_category')->nullable()->index(); // Добавил индекс
             $table->string('collection')->nullable();
             $table->integer('free_stock')->default(0);
             $table->decimal('price', 15, 2)->default(0);
@@ -29,16 +29,17 @@ return new class extends Migration
             $table->string('status', 50)->nullable(); // Сток / Вывод
             $table->string('barcode', 100)->nullable();
             $table->string('image_filename')->nullable();
-            
-            // Техническое поле для связи со скидками (если решим делать группы)
             $table->string('discount_group')->nullable()->index();
-            
+
+            // Поле для отслеживания актуальности импорта
+            $table->timestamp('last_synced_at')->nullable()->index();
+
             $table->timestamps();
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('products');
+        Schema::dropIfExists('b2b_products');
     }
 };
