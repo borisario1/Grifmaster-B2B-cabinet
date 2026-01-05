@@ -20,13 +20,20 @@ class ImportProducts extends Command
 
     public function handle()
     {
-        $this->info('Начало импорта...');
+        $this->info('Ищу файл с данными...');
         
         $csvUrl = "http://data.grifmaster.ru/files/dq9/data/products.csv";
         
         try {
-            $response = \Illuminate\Support\Facades\Http::get($csvUrl);
-            if ($response->failed()) throw new \Exception("Не удалось скачать файл.");
+            // .withoutVerifying() отключает проверку SSL
+            // .timeout(60) добавляем запас времени для больших файлов
+            $response = Http::withoutVerifying()
+                ->timeout(60)
+                ->get($csvUrl);
+            if ($response->failed()) {
+            throw new \Exception("Не удалось начать импорт. Код ответа сервера: " . $response->status());
+            }
+            $this->info('Импортирую товары...');
             $content = $response->body();
 
             $rows = explode("\n", $content);
