@@ -48,12 +48,6 @@
 
     </div>
 
-    {{-- Технический футер (опционально, для консистентности с логином) --}}
-    <div class="auth-tech-footer mt-4 text-center">
-        © {{ date('Y') }} Grifmaster<br>
-        Версия: {{ config('b2b.version') }}
-    </div>
-
 </div>
 
 @if (!empty($redirect_to))

@@ -10,7 +10,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {{-- Используем системное название из конфига --}}
-    <title>Регистрация — {{ config('b2b.app_name') }}</title>
+    <title>Восстановление доступа к учетной записи — {{ config('b2b.app_name') }}</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/auth.css') }}">
@@ -23,8 +23,8 @@
             {{-- Ссылка на логотип из конфига --}}
             <img src="{{ config('b2b.branding.fav_icon') }}" class="auth-logo-glass" alt="{{ config('b2b.app_name') }}">
             
-            <h3 class="auth-title">Регистрация</h3>
-            <p class="auth-subtitle">Создание аккаунта партнёра</p>
+            <h3 class="auth-title">Сбросить пароль</h3>
+            <p class="auth-subtitle">Если вы забыли пароль, его можно сбросить</p>
         </div>
 
         @if ($errors->any())
@@ -39,30 +39,20 @@
             @csrf
 
             <div class="mb-3">
-                <label class="form-label">Email</label>
+                <label class="form-label">Email (ваш логин)</label>
                 <input type="email" class="form-control auth-input-glass" name="email" value="{{ old('email') }}" required>
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Телефон (+7 900 000-00-00)</label>
+                <label class="form-label">Телефон (указанный при регистрации)</label>
                 <input type="text" class="form-control auth-input-glass" name="phone" id="phoneMask" value="{{ old('phone') }}" required>
             </div>
 
-            <div class="mb-3">
-                <label class="form-label">Пароль</label>
-                <input type="password" class="form-control auth-input-glass" name="password" required>
-            </div>
-
-            <div class="mb-4">
-                <label class="form-label">Подтверждение пароля</label>
-                <input type="password" class="form-control auth-input-glass" name="password_confirmation" required>
-            </div>
-
-            <button type="submit" class="auth-btn-glass">Зарегистрироваться</button>
+            <button type="submit" class="auth-btn-glass">Сбросить пароль</button>
         </form>
 
         <div class="text-center mt-3">
-            Уже есть аккаунт? <a href="{{ route('login') }}" class="auth-link">Войдите</a>
+            Вспомнили пароль? <a href="{{ route('login') }}" class="auth-link">Войдите</a>
         </div>
     </div>
 

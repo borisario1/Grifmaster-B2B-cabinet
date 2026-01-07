@@ -65,19 +65,17 @@
 
         <div class="text-center mt-3">
             {{-- Используем именованный роут для регистрации --}}
-            <a href="{{ route('register') }}" class="auth-link flash-text" id="flashText">
+            <a href="{{ route('register') }}" class="auth-link flash-text mx-2" id="flashText">
                 Создать аккаунт
+            </a>
+            <a href="{{ route('recovery_pass') }}" class="auth-link" id="flashText">
+                Забыли пароль?
             </a>
         </div>
 
     </div>
 
-    <div class="auth-tech-footer">
-        © {{ date('Y') }} Grifmaster<br>
-        {{-- Данные из конфига или константы (пока оставим текст) --}}
-        Версия приложения: 1.3.0, обновлено: 07.12.2025<br>
-        Поддержка пользователей: Борис Гусев - 232@grifmaster.ru
-    </div>
+@include('layouts.auth-tech-footer')
     
 </div>
 

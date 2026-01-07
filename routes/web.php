@@ -10,6 +10,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Auth\RecoveryPassController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\DashboardController;
@@ -31,6 +32,7 @@ Route::middleware('guest')->group(function () {
     
     // Регистрация и верификация
     Route::get('/register', [RegisterController::class, 'showRegister'])->name('register');
+    Route::get('/recovery-pass', [RecoveryPassController::class, 'showRecoveryPass'])->name('recovery_pass');
     Route::post('/register_action', [RegisterController::class, 'register'])->name('register.post');
     Route::get('/verify', [RegisterController::class, 'showVerify'])->name('register.verify');
     Route::post('/verify_action', [RegisterController::class, 'verify'])->name('register.verify.post');
