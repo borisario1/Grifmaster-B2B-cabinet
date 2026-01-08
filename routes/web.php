@@ -32,10 +32,15 @@ Route::middleware('guest')->group(function () {
     
     // Регистрация и верификация
     Route::get('/register', [RegisterController::class, 'showRegister'])->name('register');
-    Route::get('/recovery-pass', [RecoveryPassController::class, 'showRecoveryPass'])->name('recovery_pass');
     Route::post('/register_action', [RegisterController::class, 'register'])->name('register.post');
     Route::get('/verify', [RegisterController::class, 'showVerify'])->name('register.verify');
     Route::post('/verify_action', [RegisterController::class, 'verify'])->name('register.verify.post');
+
+    // Сброс и восстановление пароля
+    Route::get('/recovery_pass', [RecoveryPassController::class, 'showRecoveryPass'])->name('recovery.pass');
+    Route::post('/recovery_pass', [RecoveryPassController::class, 'sendRecoveryCode'])->name('recovery.send');
+    Route::get('/recovery_verify', [RecoveryPassController::class, 'showVerifyForm'])->name('recovery.verify.form');
+    Route::post('/recovery_verify', [RecoveryPassController::class, 'verifyAndReset'])->name('recovery.verify.post');
 });
 
 

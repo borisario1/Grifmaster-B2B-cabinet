@@ -1,7 +1,6 @@
 {{-- 
     Название: verify.blade.php
-    Описание: Страница подтверждения почты (OTP). 
-    Данные проекта тянутся из b2b.php.
+    Описание: Страница подтверждения регистрации. 
 --}}
 <!DOCTYPE html>
 <html lang="ru">
@@ -9,7 +8,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {{-- Динамический заголовок --}}
-    <title>Подтверждение — {{ config('b2b.app_name') }}</title>
+    <title>Подтверждение регистрации — {{ config('b2b.app_name') }}</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/auth.css') }}">
@@ -57,10 +56,8 @@
         </div>
     </div>
 
-    {{-- Технический футер для консистентности --}}
-    <div class="auth-tech-footer mt-4 text-center">
-        © {{ date('Y') }} Grifmaster | v.{{ config('b2b.version') }}
-    </div>
+@include('layouts.auth-tech-footer')
+
 </div>
 
 <script>

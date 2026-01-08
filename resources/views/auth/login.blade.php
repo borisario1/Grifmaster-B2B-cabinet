@@ -68,7 +68,7 @@
             <a href="{{ route('register') }}" class="auth-link flash-text mx-2" id="flashText">
                 Создать аккаунт
             </a>
-            <a href="{{ route('recovery_pass') }}" class="auth-link" id="flashText">
+            <a href="{{ route('recovery.pass') }}" class="auth-link" id="flashText">
                 Забыли пароль?
             </a>
         </div>

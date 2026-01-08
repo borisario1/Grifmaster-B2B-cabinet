@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.error')
 
 {{-- Подключаем CSS ошибок --}}
 @push('styles')
