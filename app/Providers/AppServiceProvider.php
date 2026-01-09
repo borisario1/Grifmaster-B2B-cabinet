@@ -5,6 +5,7 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -55,6 +56,24 @@ class AppServiceProvider extends ServiceProvider
 
         // Принудительно используем Bootstrap стили для пагинации
         \Illuminate\Pagination\Paginator::useBootstrapFive();
+
+        // Чтобы переменные $cartSummary и $unreadNotificationsCount 
+        // были доступны во всех шаблонах без их ручной передачи из каждого контроллера
+        view()->composer('layouts.app', function ($view) {
+            // Безопасная инициализация сервиса
+            $cartService = class_exists(\App\Services\CartService::class) ? app(\App\Services\CartService::class) : null;
+            $isAuth = Auth::check();
+
+            $view->with([
+                'cartSummary' => ($isAuth && $cartService) ? $cartService->getSummary() : ['qty' => 0, 'pos' => 0, 'amount' => 0],
+                
+                // ВРЕМЕННО: ставим 0, пока не перенесем логику из Notifications.php в новую модель
+                'unreadNotificationsCount' => 0, 
+                
+                // Исправляем: используем b2b_menu, как в твоем файле
+                'menu' => config('b2b_menu', []), 
+            ]);
+        });
     }
 
     /**

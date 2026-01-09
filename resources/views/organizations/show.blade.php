@@ -224,7 +224,17 @@
         </div>
     </div>
 
-    <br>
-    <a href="{{ route('organizations.index') }}" class="btn-link-back">← Назад</a>
+    {{-- Кнопка выбора, если эта орга не активна сейчас --}}
+    @if(auth()->user()->selected_org_id !== $organization->id)
+        <div style="margin-top: 30px;">
+            <a href="{{ route('organizations.select', $organization->id) }}" class="btn-primary btn-big">
+                <i class="bi bi-check-circle"></i> Выбрать эту организацию
+            </a>
+        </div>
+    @endif
+
+    <div style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 15px;">
+        <a href="{{ route('organizations.index') }}" class="btn-link-back">← Назад к списку</a>
+    </div>
     
 @endsection

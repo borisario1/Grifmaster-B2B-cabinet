@@ -1,21 +1,4 @@
 /* =========================================================
-   GLOBAL VARIABLES
-   ========================================================= */
-:root {
-    --radius: 30px;         /* Для крупных внешних блоков */
-    --min_radius: 15px;     /* Для таблиц и панелей фильтров */
-    --xmin_radius: 12px;    /* Для карточек товаров и пагинации */
-    --xxmin_radius: 8px;    /* Для инпутов и бейджей */
-}
-
-button, .btn, .btn-primary, .btn-default, .btn-light, .btn-secondary, .btn-big {
-    font-weight: 300 !important;
-    text-decoration: none;
-    border-radius: var(--xmin_radius);
-    transition: 0.2s ease;
-}
-
-/* =========================================================
    STORE TABLE
    ========================================================= */
 
@@ -101,13 +84,6 @@ button, .btn, .btn-primary, .btn-default, .btn-light, .btn-secondary, .btn-big {
     outline: none;
 }
 
-/* Маленькая кнопка OK */
-.btn-sm {
-    padding: 8px 14px !important;
-    font-size: 14px !important;
-    border-radius: var(--xxmin_radius) !important;
-}
-
 /* =========================================================
    Сортировка и иконки
    ========================================================= */
@@ -180,7 +156,7 @@ th.sort.desc i {
 }
 
 /* =========================================================
-   LAYOUTS & CARDS
+   LAYOUTS & CARDS, ORDERS
    ========================================================= */
 
 .page-wrapper.wide {
@@ -220,6 +196,32 @@ th.sort.desc i {
     display: inline-block;
 }
 
+/* Панель уведомления о незавершенном заказе */
+.cart-alert-panel {
+    background: #f0f7fc;
+    border: 1px solid #d0e4ff;
+    border-left: 4px solid #3295D1;
+    border-radius: var(--min_radius);
+    padding: 15px 20px;
+    margin-bottom: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.cart-alert-icon {
+    background: #3295D1;
+    color: #fff;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
 /* Статусные цвета */
 .order-status.new       { background:#d1ebff; color:#005b8f; }
 .order-status.processing { background:#fff0c2; color:#8a6d00; }
@@ -250,6 +252,76 @@ th.sort.desc i {
     padding: 25px;
     border-radius: var(--min_radius);
     margin-bottom: 25px;
+}
+
+/* =========================================================
+    ORDERS
+    Дополнения для детальной страницы заказа
+   ========================================================= */
+
+.order-header-flex {
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 25px;
+}
+
+.order-section-title {
+    font-weight: 600; 
+    margin-bottom: 15px; 
+    color: #0B466E; 
+    border-bottom: 1px solid #eee; 
+    padding-bottom: 8px;
+    font-size: 16px;
+}
+
+.order-data-list {
+    line-height: 1.8; 
+    font-size: 14px;
+}
+
+.order-data-list b {
+    font-weight: 600;
+}
+
+/* Таймлайн */
+.order-timeline {
+    margin-left: 20px;
+}
+
+.order-timeline-item {
+    position: relative; 
+    padding-left: 30px; 
+    margin-bottom: 20px; 
+    border-left: 2px solid #e9ecef;
+}
+
+.order-timeline-item .tl-dot {
+    position: absolute; 
+    left: -14px; /* Центрируем по линии границы */
+    top: 0; 
+    background: #3295D1; 
+    width: 12px; 
+    height: 12px;
+}
+
+.order-timeline-time {
+    font-size: 12px; 
+    color: #999; 
+    margin-bottom: 3px;
+}
+
+/* Вспомогательные стили для списка заказов */
+.order-main-info {
+    line-height: 1.4;
+}
+.order-secondary-info {
+    font-size: 13px;
+    color: #0B466E;
+    margin-top: 4px;
+}
+.text-nowrap {
+    white-space: nowrap;
 }
 
 /* Оформление кнопок фильтра */

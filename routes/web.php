@@ -62,6 +62,11 @@ Route::middleware(['auth', 'check.profile'])->group(function () {
     // Роут для AJAX переключения (PATCH или POST) - Настройки уведомлений в профиле
     Route::post('/profile/notify', [ProfileController::class, 'updateNotification'])->name('profile.notify');
     
+    // Уведомления
+    Route::get('/notifications', function () {
+        return view('notifications.index'); // Создадим этот файл позже
+    })->name('notifications.index');
+
     // ОРГАНИЗАЦИИ 
     // 1. AJAX поиск (ставим до resource, чтобы не конфликтовало с show)
     Route::post('/organizations/lookup', [OrganizationController::class, 'lookup'])->name('organizations.lookup');
@@ -70,9 +75,24 @@ Route::middleware(['auth', 'check.profile'])->group(function () {
     // 3. Стандартные действия (index, create, store, destroy, show)
     Route::resource('organizations', OrganizationController::class);
 
-    // Каталог товаров
-    Route::get('/store', [App\Http\Controllers\StoreController::class, 'index'])->name('store.index');
+    // Магазин (Каталог)
+    Route::get('/store', [App\Http\Controllers\StoreController::class, 'index'])->name('catalog.index');
+    
+    // Корзина
+    Route::get('/store/cart', [App\Http\Controllers\CartController::class, 'index'])->name('cart.index');
+    Route::post('/cart/add', [App\Http\Controllers\CartController::class, 'add'])->name('cart.add');
+    Route::post('/cart/clear', [App\Http\Controllers\CartController::class, 'clear'])->name('cart.clear');
+    
+    // Оформление заказа
+    Route::post('/store/checkout', [App\Http\Controllers\CartController::class, 'checkout'])->name('cart.checkout');
+    Route::get('/store/success/{code}', [App\Http\Controllers\CartController::class, 'success'])->name('cart.success');
 
+    // Избранное (чуть позже сделаем контроллер)
+    Route::get('/store/wishlist', [App\Http\Controllers\StoreController::class, 'wishlist'])->name('wishlist');
+
+    // Заказы
+    Route::get('/orders', [App\Http\Controllers\OrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/{code}', [App\Http\Controllers\OrderController::class, 'show'])->name('orders.show');
 });
 
 /**

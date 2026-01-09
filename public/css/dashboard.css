@@ -126,7 +126,7 @@ body {
     display: flex;
     align-items: center;
     gap: 12px;
-    min-width: 0;                /* даём тексту возможность сжиматься */
+    min-width: 0;
 }
 
 .topbar-logo {
@@ -398,7 +398,7 @@ body {
 
 .toolbar-wrapper {
     position: sticky;
-    top: 72px;
+    top: 70px;
     z-index: 998;
 }
 
@@ -406,7 +406,7 @@ body {
     width: 100%;
     background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.5);
+    border-bottom: 1px solid rgba(113, 113, 113, 0.5);
     padding: 10px 18px;
 
     display: flex; /* Тулбар только на десктопе */
@@ -416,34 +416,41 @@ body {
 
 .toolbar-item {
     color: #001F33;
-    background: #eaf4ff;
+    /* Базовый фон + легкий линейный градиент для объема */
+    background: linear-gradient(180deg, #f5faff 0%, #eaf4ff 100%);
     font-weight: 400;
     text-decoration: none;
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 8px 20px; /* воздушность элемента */
-    border: 1px solid transparent;
+    gap: 8px;
+    padding: 8px 20px;
     border-radius: var(--radius);
-    transition: 0.2s;
-    border-color: #b4b4b4;
+    
+    /* Граница и тени для эффекта выпуклости */
+    border: 1px solid #c2d6e8;
+    box-shadow: 
+        0 2px 4px rgba(0, 31, 51, 0.05), /* Мягкая тень под кнопкой */
+        inset 0 1px 0 rgba(255, 255, 255, 0.8); /* Блик по верхнему краю */
+    
+    transition: all 0.2s ease;
 }
 
 .toolbar-item:hover {
     background: #bae4ff;
     color: #0B466E;
-    font-weight: 400;
-    transition: 0.2s;
     border-color: #89c9f9;
+    /* Усиливаем тень при наведении, чтобы кнопка "приподнялась" */
+    box-shadow: 
+        0 4px 8px rgba(0, 31, 51, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    transform: translateY(-1px);
 }
 
-/* Активный пункт тулбара */
 .toolbar-item.active {
     background: #3295D1;
     color: #fff;
-    font-weight: 500;
-    border-radius: var(--radius);
-    border: none;
+    border-color: #1f74a9;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15); /* Вдавленный эффект для активной */
 }
 
 /* =========================================================
@@ -483,6 +490,50 @@ a.button,
     padding: 2px 5px;
     border-radius: 12px;
     box-shadow: 0 0 4px rgba(0,0,0,0.25);
+}
+
+/* =========================================================
+   TOAST уведомления
+   ========================================================= */
+.toast-container {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Анимация тряски */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    50% { transform: translateX(8px); }
+    75% { transform: translateX(-8px); }
+}
+
+.shake {
+    animation: shake 0.4s ease-in-out;
+    border-color: #ff4d4d !important;
+}
+
+.b2b-toast {
+    background: #fff;
+    padding: 16px 22px;
+    border-radius: var(--min_radius);
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    max-width: 450px;
+    animation: slideUp 0.4s ease-out forwards;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
 }
 
 /* =========================================================

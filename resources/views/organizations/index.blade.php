@@ -12,26 +12,19 @@
 
     <h1 class="page-title">Мои организации</h1>
 
-    <p>
-        <a href="{{ route('organizations.create') }}" class="btn-primary">
+    <p style="margin-bottom: 25px;">
+        {{-- Кнопка добавления: теперь большая и системная --}}
+        <a href="{{ route('organizations.create') }}" class="btn-primary btn-big">
             <i class="bi bi-plus-circle"></i>
             Добавить организацию
         </a>
     </p>
 
-    {{-- Сообщения об успехе --}}
-    @if(session('ok'))
-        <div class="alert alert-success" style="margin-bottom: 20px;">
-            <i class="bi bi-check-circle-fill"></i> {{ session('ok') }}
-        </div>
-    @endif
-
-    {{-- Если список пуст --}}
     @if($organizations->isEmpty())
 
         <div class="empty-block">
             У вас пока нет сохранённых организаций.
-            <br><br>
+            <br>
             <a href="{{ route('dashboard') }}" class="btn-link-back">← Вернуться в кабинет</a>
         </div>
 
@@ -41,96 +34,76 @@
 
             @foreach ($organizations as $org)
                 @php
-                    // Получаем ID выбранной организации из профиля юзера
-                    // Приводим к int, чтобы null превратился в 0
                     $userSelectedId = (int) auth()->user()->selected_org_id;
-                    
-                    // ID текущей организации в цикле
                     $currentOrgId = (int) $org->id;
-                    
-                    // Сравниваем числа
                     $isSelected = ($userSelectedId > 0 && $userSelectedId === $currentOrgId);
-                    
                     $selectUrl = route('organizations.select', $org->id);
                 @endphp
 
-                {{-- КАРТОЧКА --}}
-                {{-- Если выбрана, добавляем класс 'selected' для зеленой обводки --}}
                 <div class="org-card {{ $isSelected ? 'selected' : '' }}" onclick="selectOrg('{{ $selectUrl }}')">
 
-                    {{-- ЛЕВАЯ ЧАСТЬ (Инфо) --}}
+                    {{-- ИНФОРМАЦИЯ --}}
                     <div>
                         <div class="org-card-title">
                             @if($org->type === 'ip')
                                 <i class="bi bi-person-workspace"></i>
-                                {{-- Имя ИП --}}
                             @else
                                 <i class="bi bi-building-check"></i>
                             @endif
 
                             {{ $org->name }}
 
-                            {{-- Значок DaData --}}
                             @if($org->info)
                                 <i class="bi bi-patch-check-fill org-dadata-check" 
-                                   title="Данные по организации получены из ФНС"
+                                   title="Данные подтверждены DaData"
                                    style="color: #198754;"></i>
                             @endif
                         </div>
 
                         <div class="org-card-details">
                             ИНН: {{ $org->inn }}<br>
-
                             @if($org->type === 'ip')
                                 ОГРНИП: {{ $org->ogrn ?: '—' }}
                             @else
-                                КПП: {{ $org->kpp ?: '—' }}<br>
-                                ОГРН: {{ $org->ogrn ?: '—' }}
+                                КПП: {{ $org->kpp ?: '—' }} | ОГРН: {{ $org->ogrn ?: '—' }}
                             @endif
                         </div>
                     </div>
 
-                    {{-- ПРАВАЯ ЧАСТЬ (Кнопки) --}}
+                    {{-- ДЕЙСТВИЯ --}}
                     <div class="org-card-right">
 
                         @if($isSelected)
-                            {{-- ВАРИАНТ 1: Уже выбрана (просто лейбл) --}}
                             <div class="org-selected-label">
                                 <i class="bi bi-check-circle-fill"></i> Выбрана
                             </div>
                         @else
-                            {{-- ВАРИАНТ 2: Не выбрана (кнопка "Выбрать") --}}
-                            {{-- stopPropagation: чтобы клик не дублировал событие родителя --}}
                             <a class="org-action select" href="{{ $selectUrl }}" onclick="event.stopPropagation()">
                                 <i class="bi bi-check-circle"></i> Выбрать
                             </a>
                         @endif
 
-                        {{-- Кнопка Посмотреть --}}
                         <a class="org-action" href="{{ route('organizations.show', $org->id) }}" onclick="event.stopPropagation()">
-                            <i class="bi bi-eye"></i> Посмотреть
+                            <i class="bi bi-eye"></i> Просмотреть
                         </a>
 
-                        {{-- Кнопка Удалить --}}
                         <a class="org-action delete" href="#" 
-                        onclick="event.stopPropagation(); event.preventDefault(); 
-                        openModal(
-                            'universalConfirm', 
-                            () => { document.getElementById('delete-form-{{ $org->id }}').submit(); }, 
-                            'Удаление организации', 
-                            'Вы уверены, что хотите удалить «{{ $org->name }}»? Это действие нельзя будет отменить.', 
-                            5, 
-                            'Да, удалить'
-                        )">
+                           onclick="event.stopPropagation(); event.preventDefault(); 
+                           openModal(
+                               'universalConfirm', 
+                               () => { document.getElementById('delete-form-{{ $org->id }}').submit(); }, 
+                               'Удаление организации', 
+                               'Вы уверены, что хотите удалить «{{ $org->name }}»? Все связанные данные корзины для этой компании станут недоступны.', 
+                               5, 
+                               'Да, удалить'
+                           )">
                             <i class="bi bi-trash"></i> Удалить
                         </a>
                         
-                        {{-- Скрытая форма для удаления --}}
                         <form id="delete-form-{{ $org->id }}" action="{{ route('organizations.destroy', $org->id) }}" method="POST" style="display: none;">
                             @csrf
                             @method('DELETE')
                         </form>
-
                     </div>
 
                 </div>
@@ -138,12 +111,11 @@
 
         </div>
 
-        <br>
-        <a href="{{ route('dashboard') }}" class="btn-link-back">← Вернуться в кабинет</a>
-
+        <div style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 15px;">
+            <a href="{{ route('dashboard') }}" class="btn-link-back">← Вернуться в кабинет</a>
+        </div>
     @endif
     
-{{-- JS Скрипты --}}
 <script>
 function selectOrg(url) {
     window.location.href = url;

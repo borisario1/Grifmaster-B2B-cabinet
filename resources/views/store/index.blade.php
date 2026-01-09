@@ -68,13 +68,13 @@
                 </div>
             </div>
             <div class="col-md-1 text-end">
-                <button onclick="resetFilters()" class="btn-primary" style="height: 42px; margin-top: 23px;" title="Сбросить">
+                <button onclick="resetFilters()" class="btn-primary btn-big" style="margin-top: 23px;" title="Сбросить">
                     Очистить фильтр
                 </button>
             </div>
         </div>
     </div>
-    
+
     <div class="store-table-wrapper">
         <table class="store-table">
             <thead>
@@ -117,9 +117,10 @@
                             @endif
                         </td>
                         <td>
-                            <form method="POST" action="#" class="store-qty-form">
+                            <form method="POST" action="{{ route('cart.add') }}" class="store-qty-form ajax-cart-form">
                                 @csrf
-                                <input type="number" name="qty" min="0" value="0" class="store-qty-input">
+                                <input type="hidden" name="product_id" value="{{ $i->id }}">
+                                <input type="number" name="qty" min="0" value="1" class="store-qty-input">
                                 <button type="submit" class="btn-primary btn-sm">ОК</button>
                             </form>
                             <div class="hidden-data">
@@ -132,13 +133,24 @@
                 @endforeach
             </tbody>
         </table>
+
+    {{-- Сообщение о пустом результате (скрыто по умолчанию) --}}
+    <div id="no-result-message" style="display: none;" class="alert alert-info text-center mt-4">
+        <i class="bi bi-search"></i> <span id="no-result-text">По вашему запросу ничего не найдено</span>
+    </div>
+
     <div class="text-center mt-4 mb-5">
-        <p id="showing-info" style="font-size: 14px; color: #666;">Показано 50 из {{ count($products) }} товаров</p>
-        <button id="load-more-btn" class="btn btn-primary">
-            Показать еще
-        </button>
+            {{-- Исправленный счетчик: добавили ID для "найдено" --}}
+            <p id="showing-info" style="font-size: 14px; color: #666;">
+                Найдено <span id="total-found">0</span> товаров. Показано <span id="visible-count">0</span>.
+            </p>
+            
+            <button id="load-more-btn" class="btn btn-primary">
+                Показать еще
+            </button>
+        </div>
     </div>
-    </div>
+
 </div>
 @endsection
 
@@ -167,20 +179,39 @@
         // 2. ЭЛЕМЕНТЫ УПРАВЛЕНИЯ UI
         const loadMoreBtn = document.getElementById('load-more-btn');
         const showingInfo = document.getElementById('showing-info');
+        const noResultMessage = document.getElementById('no-result-message');
+        const noResultText = document.getElementById('no-result-text');
 
         function updateLoadMoreUI() {
-            const total = storeList.matchingItems.length;
-            const shown = storeList.visibleItems.length;
+            const totalItems = storeList.items.length; // Всего в базе
+            const matched = storeList.matchingItems.length; // Найдено фильтром
+            const shown = storeList.visibleItems.length; // Видно сейчас
             
-            if (showingInfo) {
-                showingInfo.innerText = `Показано ${shown} из ${total} товаров`;
+            // 1. Обработка пустых состояний
+            if (totalItems === 0) {
+                noResultMessage.style.display = 'block';
+                noResultText.innerText = "Каталог товаров в настоящее время пуст, попробуйте обновить страницу позже";
+                if(showingInfo) showingInfo.style.display = 'none';
+            } else if (matched === 0) {
+                noResultMessage.style.display = 'block';
+                noResultText.innerText = "По вашему запросу ничего не найдено";
+                if(showingInfo) showingInfo.style.display = 'none';
+            } else {
+                noResultMessage.style.display = 'none';
+                if(showingInfo) {
+                    showingInfo.style.display = 'block';
+                    document.getElementById('total-found').innerText = matched;
+                    document.getElementById('visible-count').innerText = shown;
+                }
             }
             
+            // 2. Видимость кнопки "Показать еще"
             if (loadMoreBtn) {
-                loadMoreBtn.style.display = (shown >= total) ? 'none' : 'inline-block';
+                loadMoreBtn.style.display = (shown >= matched || matched === 0) ? 'none' : 'inline-block';
             }
         }
 
+        // Кнопка теперь работает строго по клику (шаг 50)
         if (loadMoreBtn) {
             loadMoreBtn.addEventListener('click', function() {
                 itemsPerPage += step;
@@ -189,15 +220,6 @@
                 validateImages();
             });
         }
-
-        // Авто-подгрузка при скролле
-        window.addEventListener('scroll', () => {
-            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 800) {
-                if (loadMoreBtn && loadMoreBtn.style.display !== 'none') {
-                    loadMoreBtn.click();
-                }
-            }
-        });
 
         // 3. ЛОГИКА ФИЛЬТРОВ
         const selectedBrands = new Set();
@@ -353,6 +375,93 @@
         updateSelectOptions();
         updateLoadMoreUI();
         validateImages();
+    });
+
+    // Функция показа тоста
+    function showToast(message, icon = 'bi-check-circle', isError = false) {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `b2b-toast ${isError ? 'shake' : ''}`;
+        toast.innerHTML = `<i class="bi ${icon}" style="${isError ? 'color:#e53e3e' : ''}"></i> <span>${message}</span>`;
+        container.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(20px)';
+            toast.style.transition = '0.4s';
+            setTimeout(() => toast.remove(), 400);
+        }, 4000); // 4 секунды видимости
+    }
+
+    // AJAX добавление в корзину с расширенными уведомлениями
+    document.querySelectorAll('.ajax-cart-form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const btn = this.querySelector('button');
+            const originalContent = btn.innerHTML;
+            
+            btn.disabled = true;
+            btn.innerHTML = '<i class="bi bi-hourglass-split"></i>';
+
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                let message = '';
+                let icon = 'bi-check-circle';
+                let isError = false;
+
+                switch(data.action) {
+                    case 'added':
+                        message = `"${data.product_name}" <strong>добавлен в корзину: ${data.added_qty} шт.</strong>`;
+                        break;
+                    case 'increased':
+                        message = `"${data.product_name}" в корзине: <strong>+${data.added_qty} шт.</strong>, всего в корзине <strong>${data.total_qty} шт.</strong>`;
+                        break;
+                    case 'removed':
+                        message = `Товар "${data.product_name}" <strong>удален из корзины<strong>`;
+                        icon = 'bi-trash';
+                        break;
+                    case 'not_found':
+                        message = `Товара "${data.product_name}" <strong>нет в корзине</strong>.`;
+                        icon = 'bi-x-circle';
+                        isError = true;
+                        break;
+                }
+
+                showToast(message, icon, isError);
+
+                if (isError) {
+                    btn.innerHTML = '<i class="bi bi-x-lg"></i>';
+                    setTimeout(() => { btn.innerHTML = originalContent; btn.disabled = false; }, 1000);
+                } else {
+                    btn.innerHTML = '<i class="bi bi-check-lg"></i>';
+                    // Обновляем топбар
+                    const cartInfo = document.querySelector('.topbar-cart-info');
+                    const cartIcon = document.querySelector('.topbar-icon[title="Корзина"]');
+                    if (cartInfo && data.summary) {
+                        if (data.summary.pos > 0) {
+                            cartIcon.classList.add('cart-not-empty');
+                            cartInfo.innerHTML = `${data.summary.qty} шт. / ${data.summary.pos} поз. / ${data.summary.amount_formatted} ₽`;
+                            cartInfo.style.display = 'inline';
+                        } else {
+                            cartIcon.classList.remove('cart-not-empty');
+                            cartInfo.innerHTML = '';
+                        }
+                    }
+                    setTimeout(() => { btn.innerHTML = originalContent; btn.disabled = false; }, 1500);
+                }
+            })
+            .catch(error => {
+                showToast('Ошибка сервера', 'bi-exclamation-triangle', true);
+                btn.innerHTML = originalContent;
+                btn.disabled = false;
+            });
+        });
     });
 </script>
 @endpush

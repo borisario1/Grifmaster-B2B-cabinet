@@ -33,6 +33,15 @@ return [
         'group'   => 'orders',
         'show_in' => ['dashboard', 'burger'],
     ],
+    
+    'wishlist' => [
+        'title'   => 'Избранное',
+        'desc'    => 'Отложенные вами товары, которые понравились',
+        'icon'    => 'bi-heart',
+        'url'     => '/store/wishlist',
+        'group'   => 'orders',
+        'show_in' => ['dashboard', 'burger'],
+    ],
 
     'orders' => [
         'title'   => 'Заказы',

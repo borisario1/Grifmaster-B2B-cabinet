@@ -189,7 +189,6 @@ class OrganizationController extends Controller
         // Если сменили организацию — чистим корзину (Бизнес-правило)
         if ($user->selected_org_id !== $organization->id) {
             $user->update(['selected_org_id' => $organization->id]);
-            DB::table('b2b_cart_items')->where('user_id', $user->id)->delete();
         }
 
         return redirect()->back()->with('ok', 'Выбрана организация: ' . $organization->name);
@@ -209,7 +208,6 @@ class OrganizationController extends Controller
         // Если удаляем активную — сбрасываем выбор и чистим корзину
         if ($user->selected_org_id === $organization->id) {
             $user->update(['selected_org_id' => null]);
-            DB::table('b2b_cart_items')->where('user_id', $user->id)->delete();
         }
 
         // Soft Delete

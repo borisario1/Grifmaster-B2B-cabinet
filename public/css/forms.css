@@ -1,3 +1,144 @@
+/* =========================================================
+   GLOBAL VARIABLES
+   ========================================================= */
+:root {
+    --radius: 30px;         /* Для крупных внешних блоков */
+    --min_radius: 20px;     /* Для таблиц и панелей фильтров */
+    --xmin_radius: 15px;    /* Для карточек товаров и пагинации */
+    --xxmin_radius: 4px;    /* Для инпутов и бейджей */
+}
+
+button, .btn, .btn-primary, .btn-default, .btn-light, .btn-secondary, .btn-big {
+    font-weight: 300 !important;
+    text-decoration: none;
+    border-radius: var(--xmin_radius); /* 12px */
+    transition: 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    border: none;
+}
+
+/* =========================================================
+   КНОПКИ (BUTTONS SYSTEM)
+   ========================================================= */
+
+/* Специфические размеры (только падинги и шрифты) */
+.btn-sm {
+    padding: 8px 14px !important;
+    font-size: 14px !important;
+    border-radius: var(--xmin_radius) !important; /* 8px для мелких */
+}
+
+.btn-mid {
+    padding: 10px 18px !important;
+    font-size: 15px !important;
+    border-radius: var(--min_radius) !important; /* 15px для средних */
+}
+
+.btn-big {
+    margin-top: 15px;
+    padding: 14px 26px !important;
+    font-size: 17px !important;
+    border-radius: var(--radius) !important;
+}
+
+/* Цветовые схемы */
+.btn-primary {
+    background: #3295D1;
+    color: #fff;
+    padding: 14px 22px;
+}
+
+.btn-primary:hover {
+    background: #0B466E;
+    color: #fff;
+}
+
+.btn-secondary {
+    background: #f4f7f8;
+    color: #001F33;
+    border: 1px solid #d6d5d5;
+    padding: 14px 22px;
+}
+
+.btn-secondary:hover {
+    background: #d3eeff;
+    border: 1px solid #aad4ee;
+}
+
+.btn-light {
+    background: #def2ff;
+    color: #001F33;
+    border: 1px solid #969696;
+    padding: 14px 22px;
+}
+
+.btn-default {
+    background: #001F33;
+    color: #fff;
+    padding: 14px 22px;
+}
+
+/* Ссылки-возвраты */
+.btn-back, .link-back {
+    display: inline-block;
+    margin-top: 25px;
+    color: #3295D1;
+    font-size: 16px;
+    text-decoration: underline;
+    background: none;
+    border: none;
+    padding: 0;
+}
+.btn-back:hover, .link-back:hover { color: #0B466E; }
+
+/* Визуальная блокировка */
+.btn-primary:disabled {
+    cursor: not-allowed;
+    background-color: #3294d163 !important;
+    border-color: #ccc !important;
+}
+
+/* Ссылка-возврат (легкая кнопка с подчеркиванием) */
+.btn-link-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: none;
+    padding: 0;
+    color: #001F33;
+    font-size: 15px;
+    font-weight: 300; /* Как и у всех твоих кнопок */
+    text-decoration: none;
+    border-bottom: 1px dotted ;
+    text-underline-offset: 4px;
+    transition: 0.2s ease;
+    cursor: pointer;
+}
+
+.btn-link-back i {
+    font-size: 18px;
+    text-decoration: none; /* Чтобы иконка не подчеркивалась */
+    transition: transform 0.2s ease;
+}
+
+.btn-link-back:hover {
+    color: #3295D1;
+    text-decoration: none;
+}
+
+.btn-link-back:hover i {
+    transform: translateX(-3px); /* Небольшая анимация стрелочки влево */
+}
+
+/* =========================================================
+   FORMS
+   ========================================================= */
+
 /* Карточка формы уже есть в dashboard.css */
 
 .form-block {
@@ -74,105 +215,6 @@
     margin-bottom: 25px;
 }
 
-.btn-primary {
-    background: #3295D1;
-    color: #fff;
-    border: none;
-    padding: 14px 22px;
-    border-radius: var(--radius) !important;
-    font-size: 16px;
-    font-weight: 400;
-    cursor: pointer;
-    transition: 0.25s;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.btn-primary:hover {
-    background: #0B466E;
-    color: #fff;
-}
-
-.btn-secondary {
-    background: #f4f7f8;
-    color: #001F33;
-    border: 1px solid #d6d5d5;
-    border-radius: var(--radius) !important;
-    padding: 14px 22px;
-    font-size: 16px;
-    font-weight: 400;
-    cursor: pointer;
-    transition: 0.25s;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.btn-secondary:hover {
-    background: #d3eeff;
-    border: 1px solid #aad4ee;
-    color: #001F33;
-}
-
-.btn-light {
-    background: #def2ff;
-    color: #001F33;
-    border: 1px solid #969696;
-    border-radius: var(--radius) !important;
-    padding: 14px 22px;
-    font-size: 16px;
-    font-weight: 400;
-    cursor: pointer;
-    transition: 0.25s;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.btn-light:hover {
-    background: #aad4ee;
-    color: #001F33;
-}
-
-.btn-default {
-    background: #001F33;
-    color: #fff;
-    border: none;
-    padding: 14px 22px;
-    border-radius: var(--radius) !important;
-    font-size: 16px;
-    font-weight: 400;
-    cursor: pointer;
-    transition: 0.25s;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.btn-default:hover {
-    background: #0B466E;
-    color: #fff;
-}
-
-.btn-big {
-    margin-top: 15px;
-    padding: 16px 26px;
-    font-size: 17px;
-}
-
-.btn-link-back {
-    display: inline-block;
-    margin-top: 30px;
-    color: #3295D1;
-    font-size: 16px;
-    text-decoration: underline;
-    transition: 0.2s;
-}
-
-.btn-link-back:hover {
-    color: #0B466E;
-}
 
 /* =========================================================
    BREADCRUMBS
@@ -366,6 +408,28 @@
     color: #001F33;
 }
 
+/* Интерактивные строки в результатах поиска DaData */
+#search_results .info-row {
+    transition: 0.2s ease;
+    border-radius: var(--xxmin_radius); /* 8px */
+    padding: 10px 15px;
+    margin: 2px 0;
+}
+
+#search_results .info-row:hover {
+    background-color: #e7f4ff; /* Светло-голубой фон при наведении */
+    border-color: #3295D1;
+    transform: translateX(5px); /* Легкий сдвиг вправо для акцента */
+}
+
+#search_results .info-row strong {
+    color: #001F33;
+}
+
+#search_results .info-row:hover strong {
+    color: #3295D1; /* Название становится синим при наведении */
+}
+
 /* Более читаемые блоки заголовков */
 .section-title i {
     color: #0B466E;
@@ -442,3 +506,4 @@
     background-color: #3294d163 !important; /* Светлее основного синего */
     border-color: #ccc !important;
 }
+

@@ -4,76 +4,86 @@
 
 @section('content')
     <div class="breadcrumbs">
+        <a href="{{ route('dashboard') }}">Главная</a> → 
         <a href="{{ route('organizations.index') }}">Мои организации</a> →
         <span>Добавить</span>
     </div>
 
     <h1 class="page-title">Добавить организацию</h1>
-    <p class="page-subtitle">Введите ИНН — остальные данные подставятся автоматически.</p>
+    <p class="page-subtitle">Введите ИНН — основные данные подтянутся автоматически из ФНС.</p>
 
-    {{-- Блок для ошибок сервера --}}
+    {{-- Ошибки валидации (серверные) --}}
     @if($errors->any())
         <div class="form-error">
             @foreach($errors->all() as $error) <div>{{ $error }}</div> @endforeach
         </div>
     @endif
 
-    {{-- Блок для JS ошибок --}}
+    {{-- Ошибки поиска (клиентские) --}}
     <div id="js-error" class="form-error" style="display: none;"></div>
 
     <form method="POST" action="{{ route('organizations.store') }}" class="form-block">
         @csrf
         <input type="hidden" name="dadata_raw" id="dadata_raw">
 
-        <div class="form-row search-row" style="position: relative;">
-            <div class="form-group" style="flex-grow: 1;">
-                <label>Поиск по ИНН</label>
-                <input type="text" id="inn_search" class="form-input" placeholder="Введите ИНН" autocomplete="off">
-            </div>
-            <div class="form-group" style="width: auto; align-self: flex-end;">
-                <button type="button" class="btn-primary" id="btn_search" style="height: 42px; margin-top: 23px;">Найти</button>
+        {{-- СЕКЦИЯ ПОИСКА --}}
+        <div class="form-row">
+            <div class="form-group">
+                <label>Поиск по ИНН (10 или 12 цифр)</label>
+                <div style="gap: 20px;">
+                    <input type="text" id="inn_search" class="form-input" placeholder="770505..." autocomplete="off" style="flex-grow: 1;">
+                    <button type="button" class="btn-primary btn-big" id="btn_search">Найти</button>
+                </div>
             </div>
         </div>
 
-        <div id="search_results" class="list-group mt-3 mb-4" style="display: none; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-            </div>
+        {{-- РЕЗУЛЬТАТЫ МНОЖЕСТВЕННОГО ПОИСКА --}}
+        <div id="search_results" class="card-info" style="display: none; padding: 15px; margin-top: -10px; border-color: #3295D1;">
+            {{-- Сюда JS вставит список филиалов --}}
+        </div>
 
-        <div id="org_fields" style="display:none; margin-top: 20px; border-top: 1px solid #eee; padding-top: 20px;">
+        {{-- ПОЛЯ ОРГАНИЗАЦИИ (ЗАПОЛНЯЮТСЯ АВТОМАТОМ) --}}
+        <div id="org_fields" style="display:none; margin-top: 10px;">
             
             <div class="form-group">
-                <label>ИНН *</label>
-                <input type="text" name="inn" id="inn" class="form-input" required readonly style="background-color: #f9f9f9;">
-            </div>
-
-            <div class="form-group">
                 <label>Название организации *</label>
-                <input type="text" name="name" id="name" class="form-input" required readonly style="background-color: #f9f9f9;">
+                <input type="text" name="name" id="name" class="form-input" required readonly>
             </div>
 
-            <div class="form-row">
-                <div class="form-group half">
-                    <label>КПП</label>
-                    <input type="text" name="kpp" id="kpp" class="form-input" readonly style="background-color: #f9f9f9;">
+            <div class="form-two">
+                <div class="form-group">
+                    <label>ИНН *</label>
+                    <input type="text" name="inn" id="inn" class="form-input" required readonly>
                 </div>
-                <div class="form-group half">
+                <div class="form-group">
+                    <label>КПП (только для ООО)</label>
+                    <input type="text" name="kpp" id="kpp" class="form-input" readonly>
+                </div>
+            </div>
+
+            <div class="form-two">
+                <div class="form-group">
                     <label>ОГРН / ОГРНИП</label>
-                    <input type="text" name="ogrn" id="ogrn" class="form-input" readonly style="background-color: #f9f9f9;">
+                    <input type="text" name="ogrn" id="ogrn" class="form-input" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Юридический адрес</label>
+                    <input type="text" name="address" id="address" class="form-input" readonly>
                 </div>
             </div>
 
-            <div class="form-group">
-                <label>Юридический адрес</label>
-                <input type="text" name="address" id="address" class="form-input" readonly style="background-color: #f9f9f9;">
+            <div style="margin-top: 30px;">
+                <button type="submit" class="btn-primary btn-big">
+                    <i class="bi bi-check-lg"></i> Сохранить организацию
+                </button>
             </div>
-
-            <button type="submit" class="btn-primary btn-lg mt-3">
-                <i class="bi bi-check-lg"></i> Сохранить
-            </button>
         </div>
     </form>
 
-    <br>
-    <a href="{{ route('organizations.index') }}" class="btn-link-back">← Отмена</a>
+    {{-- Системный отступ перед возвратом --}}
+    <div style="margin-top: 35px; border-top: 1px solid #eee; padding-top: 15px;">
+        <a href="{{ route('organizations.index') }}" class="btn-link-back">← Отмена и возврат к списку</a>
+    </div>
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
@@ -83,7 +93,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const errorBlock = document.getElementById("js-error");
     const resultsBlock = document.getElementById("search_results");
     
-    // КЭШ: защищаем кошелек и сервер от повторных кликов
     const searchCache = {};
     let currentSuggestions = [];
 
@@ -96,18 +105,12 @@ document.addEventListener("DOMContentLoaded", () => {
         raw: document.getElementById("dadata_raw")
     };
 
-    // Маска: только цифры, макс 12
     inp.addEventListener("input", function() {
         this.value = this.value.replace(/\D/g, '').substring(0, 12);
     });
 
     btn.addEventListener("click", findOrg);
-    inp.addEventListener("keypress", (e) => { 
-        if(e.key === "Enter") { 
-            e.preventDefault(); 
-            findOrg(); 
-        } 
-    });
+    inp.addEventListener("keypress", (e) => { if(e.key === "Enter") { e.preventDefault(); findOrg(); } });
 
     function showError(msg) {
         errorBlock.textContent = msg;
@@ -116,14 +119,9 @@ document.addEventListener("DOMContentLoaded", () => {
         resultsBlock.style.display = 'none';
     }
 
-    function clearError() {
-        errorBlock.textContent = '';
-        errorBlock.style.display = 'none';
-    }
-
     async function findOrg() {
         let inn = inp.value.trim();
-        clearError();
+        errorBlock.style.display = 'none';
         resultsBlock.style.display = 'none';
 
         if (inn.length !== 10 && inn.length !== 12) {
@@ -131,9 +129,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        // Если уже искали этот ИНН - берем из памяти мгновенно
         if (searchCache[inn]) {
-            console.log("Взято из кэша");
             handleResponse(searchCache[inn], inn);
             return;
         }
@@ -143,25 +139,18 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             let response = await fetch("{{ route('organizations.lookup') }}", {
                 method: "POST",
-                headers: { 
-                    "Content-Type": "application/json", 
-                    "X-CSRF-TOKEN": "{{ csrf_token() }}" 
-                },
+                headers: { "Content-Type": "application/json", "X-CSRF-TOKEN": "{{ csrf_token() }}" },
                 body: JSON.stringify({ inn: inn })
             });
 
             let data = await response.json();
             setLoading(false);
 
-            if (data.ok) {
-                searchCache[inn] = data; // Запоминаем результат
-            }
-            
+            if (data.ok) searchCache[inn] = data;
             handleResponse(data, inn);
 
         } catch(e) {
-            console.error(e);
-            showError("Ошибка соединения. Попробуйте заполнить вручную.");
+            showError("Сервис временно недоступен. Введите данные вручную.");
             setLoading(false);
             enableManualMode(inn);
         }
@@ -169,18 +158,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function handleResponse(data, inn) {
         if (!data.ok) {
-            showError(data.error || "Ошибка сервера");
+            showError(data.error || "Ошибка поиска");
             enableManualMode(inn);
             return;
         }
 
-        if (!data.suggestions || !data.suggestions.length) {
-            showError("Организации с таким ИНН не найдены.");
-            enableManualMode(inn);
-            return;
-        }
-
-        // Сохраняем предложения глобально для функции клика по списку
         currentSuggestions = data.suggestions;
 
         if (data.suggestions.length === 1) {
@@ -192,36 +174,29 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function renderResultsList(suggestions) {
-        resultsBlock.innerHTML = '';
+        resultsBlock.innerHTML = '<div style="margin-bottom:10px; font-weight:600; font-size:14px; color:#0B466E;">Найдено несколько подразделений. Выберите нужное:</div>';
         resultsBlock.style.display = 'block';
         
-        const header = document.createElement('div');
-        header.className = 'list-group-item list-group-item-light fw-bold';
-        header.textContent = 'Найдено несколько филиалов. Выберите нужный:';
-        header.style.padding = '10px 15px';
-        resultsBlock.appendChild(header);
-
         suggestions.forEach((item, index) => {
-            const btnItem = document.createElement('button');
-            btnItem.type = 'button';
-            btnItem.className = "list-group-item list-group-item-action";
-            btnItem.style.textAlign = 'left';
+            const div = document.createElement('div');
+            div.className = "info-row";
+            div.style.cursor = "pointer";
+            div.style.padding = "10px";
+            div.style.borderRadius = "8px";
             
             const kpp = item.data.kpp ? ` (КПП: ${item.data.kpp})` : '';
-            btnItem.innerHTML = `<strong>${item.value}</strong>${kpp}<br><small>${item.data.address.value}</small>`;
+            div.innerHTML = `<strong>${item.value}</strong> <span>${kpp}<br><small>${item.data.address.value}</small></span>`;
             
-            btnItem.onclick = (e) => {
-                e.preventDefault();
+            div.onclick = () => {
                 fillFields(currentSuggestions[index].data, currentSuggestions[index], true);
                 block.style.display = "block";
                 resultsBlock.style.display = 'none';
             };
-            resultsBlock.appendChild(btnItem);
+            resultsBlock.appendChild(div);
         });
     }
 
     function fillFields(d, suggestion, lock = true) {
-        clearError(); 
         fields.inn.value = d.inn || suggestion.data.inn || inp.value;
         fields.name.value = suggestion.value; 
         fields.kpp.value = d.kpp || "";
@@ -233,7 +208,8 @@ document.addEventListener("DOMContentLoaded", () => {
             Object.values(fields).forEach(el => {
                 if(el && el.type !== 'hidden') {
                     el.readOnly = true;
-                    el.style.backgroundColor = "#f9f9f9";
+                    el.classList.add('form-input-readonly'); // Можно добавить в CSS
+                    el.style.background = "#f2f2f2";
                 }
             });
         }
@@ -245,23 +221,16 @@ document.addEventListener("DOMContentLoaded", () => {
         Object.values(fields).forEach(el => {
             if(el && el.type !== 'hidden') {
                 el.readOnly = false;
-                el.style.backgroundColor = "";
-                el.value = (el === fields.inn) ? innValue : "";
+                el.style.background = "#fff";
+                if(el !== fields.inn) el.value = "";
             }
         });
     }
 
     function setLoading(state) {
-            btn.disabled = state;
-            if (state) {
-                // Устанавливаем фиксированную ширину перед сменой текста, чтобы кнопка не дергалась
-                btn.style.width = btn.offsetWidth + 'px';
-                btn.innerHTML = '<div class="loader-spinner"></div> ...';
-            } else {
-                btn.style.width = ''; // Возвращаем автоматическую ширину
-                btn.innerHTML = "Найти";
-            }
-        }
+        btn.disabled = state;
+        btn.innerHTML = state ? '<div class="loader-spinner"></div>' : "Найти";
+    }
 });
 </script>
 @endsection

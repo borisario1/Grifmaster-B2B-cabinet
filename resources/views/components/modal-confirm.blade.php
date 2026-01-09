@@ -13,9 +13,9 @@
             {{ $slot }}
         </div>
         <div class="custom-modal-footer">
-            <button type="button" class="btn btn-secondary" onclick="closeModal('{{ $id }}')">Отмена</button>
+            <button type="button" class="btn-secondary btn-mid" onclick="closeModal('{{ $id }}')">Отмена</button>
             {{-- Добавляем текст таймера внутрь кнопки через span --}}
-            <button type="button" class="btn {{ $btnClass ?? 'btn-primary' }} btn-modal-submit" id="{{ $id }}Submit">
+            <button type="button" class="{{ $btnClass ?? 'btn-primary' }} btn-mid btn-modal-submit" id="{{ $id }}Submit">
                 <span class="submit-text">Подтвердить</span>
             </button>
         </div>
@@ -88,7 +88,6 @@
 
 <script>
 let modalTimer = null;
-let originalBtnText = '';
 
 function closeModal(id) {
     document.getElementById(id).style.display = 'none';
@@ -97,25 +96,47 @@ function closeModal(id) {
 }
 
 /**
- * @param id - ID модалки (universalConfirm)
- * @param callback - функция, которая выполнится при нажатии "Подтвердить"
- * @param title - (опционально) новый заголовок
- * @param message - (опционально) новый текст вопроса
- * @param delay - задержка в секундах (0 по умолчанию)
- * @param btnText - свое название кнопки, по умолчанию "Подтвердить"
+ * @param id - ID модалки
+ * @param callback - функция при нажатии
+ * @param title - заголовок
+ * @param message - текст
+ * @param delay - задержка (сек)
+ * @param btnText - текст кнопки
+ * @param isLoading - если true, показывает лоадер и скрывает кнопки [NEW]
  */
-function openModal(id, callback, title = '', message = '', delay = 0, btnText = '') {
+function openModal(id, callback, title = '', message = '', delay = 0, btnText = '', isLoading = false) {
     const modal = document.getElementById(id);
     const submitBtn = document.getElementById(id + 'Submit');
+    const cancelBtn = modal.querySelector('.btn-secondary');
+    const modalIcon = modal.querySelector('.modal-icon');
     const textSpan = submitBtn.querySelector('.submit-text');
+    const body = modal.querySelector('.custom-modal-body');
+
+    // Сбрасываем видимость (на случай если открываем после лоадера)
+    submitBtn.style.display = 'inline-flex';
+    cancelBtn.style.display = 'inline-flex';
+    modalIcon.style.display = 'block';
 
     if (title) modal.querySelector('h3').textContent = title;
-    if (message) modal.querySelector('.custom-modal-body').textContent = message;
+    if (message) body.textContent = message;
 
-    // Устанавливаем текст кнопки: либо кастомный, либо дефолтный "Подтвердить"
+    // Режим лоадера (для оформления заказа)
+    if (isLoading) {
+        submitBtn.style.display = 'none';
+        cancelBtn.style.display = 'none';
+        modalIcon.style.display = 'none';
+        body.innerHTML = `
+            <div style="padding: 20px 0;">
+                <div class="loader-spinner" style="width: 40px; height: 40px; border-width: 4px; border-top-color: #3295D1; margin: 0 auto 15px;"></div>
+                <p>${message}</p>
+            </div>
+        `;
+        modal.style.display = 'flex';
+        return; // Прекращаем выполнение, кнопки не нужны
+    }
+
     const finalBtnText = btnText || 'Подтвердить';
     textSpan.textContent = finalBtnText;
-    originalBtnText = finalBtnText;
 
     modal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
@@ -126,10 +147,7 @@ function openModal(id, callback, title = '', message = '', delay = 0, btnText = 
     if (delay > 0) {
         submitBtn.disabled = true;
         let timeLeft = delay;
-        
-        // Сразу показываем текст с таймером
         textSpan.textContent = `${finalBtnText} (${timeLeft})`;
-
         modalTimer = setInterval(() => {
             timeLeft--;
             if (timeLeft > 0) {
@@ -143,8 +161,10 @@ function openModal(id, callback, title = '', message = '', delay = 0, btnText = 
     }
 
     submitBtn.onclick = () => {
-        callback();
-        closeModal(id);
-    };
+            callback();
+            if (!modal.querySelector('.loader-spinner')) {
+                closeModal(id);
+            }
+        };
 }
 </script>

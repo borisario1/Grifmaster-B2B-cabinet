@@ -145,26 +145,6 @@ return new class extends Migration
         // 4. КОРЗИНА
         // ==========================================
 
-        Schema::create('b2b_cart_items', function (Blueprint $table) {
-            $table->id();
-            
-            $table->foreignId('user_id')
-                  ->constrained('b2b_users')
-                  ->onDelete('cascade');
-            
-            // Если организация удаляется, ставим NULL (чтобы не удалять товар из корзины сразу, 
-            // хотя логика контроллера может решить иначе).
-            $table->foreignId('org_id')
-                  ->nullable()
-                  ->constrained('b2b_organizations')
-                  ->onDelete('cascade');
-            
-            $table->string('sku'); // Артикул товара
-            $table->unsignedInteger('qty')->default(1);
-            
-            $table->timestamps();
-        });
-
         // ==========================================
         // 5. СИСТЕМНЫЕ ТАБЛИЦЫ (JOBS, CACHE)
         // ==========================================
@@ -213,6 +193,13 @@ return new class extends Migration
             $table->longText('exception');
             $table->timestamp('failed_at')->useCurrent();
         });
+
+        Schema::table('b2b_users', function (Blueprint $table) {
+            $table->foreign('selected_org_id')
+                ->references('id')
+                ->on('b2b_organizations')
+                ->onDelete('set null');
+        });
     }
 
     /**
@@ -227,7 +214,7 @@ return new class extends Migration
         Schema::dropIfExists('cache_locks');
         Schema::dropIfExists('cache');
         
-        Schema::dropIfExists('b2b_cart_items');
+        //Schema::dropIfExists('b2b_cart_items');
         
         Schema::dropIfExists('b2b_organization_infos');
         Schema::dropIfExists('b2b_organizations');
