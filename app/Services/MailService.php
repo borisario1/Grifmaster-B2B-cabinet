@@ -24,14 +24,13 @@ class MailService
      */
     public static function send(string $to, string $subject, string $html, ?string $text = null): bool
     {
-        // Получение конфигурационных данных из config/services.php
-        $url = config('services.smtpbz.url');
-        $key = config('services.smtpbz.key');
+        // Теперь тянем из единого конфига b2b
+        $url = config('b2b.smtpbz.url');
+        $key = config('b2b.smtpbz.key');
 
-        // Подготовка данных для multipart/form-data запроса
         $post = [
-            'from'    => config('services.smtpbz.from_email'),
-            'name'    => config('services.smtpbz.from_name'),
+            'from'    => config('b2b.smtpbz.from_email'),
+            'name'    => config('b2b.smtpbz.from_name'),
             'to'      => $to,
             'subject' => $subject,
             'html'    => $html,

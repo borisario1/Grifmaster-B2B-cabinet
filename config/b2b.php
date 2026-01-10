@@ -10,7 +10,7 @@
 return [
     // Основные параметры приложения
     'app_name' => 'Бизнес-кабинет',
-    'version'  => '2.18.77135fe',
+    'version'  => '2.19.513fa',
     'updated'  => '09.01.2026',
 
     // Контакты поддержки (выводятся в футере)
@@ -30,6 +30,15 @@ return [
     'dadata' => [
         'key'    => env('DADATA_API_KEY', '667530abf26b739c1121e410414a045a1a2e649e'),
         'secret' => env('DADATA_SECRET_KEY', 'c7f9b624ef145403ad4e0889e5b3a80728a1331b'),
+        'url_party'  => env('DADATA_URL_PARTY', 'https://suggestions.dadata.ru/suggestions/api/4_1/rs/findById/party'),
+    ],
+
+    // Интеграция с SMTP.BZ (Рассылки)
+    'smtpbz' => [
+        'url'        => env('SMTPBZ_URL', 'https://api.smtp.bz/v1/smtp/send'),
+        'key'        => env('SMTPBZ_API_KEY'),
+        'from_email' => env('SMTPBZ_FROM_EMAIL', 'no-reply@grifmaster.ru'),
+        'from_name'  => env('SMTPBZ_FROM_NAME', 'Grifmaster B2B'),
     ],
 
     // Настройки интерфейса

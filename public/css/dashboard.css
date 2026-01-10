@@ -6,14 +6,18 @@
     --min_radius: 15px;     /* Для таблиц и панелей фильтров */
     --xmin_radius: 12px;    /* Для карточек товаров и пагинации */
     --xxmin_radius: 8px;    /* Для инпутов и бейджей */
+    --def_blur:4px;      /* Для блюра в модалках и топбаре */
+    --topbar_opacity: 0.5;   /* Прозрачность топбара */
+    --toolbar_opacity: 0.5;   /* Прозрачность тулбара */
 }
-
+/* временно убрано, тест. уже есть в forms.css
 button, .btn, .btn-primary, .btn-default, .btn-light, .btn-secondary, .btn-big {
     font-weight: 300 !important;
     text-decoration: none;
     border-radius: var(--xmin_radius);
     transition: 0.2s ease;
 }
+*/
 
 /* =========================================================
    GLOBAL RESET + BOX MODEL
@@ -101,9 +105,9 @@ body {
    ========================================================= */
 .topbar {
     width: 100%;
-    background: rgba(0, 31, 51, 0.45);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
+    background: rgba(0, 31, 51, var(--topbar_opacity));
+    backdrop-filter: blur(var(--def_blur));
+    -webkit-backdrop-filter: blur(var(--def_blur));
     padding: 14px 0;
     box-shadow: 0 3px 8px rgba(0,0,0,0.15);
     position: sticky;
@@ -259,7 +263,7 @@ body {
     width: 300px; 
     height: 100vh;
     background: rgba(255,255,255,0.98);
-    backdrop-filter: blur(15px);
+    backdrop-filter: blur(var(--def_blur));
     padding: 25px;
     transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 9999;
@@ -638,14 +642,14 @@ body {
 
 .toolbar-wrapper {
     position: sticky;
-    top: 70px;
+    top: 71px;
     z-index: 998;
 }
 
 .toolbar {
     width: 100%;
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(12px);
+    background: rgba(255, 255, 255, var(--toolbar_opacity));
+    backdrop-filter: blur(var(--def_blur));
     border-bottom: 1px solid rgba(113, 113, 113, 0.5);
     padding: 10px 18px;
 

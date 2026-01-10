@@ -17,7 +17,7 @@
                 <i class="bi bi-cart-check"></i>
             </div>
             <div>
-                <div style="font-weight: 600; color: #001F33;">У вас есть незавершенный заказ</div>
+                <div style="font-weight: 600; color: #001F33;">У вас есть неотправленный заказ. Не забыли подтвердить его?</div>
                 <div style="font-size: 13px; color: #666; line-height: 1.5;">
                     <div>Организация: {{ $currentOrg->name ?? 'Физическое лицо' }}</div>
                     <div>В корзине лежит <b>{{ $currentCartStats->count }}</b> 
@@ -28,11 +28,11 @@
         </div>
         <div style="display: flex; gap: 12px;">
             <button type="button" class="btn-secondary btn-mid" 
-                    onclick="openModal('universalConfirm', () => { document.getElementById('clear-cart-form').submit(); }, 'Очистка корзины', 'Вы уверены, что хотите полностью очистить текущую корзину?', 5, 'Да, очистить')">
+                    onclick="openModal('universalConfirm', () => { document.getElementById('clear-cart-form').submit(); }, 'Очистка корзины', 'Вы уверены, что хотите очистить корзину и удалить заказ?', 5, 'Да, очистить')">
                 Очистить
             </button>
             
-            <a href="{{ route('cart.index') }}" class="btn-primary btn-mid">
+            <a href="{{ route('cart.index') }}" class="btn-default btn-mid">
                 Перейти в корзину →
             </a>
         </div>

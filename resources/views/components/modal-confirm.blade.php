@@ -2,7 +2,7 @@
     Универсальный компонент подтверждения действия
     Использование: <x-modal-confirm id="logoutModal" title="Выход" ... />
 --}}
-<div id="{{ $id }}" class="custom-modal-wrapper" style="display: none;">
+<div id="{{ $id }}" class="custom-modal-wrapper" style="display: none;" tabindex="-1">
     <div class="custom-modal-backdrop"></div>
     <div class="custom-modal-content">
         <div class="custom-modal-header">
@@ -22,69 +22,9 @@
     </div>
 </div>
 
-<style>
-.custom-modal-wrapper {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    z-index: 9999;
-    display: flex; align-items: center; justify-content: center;
-}
-.custom-modal-backdrop {
-    position: absolute;
-    width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(8px); /* Тот самый блюр */
-}
-.custom-modal-content {
-    position: relative;
-    background: white;
-    padding: 30px;
-    border-radius: 15px;
-    width: 100%; max-width: 400px;
-    text-align: center;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-    animation: modalIn 0.3s ease-out;
-}
-.btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-.timer-text {
-    font-size: 0.85em;
-    margin-left: 5px;
-    opacity: 0.8;
-}
-.btn-modal-submit {
-    min-width: 150px; /* Увеличим немного, чтобы точно влез длинный текст */
-    display: inline-flex;
-    align-items: center;
-    justify-content: center; /* Центрируем текст по горизонтали */
-    text-align: center;
-    padding: 10px 20px; /* Симметричные отступы */
-    position: relative;
-    transition: all 0.3s ease;
-}
-
-/* Сбросим отступы у span, если они там остались */
-.btn-modal-submit .submit-text {
-    display: inline-block;
-    width: 100%;
-    margin: 0;
-    padding: 0;
-}
-.btn-modal-submit:disabled {
-    filter: grayscale(0.5);
-    opacity: 0.8;
-    cursor: not-allowed;
-}
-
-@keyframes modalIn {
-    from { transform: translateY(-20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-}
-.modal-icon { font-size: 3rem; color: #2c7be5; margin-bottom: 15px; display: block; }
-.custom-modal-footer { margin-top: 25px; display: flex; gap: 10px; justify-content: center; }
-</style>
+{{-- 
+    Стили модалки перенесены в forms.css
+--}}
 
 <script>
 let modalTimer = null;
@@ -92,6 +32,14 @@ let modalTimer = null;
 function closeModal(id) {
     document.getElementById(id).style.display = 'none';
     document.body.style.overflow = 'auto';
+    
+    // Снимаем блокировку с основного контента
+    document.querySelectorAll('body > *:not(script):not(.custom-modal-wrapper):not(.toast-container)').forEach(el => {
+        el.removeAttribute('inert');
+    });
+    //const mainContent = document.querySelector('main') || document.getElementById('store-app');
+    //if (mainContent) mainContent.removeAttribute('inert');
+
     if (modalTimer) clearInterval(modalTimer);
 }
 
@@ -111,6 +59,24 @@ function openModal(id, callback, title = '', message = '', delay = 0, btnText = 
     const modalIcon = modal.querySelector('.modal-icon');
     const textSpan = submitBtn.querySelector('.submit-text');
     const body = modal.querySelector('.custom-modal-body');
+
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+
+    // Блокируем всё, что ВНЕ модалки для клавиатуры и мыши
+    // Атрибут inert делает элементы нефокусируемыми и некликабельными
+    document.querySelectorAll('body > *:not(script):not(.custom-modal-wrapper):not(.toast-container)').forEach(el => {
+        el.setAttribute('inert', 'true');
+    });
+
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+
+    //const mainContent = document.querySelector('main') || document.getElementById('store-app');
+    //if (mainContent) mainContent.setAttribute('inert', 'true');
+
+    // Автофокус на кнопку отмены или саму модалку, чтобы сбить фокус с кнопок в таблице
+    setTimeout(() => modal.focus(), 10);
 
     // Сбрасываем видимость (на случай если открываем после лоадера)
     submitBtn.style.display = 'inline-flex';

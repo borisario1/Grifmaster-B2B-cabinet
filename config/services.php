@@ -35,17 +35,4 @@ return [
         ],
     ],
 
-    'smtpbz' => [
-        'url'        => 'https://api.smtp.bz/v1/smtp/send',
-        'key'        => env('SMTPBZ_API_KEY'),
-        'from_email' => env('SMTPBZ_FROM_EMAIL'),
-        'from_name'  => env('SMTPBZ_FROM_NAME'),
-    ],
-
-    'dadata' => [
-            'token'    => env('DADATA_API_KEY'),
-            'secret'   => env('DADATA_SECRET_KEY'),
-            'base_url' => env('DADATA_API_URL', 'https://suggestions.dadata.ru/suggestions/api/4_1/rs/findById/party'),
-        ],
-
 ];

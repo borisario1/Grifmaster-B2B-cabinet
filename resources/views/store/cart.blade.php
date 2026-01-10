@@ -41,7 +41,7 @@
     <div class="empty-block">
         <p>Ваша корзина сейчас пуста.</p>
         <div style="margin-top: 25px;">
-            <a href="{{ route('catalog.index') }}" class="btn-default btn-big">
+            <a href="{{ route('catalog.index') }}" class="btn-primary btn-big">
                 <i class="bi bi-grid-3x3-gap-fill"></i> Перейти в каталог
             </a>
         </div>
@@ -94,22 +94,37 @@
                     </td>
                     <td><b>{!! str_replace(' ', '&nbsp;', number_format($partnerPrice * $item->qty, 2, ',', ' ')) !!}&nbsp;₽</b></td>
                     <td>{{ $item->product->free_stock ?? '—' }}</td>
-                    <td>
-                        <form class="ajax-cart-form" method="POST" action="{{ route('cart.add') }}">
-                            @csrf
-                            <input type="hidden" name="product_id" value="{{ $item->product_id }}">
-                            <input type="hidden" name="mode" value="set"> 
-                            <div style="display: flex; gap: 15px;">
-                                <input type="number" min="1" name="qty" class="store-qty-input" value="{{ $item->qty }}">
-                                <button type="submit" class="btn-primary btn-sm">ОК</button>
-                            </div>
-                        </form>
-                    </td>
-                    <td>
-                        <button class="btn-primary btn-sm" style="background:#d9534f; border-color:#d9534f;" 
-                                onclick="openModal('universalConfirm', () => { removeItem({{ $item->product_id }}) }, 'Удаление товара', 'Вы уверены, что хотите удалить из корзины весь товар «{{ $item->product->name }}»?', 0, 'Да, удалить')">
-                            <i class="bi bi-trash"></i>
-                        </button>
+                    <td class="col-actions" style="text-align: right; vertical-align: middle;">
+                        <div class="cart-controls-container">
+                            {{-- Группа изменения количества --}}
+                            <form class="ajax-cart-form" method="POST" action="{{ route('cart.add') }}">
+                                @csrf
+                                <input type="hidden" name="product_id" value="{{ $item->product_id }}">
+                                <input type="hidden" name="mode" value="set"> 
+                                
+                                <div class="cart-input-group">
+                                    <button type="button" class="btn-qty-step" onclick="this.nextElementSibling.stepDown(); this.closest('form').classList.add('needs-save')">
+                                        <i class="bi bi-dash"></i>
+                                    </button>
+                                    
+                                    <input type="number" min="1" name="qty" class="qty-field" value="{{ $item->qty }}" onchange="this.closest('form').classList.add('needs-save')">
+                                    
+                                    <button type="button" class="btn-qty-step" onclick="this.previousElementSibling.stepUp(); this.closest('form').classList.add('needs-save')">
+                                        <i class="bi bi-plus"></i>
+                                    </button>
+
+                                    <button type="submit" class="btn-qty-apply" title="Сохранить">
+                                        <i class="bi bi-check2"></i>
+                                    </button>
+                                </div>
+                            </form>
+
+                            {{-- Кнопка удаления --}}
+                            <button class="btn-cart-remove" 
+                                    onclick="openModal('universalConfirm', () => { removeItem({{ $item->product_id }}) }, 'Удаление товара', 'Точно удалить «{{ $item->product->name }}»?', 0, 'Да, удалить')">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
                     </td>
                 </tr>
             @endforeach
