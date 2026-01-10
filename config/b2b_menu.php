@@ -22,6 +22,7 @@ return [
         'icon'    => 'bi-grid-3x3-gap-fill',
         'url'     => '/store',
         'group'   => 'orders',
+        'priority' => 'high', // Высокий приоритет - отображается первым в бургер меню
         'show_in' => ['dashboard', 'burger', 'toolbar'],
     ],
 
@@ -31,6 +32,7 @@ return [
         'icon'    => 'bi-basket2-fill',
         'url'     => '/store/cart',
         'group'   => 'orders',
+        'priority' => 'high', // Высокий приоритет - отображается первым в бургер меню
         'show_in' => ['dashboard', 'burger'],
     ],
     
@@ -47,8 +49,9 @@ return [
         'title'   => 'Заказы',
         'desc'    => 'История и статус заказов',
         'icon'    => 'bi-receipt-cutoff',
-        'url'     => '/orders',
+        'url'     => '/store/orders',
         'group'   => 'orders',
+        'priority' => 'high', // Высокий приоритет - отображается первым в бургер меню
         'show_in' => ['dashboard', 'burger', 'toolbar'],
     ],
 
@@ -146,4 +149,27 @@ return [
         'show_in' => ['dashboard', 'burger'],
     ],
 
+    // =============================
+    // НАСТРОЙКИ МОБИЛЬНОГО БУРГЕР МЕНЮ
+    // =============================
+    'burger_settings' => [
+        'show_user_block'   => true,   // Инфо о пользователе сверху
+        'show_priority_block' => true,   // Основные пункты меню
+        'show_contact_info' => true,   // Контакты менеджера снизу
+        'manager_info'     => 'пн–пт 9:00–18:00',
+        'manager_phone'     => '+7 499 346-75-67',
+        'manager_email'     => 'sale@grifmaster.ru',
+    ],
+
+    // Кнопки для нижнего Tab Bar (фиксированные снизу экрана)
+    'mobile_tab_bar' => [
+        'enabled' => true,
+        'items' => [
+            ['title' => 'Главная', 'icon' => 'bi-house', 'url' => '/dashboard'],
+            ['title' => 'Каталог', 'icon' => 'bi-grid',  'url' => '/store'],
+            ['title' => 'Корзина', 'icon' => 'bi-basket', 'url' => '/store/cart', 'is_cart' => true],
+            ['title' => 'Заказы',  'icon' => 'bi-box-seam', 'url' => '/store/orders'],
+            ['title' => 'Профиль', 'icon' => 'bi-person', 'url' => '/profile'],
+        ]
+    ]
 ];

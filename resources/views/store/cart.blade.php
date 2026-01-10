@@ -20,7 +20,8 @@
 <div class="breadcrumbs">
     <a href="{{ route('dashboard') }}">Главная</a> →
     <a href="{{ route('catalog.index') }}">Каталог товаров</a> →
-    <span>Мой заказ</span>
+    <a href="{{ route('orders.index') }}">Мои заказы</a> →
+    <span>Моя корзина</span>
 </div>
 
 <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 25px;">
@@ -40,7 +41,7 @@
     <div class="empty-block">
         <p>Ваша корзина сейчас пуста.</p>
         <div style="margin-top: 25px;">
-            <a href="{{ route('catalog.index') }}" class="btn-primary btn-big">
+            <a href="{{ route('catalog.index') }}" class="btn-default btn-big">
                 <i class="bi bi-grid-3x3-gap-fill"></i> Перейти в каталог
             </a>
         </div>
@@ -183,13 +184,19 @@
 @endif
 
 <div style="margin-top: 35px; border-top: 1px solid #eee; padding-top: 15px;">
-    <a href="{{ route('catalog.index') }}" class="btn-link-back">← Вернуться в каталог товаров</a>
+    <a href="{{ route('catalog.index') }}" class="btn-link-back">← В каталог товаров</a>
+</div>
+<div style="margin-top: 10px;">
+    <a href="{{ route('orders.index') }}" class="btn-link-back">← К списку заказов</a>
+</div>
+<div style="margin-top: 10px;">
+    <a href="{{ route('dashboard') }}" class="btn-link-back">← Вернуться в личный кабинет</a>
 </div>
 @endsection
 
 @push('scripts')
 <script>
-    // AJAX обновление количества
+    // 1. AJAX обновление количества (кнопка ОК)
     document.addEventListener('submit', function(e) {
         const form = e.target.closest('.ajax-cart-form');
         if (!form) return;
@@ -207,36 +214,72 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
+                // ОБНОВЛЯЕМ ТОПБАР МГНОВЕННО
+                if (window.updateTopbarCart && data.summary) {
+                    window.updateTopbarCart(data.summary);
+                }
+                
                 showToast(`Количество обновлено`, 'bi-check-circle');
+                
+                // Перезагрузка нужна для обновления итогов в самой таблице и подвале
                 setTimeout(() => location.reload(), 800);
             }
+        })
+        .catch(error => {
+            btn.disabled = false;
+            showToast('Ошибка при обновлении', 'bi-exclamation-triangle', true);
         });
     });
 
+    // 2. Удаление одной позиции
     function removeItem(productId) {
         const formData = new FormData();
         formData.append('product_id', productId);
         formData.append('qty', 0);
         formData.append('_token', '{{ csrf_token() }}');
 
-        fetch('{{ route("cart.add") }}', { method: 'POST', body: formData, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-        .then(() => {
-            showToast('Товар удален', 'bi-trash');
-            setTimeout(() => location.reload(), 800);
+        fetch('{{ route("cart.add") }}', { 
+            method: 'POST', 
+            body: formData, 
+            headers: { 'X-Requested-With': 'XMLHttpRequest' } 
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // ОБНОВЛЯЕМ ТОПБАР МГНОВЕННО
+                if (window.updateTopbarCart && data.summary) {
+                    window.updateTopbarCart(data.summary);
+                }
+                
+                showToast('Товар удален', 'bi-trash');
+                setTimeout(() => location.reload(), 800);
+            }
         });
     }
 
+    // 3. Полная очистка корзины
     function clearCart() {
         fetch('{{ route("cart.clear") }}', { 
             method: 'POST', 
-            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'X-Requested-With': 'XMLHttpRequest' } 
+            headers: { 
+                'X-CSRF-TOKEN': '{{ csrf_token() }}', 
+                'X-Requested-With': 'XMLHttpRequest' 
+            } 
         })
-        .then(() => {
-            showToast('Корзина очищена', 'bi-trash3');
-            setTimeout(() => location.reload(), 800);
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // ОБНУЛЯЕМ ТОПБАР МГНОВЕННО
+                if (window.updateTopbarCart) {
+                    window.updateTopbarCart({pos: 0, qty: 0, amount: 0});
+                }
+                
+                showToast('Корзина очищена', 'bi-trash3');
+                setTimeout(() => location.reload(), 800);
+            }
         });
     }
-
+    
     function submitOrder() {
         openModal('universalConfirm', null, 'Создание заказа...', 'Пожалуйста, подождите...', 0, '', true);
         document.getElementById('checkout-form').submit();

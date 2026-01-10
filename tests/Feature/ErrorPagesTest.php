@@ -58,9 +58,9 @@ test('шаблон берет ссылку и текст кнопки ДИНАМ
     expect($view)->toContain($fakePath);
 
     // Б) Проверяем Заголовок.
-    // В шаблоне стоит mb_strtolower(), поэтому мы ожидаем строку в нижнем регистре.
-    // "Super Test Catalog" -> "super test catalog"
-    expect($view)->toContain(mb_strtolower($fakeTitle));
+    // Теперь мы убрали mb_strtolower() в шаблоне, поэтому ищем текст как есть.
+    // Если в шаблоне добавлено "В ", то проверяем наличие оригинального заголовка.
+    expect($view)->toContain($fakeTitle);
 
     // В) Проверяем Иконку.
     expect($view)->toContain($fakeIcon);

@@ -1,8 +1,7 @@
 <div class="dashboard-footer">
-    © {{ date('Y') }} Grifmaster<br>
+    © 2005 - {{ date('Y') }} Grifmaster<br>
     Версия приложения: {{ config('b2b.version') }}, обновлено: {{ config('b2b.updated') }}<br>
-    Поддержка пользователей: {{ config('b2b.support.name') }} - 
-    <a href="mailto:{{ config('b2b.support.email') }}">{{ config('b2b.support.email') }}</a>
+    {{ config('b2b.support.name') }} <a href="mailto:{{ config('b2b.support.email') }}">{{ config('b2b.support.email') }}</a>
 
     @if(config('app.debug') && config('debugbar.debug_footer'))
         @php

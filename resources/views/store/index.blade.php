@@ -440,19 +440,10 @@
                     setTimeout(() => { btn.innerHTML = originalContent; btn.disabled = false; }, 1000);
                 } else {
                     btn.innerHTML = '<i class="bi bi-check-lg"></i>';
-                    // Обновляем топбар
-                    const cartInfo = document.querySelector('.topbar-cart-info');
-                    const cartIcon = document.querySelector('.topbar-icon[title="Корзина"]');
-                    if (cartInfo && data.summary) {
-                        if (data.summary.pos > 0) {
-                            cartIcon.classList.add('cart-not-empty');
-                            cartInfo.innerHTML = `${data.summary.qty} шт. / ${data.summary.pos} поз. / ${data.summary.amount_formatted} ₽`;
-                            cartInfo.style.display = 'inline';
-                        } else {
-                            cartIcon.classList.remove('cart-not-empty');
-                            cartInfo.innerHTML = '';
-                        }
-                    }
+                    
+                if (window.updateTopbarCart && data.summary) {
+                    window.updateTopbarCart(data.summary);
+                }
                     setTimeout(() => { btn.innerHTML = originalContent; btn.disabled = false; }, 1500);
                 }
             })

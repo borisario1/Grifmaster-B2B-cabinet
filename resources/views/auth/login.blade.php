@@ -75,7 +75,7 @@
 
     </div>
 
-@include('layouts.auth-tech-footer')
+@include('layouts.partials.auth-tech-footer')
     
 </div>
 

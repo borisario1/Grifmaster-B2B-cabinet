@@ -9,13 +9,13 @@
 
 return [
     // Основные параметры приложения
-    'app_name' => 'Партнёрская территория GRIFMASTER',
-    'version'  => '2.00.27',
-    'updated'  => '28.12.2025',
+    'app_name' => 'Бизнес-кабинет',
+    'version'  => '2.18.77135fe',
+    'updated'  => '09.01.2026',
 
     // Контакты поддержки (выводятся в футере)
     'support' => [
-        'name'  => 'Борис Гусев',
+        'name'  => 'Поддержка пользователей -',
         //'email' => '<a target="_blank" href="mailto:232@grifmaster.ru">232@grifmaster.ru</a>',
         'email' => '232@grifmaster.ru',
     ],

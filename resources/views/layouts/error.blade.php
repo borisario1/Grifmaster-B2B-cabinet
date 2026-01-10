@@ -32,7 +32,7 @@
     <div class="toolbar-wrapper">
         <div class="toolbar">
             @foreach($menu as $item)
-                @if(in_array('toolbar', $item['show_in']))
+                @if(isset($item['show_in']) && in_array('toolbar', $item['show_in']))
                     <a href="{{ $item['url'] }}" class="toolbar-item">
                         <i class="bi {{ $item['icon'] }}"></i>
                         <span>{{ $item['title'] }}</span>
@@ -45,7 +45,7 @@
     <div class="page-wrapper wide">
         <div class="page-card wide">
             @yield('content')
-            @include('layouts.footer')
+            @include('layouts.partials.footer')
         </div>
     </div>
 

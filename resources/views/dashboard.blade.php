@@ -44,7 +44,7 @@
     <h2 class="dash-block-title mt-5">Заказы и каталог</h2>
     <div class="dash-block-grid">
         @foreach($menu as $item)
-            @if($item['group'] === 'orders' && in_array('dashboard', $item['show_in']))
+            @if(isset($item['group']) && $item['group'] === 'orders' && in_array('dashboard', $item['show_in']))
                 <a href="{{ $item['url'] }}" class="dash-card">
                     <i class="bi {{ $item['icon'] }}"></i>
                     <div class="dash-card-title">{{ $item['title'] }}</div>
@@ -58,7 +58,7 @@
     <h2 class="dash-block-title mt-5">Бизнес и организации</h2>
     <div class="dash-block-grid">
         @foreach($menu as $item)
-            @if($item['group'] === 'business' && in_array('dashboard', $item['show_in']))
+            @if(isset($item['group']) && $item['group'] === 'business' && in_array('dashboard', $item['show_in']))
                 <a href="{{ $item['url'] }}" class="dash-card">
                     <i class="bi {{ $item['icon'] }}"></i>
                     <div class="dash-card-title">{{ $item['title'] }}</div>
@@ -72,7 +72,7 @@
     <h2 class="dash-block-title mt-5">Настройки и сервисы</h2>
     <div class="dash-block-grid">
         @foreach($menu as $item)
-            @if($item['group'] === 'settings' && in_array('dashboard', $item['show_in']))
+            @if(isset($item['group']) && $item['group'] === 'settings' && in_array('dashboard', $item['show_in']))
                 @php $isLogout = str_contains($item['url'], 'logout'); @endphp
 
                 <a href="{{ $isLogout ? '#' : $item['url'] }}" 

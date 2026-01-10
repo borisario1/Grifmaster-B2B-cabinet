@@ -91,8 +91,8 @@ Route::middleware(['auth', 'check.profile'])->group(function () {
     Route::get('/store/wishlist', [App\Http\Controllers\StoreController::class, 'wishlist'])->name('wishlist');
 
     // Заказы
-    Route::get('/orders', [App\Http\Controllers\OrderController::class, 'index'])->name('orders.index');
-    Route::get('/orders/{code}', [App\Http\Controllers\OrderController::class, 'show'])->name('orders.show');
+    Route::get('/store/orders', [App\Http\Controllers\OrderController::class, 'index'])->name('orders.index');
+    Route::get('/store/order/{code}', [App\Http\Controllers\OrderController::class, 'show'])->name('orders.show');
 });
 
 /**

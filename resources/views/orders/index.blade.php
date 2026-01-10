@@ -20,7 +20,8 @@
                 <div style="font-weight: 600; color: #001F33;">У вас есть незавершенный заказ</div>
                 <div style="font-size: 13px; color: #666; line-height: 1.5;">
                     <div>Организация: {{ $currentOrg->name ?? 'Физическое лицо' }}</div>
-                    <div>В корзине лежит <b>{{ $currentCartStats->count }}</b> {{ trans_choice('позиция|позиции|позиций', $currentCartStats->count, [], 'ru') }} 
+                    <div>В корзине лежит <b>{{ $currentCartStats->count }}</b> 
+                    {{ trans_choice('{1} позиция|[2,4] позиции|[5,*] позиций', $currentCartStats->count, ['count' => $currentCartStats->count], 'ru') }} 
                     (всего {{ (int)$currentCartStats->total_qty }}&nbsp;шт.)</div>
                 </div>
             </div>
@@ -136,6 +137,10 @@
     </div>
 @endif
 <div style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 15px;">
+    <a href="{{ route('catalog.index') }}" class="btn-link-back">← В каталог товаров</a>
+</div>
+
+<div style="margin-top: 10px;">
     <a href="{{ route('dashboard') }}" class="btn-link-back">← Вернуться в личный кабинет</a>
 </div>
 @endsection
