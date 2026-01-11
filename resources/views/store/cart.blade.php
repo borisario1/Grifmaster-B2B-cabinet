@@ -31,7 +31,7 @@
     </div>
     @if(!$items->isEmpty())
         <button type="button" class="btn-clear-cart" 
-                onclick="openModal('universalConfirm', clearCart, 'Очистка корзины', 'Вы уверены, что хотите очистить корзину и удалить свой заказ?', 5, 'Да, очистить')">
+                onclick="openModal('universalConfirm', clearCart, 'Удаление заказа', 'Вы уверены, что хотите очистить корзину и удалить свой заказ?', 5, 'Да, очистить')">
             <i class="bi bi-trash3"></i> Очистить корзину
         </button>
     @endif

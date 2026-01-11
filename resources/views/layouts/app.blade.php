@@ -50,6 +50,7 @@
         if (!cartLink) return;
 
         if (summary && summary.pos > 0) {
+            cartLink.classList.remove('cart-empty');
             cartLink.classList.add('cart-not-empty');
             if (badgeContainer) {
                 badgeContainer.innerHTML = `<span class="cart-badge">${summary.qty}</span>`;
@@ -73,6 +74,7 @@
             }
         } else {
             cartLink.classList.remove('cart-not-empty');
+            cartLink.classList.add('cart-empty');
             if (badgeContainer) badgeContainer.innerHTML = '';
             if (textContainer) textContainer.innerHTML = '';
         }

@@ -200,6 +200,23 @@ body {
     border: 1px solid #c79c00;
 }
 
+/* Если корзина пуста — центрируем иконку и убираем зазор */
+.cart-empty {
+    justify-content: center;
+    gap: 0; 
+    padding: 8px 12px;
+}
+
+.cart-empty .topbar-cart-details {
+    display: none !important;
+}
+
+.cart-empty .topbar-cart-icon-wrapper i {
+    opacity: 0.6;
+    background: none !important;
+}
+
+
 /* Контейнеры для AJAX-обновления */
 .topbar-cart-details {
     display: flex;
@@ -695,6 +712,17 @@ body {
     color: #fff;
     border-color: #1f74a9;
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15); /* Вдавленный эффект для активной */
+}
+
+.toolbar-item.toolbar-icon-only {
+    padding-left: 12px;
+    padding-right: 12px;
+    justify-content: center;
+}
+
+.toolbar-item.toolbar-icon-only i {
+    margin: 0;
+    font-size: 1.4rem;
 }
 
 /* =========================================================

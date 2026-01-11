@@ -9,7 +9,7 @@
         
         <div class="topbar-right">
             <a href="{{ route('cart.index') }}" 
-            class="topbar-cart-link {{ ($cartSummary['pos'] ?? 0) > 0 ? 'cart-not-empty' : '' }}" 
+            class="topbar-cart-link {{ ($cartSummary['pos'] ?? 0) > 0 ? 'cart-not-empty' : 'cart-empty' }}" 
             title="Корзина" 
             id="topbar-cart">
                 

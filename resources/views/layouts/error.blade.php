@@ -28,14 +28,30 @@
         </div>
     </header>
 
-    {{-- Тулбар возвращен на место --}}
     <div class="toolbar-wrapper">
         <div class="toolbar">
             @foreach($menu as $item)
                 @if(isset($item['show_in']) && in_array('toolbar', $item['show_in']))
-                    <a href="{{ $item['url'] }}" class="toolbar-item">
+                    @php
+                        // Логика активного пункта (укороченная версия)
+                        $currentPath = '/' . ltrim(request()->path(), '/');
+                        $itemPath = '/' . ltrim(parse_url($item['url'], PHP_URL_PATH), '/');
+                        $isActive = ($currentPath === $itemPath) || (str_starts_with($currentPath, $itemPath . '/'));
+                        
+                        // Твои исключения для склада/заказов
+                        if ($itemPath === '/store' && (str_contains($currentPath, '/store/cart') || str_contains($currentPath, '/store/order'))) {
+                            $isActive = false;
+                        }
+                    @endphp
+
+                    <a href="{{ $item['url'] }}" 
+                    class="toolbar-item {{ $isActive ? 'active' : '' }} {{ empty($item['title']) ? 'toolbar-icon-only' : '' }}">
+                        
                         <i class="bi {{ $item['icon'] }}"></i>
-                        <span>{{ $item['title'] }}</span>
+                        
+                        @if(!empty($item['title']))
+                            <span>{{ $item['title'] }}</span>
+                        @endif
                     </a>
                 @endif
             @endforeach

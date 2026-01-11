@@ -28,8 +28,8 @@
         </div>
         <div style="display: flex; gap: 12px;">
             <button type="button" class="btn-secondary btn-mid" 
-                    onclick="openModal('universalConfirm', () => { document.getElementById('clear-cart-form').submit(); }, 'Очистка корзины', 'Вы уверены, что хотите очистить корзину и удалить заказ?', 5, 'Да, очистить')">
-                Очистить
+                    onclick="openModal('universalConfirm', () => { document.getElementById('clear-cart-form').submit(); }, 'Удаление заказа', 'Вы уверены, что хотите очистить корзину и удалить заказ?', 5, 'Да, очистить')">
+                Удалить
             </button>
             
             <a href="{{ route('cart.index') }}" class="btn-default btn-mid">

@@ -23,9 +23,17 @@
                         }
                     }
                 @endphp
-                <a href="{{ $item['url'] }}" class="toolbar-item {{ $isActive ? 'active' : '' }}">
+                
+                <a href="{{ $item['url'] }}" 
+                   class="toolbar-item {{ $isActive ? 'active' : '' }} {{ empty($item['title']) ? 'toolbar-icon-only' : '' }}"
+                   @if(!empty($item['title'])) title="{{ $item['title'] }}" @endif>
+                    
                     <i class="bi {{ $item['icon'] }}"></i>
-                    <span>{{ $item['title'] }}</span>
+                    
+                    {{-- Выводим текст только если он есть в конфиге --}}
+                    @if(!empty($item['title']))
+                        <span>{{ $item['title'] }}</span>
+                    @endif
                 </a>
             @endif
         @endforeach
