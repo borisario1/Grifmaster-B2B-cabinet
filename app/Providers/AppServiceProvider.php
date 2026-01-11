@@ -69,9 +69,6 @@ class AppServiceProvider extends ServiceProvider
                 
                 // ВРЕМЕННО: ставим 0, пока не перенесем логику из Notifications.php в новую модель
                 'unreadNotificationsCount' => 0, 
-                
-                // Исправляем: используем b2b_menu, как в твоем файле
-                'menu' => config('b2b_menu', []), 
             ]);
         });
     }

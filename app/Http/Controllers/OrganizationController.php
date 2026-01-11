@@ -186,7 +186,8 @@ class OrganizationController extends Controller
             abort(403, 'Доступ запрещен');
         }
 
-        // Если сменили организацию — чистим корзину (Бизнес-правило)
+        // Если сменили организацию — переключаемчя 
+        // с одной корзины на другую (с одного ID орг на другой)
         if ($user->selected_org_id !== $organization->id) {
             $user->update(['selected_org_id' => $organization->id]);
         }

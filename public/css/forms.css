@@ -87,59 +87,6 @@ button, .btn, .btn-primary, .btn-default, .btn-light, .btn-secondary, .btn-big {
     background: #0B466E;
 }
 
-/* Ссылки-возвраты */
-.btn-back, .link-back {
-    display: inline-block;
-    margin-top: 25px;
-    color: #3295D1;
-    font-size: 16px;
-    text-decoration: underline;
-    background: none;
-    border: none;
-    padding: 0;
-}
-.btn-back:hover, .link-back:hover { color: #0B466E; }
-
-/* Визуальная блокировка */
-.btn-primary:disabled {
-    cursor: not-allowed;
-    background-color: #3294d163 !important;
-    border-color: #ccc !important;
-}
-
-/* Ссылка-возврат (легкая кнопка с подчеркиванием) */
-.btn-link-back {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: none;
-    border: none;
-    padding: 0;
-    color: #001F33;
-    font-size: 15px;
-    font-weight: 300; /* Как и у всех твоих кнопок */
-    text-decoration: none;
-    border-bottom: 1px dotted ;
-    text-underline-offset: 4px;
-    transition: 0.2s ease;
-    cursor: pointer;
-}
-
-.btn-link-back i {
-    font-size: 18px;
-    text-decoration: none; /* Чтобы иконка не подчеркивалась */
-    transition: transform 0.2s ease;
-}
-
-.btn-link-back:hover {
-    color: #3295D1;
-    text-decoration: none;
-}
-
-.btn-link-back:hover i {
-    transform: translateX(-3px); /* Небольшая анимация стрелочки влево */
-}
-
 /* =========================================================
    FORMS
    ========================================================= */
@@ -222,7 +169,7 @@ button, .btn, .btn-primary, .btn-default, .btn-light, .btn-secondary, .btn-big {
 
 
 /* =========================================================
-   BREADCRUMBS
+   BREADCRUMBS LINKS
    ========================================================= */
 .breadcrumbs {
     font-size: 15px;
@@ -247,6 +194,77 @@ button, .btn, .btn-primary, .btn-default, .btn-light, .btn-secondary, .btn-big {
 }
 
 /* =========================================================
+   OTHER LINKS
+   ========================================================= */
+
+/* Обычная ссылка в тексте */
+.link-default {
+    color: #001F33;
+    font-weight: 500;
+    text-decoration: none;
+    border-bottom: 1px solid #001F33;
+    transition: all 0.2s ease;
+}
+
+.link-default:hover {
+    color: #3295D1;
+    border-bottom-color: #3295D1;
+}
+
+/* Ссылки-возвраты */
+.btn-back, .link-back {
+    display: inline-block;
+    margin-top: 25px;
+    color: #3295D1;
+    font-size: 16px;
+    text-decoration: underline;
+    background: none;
+    border: none;
+    padding: 0;
+}
+.btn-back:hover, .link-back:hover { color: #0B466E; }
+
+/* Визуальная блокировка */
+.btn-primary:disabled {
+    cursor: not-allowed;
+    background-color: #3294d163 !important;
+    border-color: #ccc !important;
+}
+
+/* Ссылка-возврат (легкая кнопка с подчеркиванием) */
+.btn-link-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: none;
+    padding: 0;
+    color: #001F33;
+    font-size: 15px;
+    font-weight: 300; /* Как и у всех твоих кнопок */
+    text-decoration: none;
+    border-bottom: 1px dotted ;
+    text-underline-offset: 4px;
+    transition: 0.2s ease;
+    cursor: pointer;
+}
+
+.btn-link-back i {
+    font-size: 18px;
+    text-decoration: none; /* Чтобы иконка не подчеркивалась */
+    transition: transform 0.2s ease;
+}
+
+.btn-link-back:hover {
+    color: #3295D1;
+    text-decoration: none;
+}
+
+.btn-link-back:hover i {
+    transform: translateX(-3px); /* Небольшая анимация стрелочки влево */
+}
+
+   /* =========================================================
    ORG LIST
    ========================================================= */
 

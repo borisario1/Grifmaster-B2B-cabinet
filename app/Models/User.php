@@ -75,4 +75,13 @@ class User extends Authenticatable
     {
         return $this->hasMany(Organization::class, 'user_id');
     }
+
+    /**
+     * Текущая выбранная организация пользователя.
+     * Используем belongsTo, так как ID организации хранится в таблице users (поле selected_org_id)
+     */
+    public function currentOrganization()
+    {
+        return $this->belongsTo(Organization::class, 'selected_org_id');
+    }
 }

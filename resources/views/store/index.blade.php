@@ -152,8 +152,8 @@
                                             <i class="bi bi-dash"></i>
                                         </button>
                                         
-                                        <input type="number" name="qty" min="1" class="qty-field" 
-                                            value="{{ $i->cart_qty }}" 
+                                        <input type="number" name="qty" min="0" class="qty-field" 
+                                            value="{{ $isInCart ? $i->cart_qty : 0 }}"
                                             data-original="{{ $i->in_cart ? $i->cart_qty : 0 }}" 
                                             oninput="handleInput(this)">
                                         
@@ -205,39 +205,42 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/2.3.1/list.min.js"></script>
 
 <script>
-    window.jsLoaded = false;
     // Подготовка каталога товаров
     window.jsLoaded = false;
-    // 1. Умный ввод (контроль флуда и иконок)
+    // Ввод данных
     function handleInput(input) {
         const form = input.closest('form');
         const applyBtn = form.querySelector('.btn-qty-apply');
-        const applyIcon = applyBtn.querySelector('i'); // Ищем иконку внутри кнопки ОК
+        const applyIcon = applyBtn.querySelector('i');
         const isInCart = form.classList.contains('is-in-cart');
         
         const originalValue = parseInt(input.getAttribute('data-original') || 0);
         const currentValue = parseInt(input.value);
 
-        if (isNaN(currentValue) || currentValue < 1) {
+        if (isNaN(currentValue) || currentValue < 0) {
             applyBtn.disabled = true;
             return;
         }
 
-        if (currentValue !== originalValue) {
-            form.classList.add('needs-save');
-            applyBtn.disabled = false;
-            // Меняем иконку ТОЛЬКО на центральной кнопке
-            if (applyIcon) {
-                applyIcon.className = isInCart ? 'bi bi-check2' : 'bi bi-cart-plus';
-            }
-        } else {
+        // Если товар в корзине и значение совпадает (например, оба 5) — кнопка не нужна
+        if (isInCart && currentValue === originalValue) {
+            applyBtn.disabled = true;
             form.classList.remove('needs-save');
-            applyBtn.disabled = true; 
-            if (isInCart && applyIcon) applyIcon.className = 'bi bi-check2';
+            return;
+        }
+
+        // Во всех остальных случаях кнопка активна:
+        // 1. Если товара нет в корзине (даже если в поле 0, чтобы сработал "быстрый заказ")
+        // 2. Если значение отличается от того, что в корзине (редактирование)
+        applyBtn.disabled = false;
+        form.classList.add('needs-save');
+
+        if (applyIcon) {
+            applyIcon.className = isInCart ? 'bi bi-check2' : 'bi bi-cart-plus';
         }
     }
 
-    // 2. Умный минус (всегда работает при > 1)
+    // Функция обработки минуса
     function handleMinus(btn, productId, productName) {
         const input = btn.nextElementSibling;
         const currentValue = parseInt(input.value);
@@ -247,10 +250,19 @@
         if (currentValue > 1) {
             input.stepDown();
             handleInput(input);
-        } else if (currentValue === 1 && isInCart) {
-            const removeBtn = form.parentElement.querySelector('.btn-cart-remove');
-            openModal('universalConfirm', () => { removeItemInCatalog(removeBtn, productId) }, 
-                    'Удаление товара', `Вы уверены, что хотите удалить из заказа «${productName}»?`, 0, 'Да, удалить');
+        } else if (currentValue === 1) {
+            if (isInCart) {
+                // Удаление из корзины
+                const removeBtn = form.parentElement.querySelector('.btn-cart-remove');
+                openModal('universalConfirm', () => { 
+                    removeItemInCatalog(removeBtn, productId);
+                    // Внутри removeItemInCatalog у нас уже стоит сброс в 0
+                }, 'Удаление товара', `Вы уверены, что хотите удалить из заказа «${productName}»?`, 0, 'Да, удалить');
+            } else {
+                // Если товара нет в корзине, просто скидываем в 0
+                input.value = 0;
+                handleInput(input);
+            }
         }
     }
 
@@ -490,10 +502,18 @@
         }, 4000); // 4 секунды видимости
     }
 
-        // AJAX добавление в корзину
+        // 1. AJAX добавление/изменение количества
         document.querySelectorAll('.ajax-cart-form').forEach(form => {
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
+
+                const input = this.querySelector('.qty-field');
+                const isInCart = this.classList.contains('is-in-cart');
+                
+                if (!isInCart && parseInt(input.value) === 0) {
+                    input.value = 1;
+                }
+    
                 const btn = this.querySelector('.btn-qty-apply');
                 const icon = btn.querySelector('i');
                 const originalIconClass = icon.className;
@@ -512,31 +532,42 @@
                     if (data.success) {
                         const input = form.querySelector('.qty-field');
                         const removeBtn = form.parentElement.querySelector('.btn-cart-remove');
-
+                        const wasInCart = form.classList.contains('is-in-cart');
+                        
                         input.setAttribute('data-original', data.total_qty);
                         input.value = data.total_qty;
 
                         if (data.action === 'removed') {
+                            // 1. Сценарий: УДАЛЕНИЕ
                             form.classList.remove('is-in-cart');
                             input.setAttribute('data-original', 0);
-                            input.value = 1;
+                            input.value = 0;
                             if (removeBtn) removeBtn.classList.add('hidden-data');
+                            showToast(`${data.product_name} <br><strong>удален из заказа</strong>`, 'bi-trash');
                         } else {
+                            // 2. Сценарии: ДОБАВЛЕНИЕ или ОБНОВЛЕНИЕ
                             form.classList.add('is-in-cart');
                             if (removeBtn) removeBtn.classList.remove('hidden-data');
+
+                            if (!wasInCart) {
+                                // Товар только что залетел в корзину (был 0, стал > 0)
+                                showToast(`<strong>Добавлено в заказ!</strong><br>${data.product_name} <br><strong>в количестве: ${data.total_qty} шт.</strong>`, 'bi-cart-plus');
+                            } else {
+                                // Товар уже был, просто поменяли цифру
+                                showToast(`<strong>Количество обновлено</strong><br>${data.product_name} <br><strong>всего в заказе: ${data.total_qty} шт.</strong>`, 'bi-cart-check');
+                            }
                         }
                         
                         form.classList.remove('needs-save');
-                        showToast(`${data.product_name} в заказе: ${data.total_qty} шт.`);
+                    } else {
+                        showToast('Ошибка сервера', 'bi-exclamation-triangle', true);
                     }
 
-                    // АНИМАЦИЯ УСПЕХА
                     icon.className = 'bi bi-check-lg';
                     if (window.updateTopbarCart && data.summary) window.updateTopbarCart(data.summary);
                     
                     setTimeout(() => { 
                         const isInCart = form.classList.contains('is-in-cart');
-                        // Возвращаем иконку без перезаписи innerHTML
                         icon.className = isInCart ? 'bi bi-check2' : 'bi bi-cart-plus';
                         btn.disabled = true; 
                     }, 1500);
@@ -565,11 +596,11 @@
                     const form = container.querySelector('.ajax-cart-form');
                     const input = form.querySelector('.qty-field');
                     form.classList.remove('is-in-cart', 'needs-save');
-                    input.value = 1;
+                    input.value = 0;
                     input.setAttribute('data-original', 0);
                     btnElement.classList.add('hidden-data');
                     form.querySelector('.btn-qty-apply i').className = 'bi bi-cart-plus';
-                    showToast(`Товар <strong>${data.product_name}</strong> удален из корзины`, 'bi-trash');
+                    showToast(`${data.product_name} <br><strong>удален из заказа</strong>`, 'bi-trash');
                     if (window.updateTopbarCart) window.updateTopbarCart(data.summary);
                 }
             }).finally(() => { btnElement.disabled = false; });

@@ -10,14 +10,21 @@
 return [
     // Основные параметры приложения
     'app_name' => 'Бизнес-кабинет',
-    'version'  => '2.19.513fa',
-    'updated'  => '09.01.2026',
+    'version'  => '2.20.8903c',
+    'updated'  => '10.01.2026',
 
     // Контакты поддержки (выводятся в футере)
     'support' => [
         'name'  => 'Поддержка пользователей -',
         //'email' => '<a target="_blank" href="mailto:232@grifmaster.ru">232@grifmaster.ru</a>',
         'email' => '232@grifmaster.ru',
+    ],
+
+    // Доступ к CSV данным из 1С и файлам изображений для формирования каталога
+    '1c_csv_price' => [
+        'csv_source'    => env('1C_CSV_SOURCE', 'http://data.grifmaster.ru/files/dq9/data/products.csv'),
+        'csv_images' => env('1C_CSV_IMAGES', 'https://data.grifmaster.ru/files/dq9/data/images/'),
+        'csv_noimage'  => env('1C_CSV_NOIMAGE', 'https://data.grifmaster.ru/files/dq9/data/noimage.png'),
     ],
 
     // Интеграция с Webasyst (Заказы, Склад)

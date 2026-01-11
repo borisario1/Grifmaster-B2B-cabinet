@@ -257,16 +257,16 @@ body {
    ========================================================= */
 .burger-overlay {
     position: fixed;
-    top: 0;
+    top: 72px;
     right: 0;
     transform: translateX(100%);
     width: 300px; 
     height: 100vh;
-    background: rgba(255,255,255,0.98);
+    background: rgba(255,255,255,0.8);
     backdrop-filter: blur(var(--def_blur));
     padding: 25px;
     transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 9999;
+    z-index: 100;
     box-shadow: -10px 0 30px rgba(0,0,0,0.1);
     overflow-y: auto;
 }
@@ -508,7 +508,7 @@ body {
 .page-title {
     font-size: 32px;
     font-weight: 800;
-    margin-bottom: 5px;
+    margin-bottom: 20px;
     color: #333333;
 }
 
@@ -799,4 +799,28 @@ a.button,
     .topbar-title { max-width: 120px; font-size: 13px; }
     .page-card { padding: 28px 20px; }
     .page-title { font-size: 22px; }
+}
+
+@media (max-width: 600px) {
+    /* Скрываем текстовый заголовок  */
+    .topbar-title { 
+        display: none !important; 
+    }
+
+    /* Скрываем корзину целиком */
+    .topbar-cart-link, 
+    #topbar-cart { 
+        display: none !important; 
+    }
+
+     /* Убеждаемся, что бургер остался и он виден */
+    .topbar-burger { 
+        display: flex !important; 
+        margin-left: 0;
+    }
+
+    /* Центрируем бургер или прижимаем к краю */
+    .header-content { 
+        justify-content: flex-end; 
+    }
 }

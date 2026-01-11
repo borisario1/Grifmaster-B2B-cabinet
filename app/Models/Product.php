@@ -26,22 +26,22 @@ class Product extends Model
     protected $guarded = ['id'];
 
     /**
-     * Константа для заглушки
-     */
-    const NO_IMAGE_URL = 'https://data.grifmaster.ru/files/dq9/data/noimage.png';
-
-    /**
      * Аксессор для получения URL изображения.
      * Если файла нет — возвращаем заглушку.
      */
     public function getImageUrlAttribute(): string
     {
-        if (empty($this->image_filename)) {
-            return self::NO_IMAGE_URL;
+        // Получаем имя файла из БД
+        $filename = $this->image_filename;
+
+        // Если файла нет или поле пустое — возвращаем заглушку из конфига
+        if (empty($filename)) {
+            return config('b2b.1c_csv_price.csv_noimage');
         }
 
-        // Базовый путь из твоего конфига
-        return "https://data.grifmaster.ru/files/dq9/data/images/" . $this->image_filename;
+        // Берем базовый путь и склеиваем с именем файла
+        // config(...) вернет строку типа 'https://.../images/'
+        return config('b2b.1c_csv_price.csv_images') . $filename;
     }
 
     /**

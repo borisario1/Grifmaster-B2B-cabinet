@@ -1,34 +1,29 @@
 <?php
 
-/**
- * Название: MailService (Сервис отправки почты через SMTP.BZ)
- * Дата-время: 20-12-2025 22:55
- * Описание: Адаптация оригинального Mailer для Laravel 12. 
- * Реализует отправку HTML-писем через API SMTP.BZ с использованием cURL.
- * Включает оптимизации для локальной разработки (IPv4, обход SSL).
- */
-
 namespace App\Services;
 
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class MailService
 {
     /**
-     * Отправка письма
-     * * @param string $to      Email получателя
+     * Отправка письма через API SMTP.BZ
+     *
+     * @param string $to Email получателя
      * @param string $subject Тема письма
-     * @param string $html     HTML-содержимое письма
+     * @param string $html HTML-содержимое письма
      * @param string|null $text Текстовая версия (необязательно)
-     * @return bool           True при успехе, False при любой ошибке
+     * @return bool
      */
     public static function send(string $to, string $subject, string $html, ?string $text = null): bool
     {
-        // Теперь тянем из единого конфига b2b
-        $url = config('b2b.smtpbz.url');
-        $key = config('b2b.smtpbz.key');
-
-        $post = [
+        // Берем конфиги 
+        $url = config('b2b.smtpbz.url', 'https://api.smtp.bz/v1/mailer/send');
+        $apiKey = config('b2b.smtpbz.key');
+        
+        // Данные формы (согласно документации formData)
+        $payload = [
             'from'    => config('b2b.smtpbz.from_email'),
             'name'    => config('b2b.smtpbz.from_name'),
             'to'      => $to,
@@ -37,49 +32,39 @@ class MailService
         ];
 
         if ($text) {
-            $post['text'] = $text;
+            $payload['text'] = $text;
         }
 
-        $ch = curl_init();
+        try {
+            $response = Http::withHeaders([
+                // Документация: "Ключ необходимо передавать в заголовке Authorization"
+                'Authorization' => $apiKey, 
+                'Accept'        => 'application/json',
+            ])
+            ->timeout(8)
+            ->connectTimeout(5)
+            ->withoutVerifying() // Отключаем SSL (ВРЕМЕННО! Пока идет разработка)
+            ->withOptions([
+                'force_ip_resolve' => 'v4',
+            ])
+            ->asForm()
+            ->post($url, $payload);
 
-        curl_setopt_array($ch, [
-            CURLOPT_URL            => $url,
-            CURLOPT_POST           => true,
-            CURLOPT_POSTFIELDS     => $post, 
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HTTPHEADER     => [
-                "authorization: " . $key,
-                "Accept: application/json"
-            ],
-            CURLOPT_USERAGENT      => "GrifmasterB2B-Mailer/1.0",
-            
-            // Настройки таймаутов (критично для стабильности интерфейса)
-            CURLOPT_CONNECTTIMEOUT => 5, // Таймаут на установку соединения
-            CURLOPT_TIMEOUT        => 8, // Общий таймаут выполнения запроса
-            
-            // Инженерные правки для локального окружения
-            CURLOPT_SSL_VERIFYPEER => false,             // Отключаем проверку SSL (для Localhost)
-            CURLOPT_IPRESOLVE      => CURL_IPRESOLVE_V4, // Принудительно IPv4 (решает 90% таймаутов)
-        ]);
+            // 1. Проверяем HTTP статус (200, 400, 401)
+            if ($response->failed()) {
+                Log::error("SMTP.BZ HTTP ERROR: " . $response->body() . " [Status: " . $response->status() . "]");
+                return false;
+            }
 
-        $response  = curl_exec($ch);
-        $curl_err  = curl_error($ch);
-        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
+            // 2. Проверяем логический ответ (в документации написано, что вернется JSON)
+            // Обычно, если статус 200, то все ок, но на всякий случай проверяем
+            $json = $response->json();
 
-        // Обработка сетевых ошибок (CURL)
-        if ($curl_err) {
-            Log::error("SMTP.BZ CURL ERROR: " . $curl_err . " [To: $to]");
+            return true;
+
+        } catch (\Exception $e) {
+            Log::error("SMTP.BZ EXCEPTION: " . $e->getMessage());
             return false;
         }
-
-        // Обработка логических ошибок API
-        $json = json_decode($response, true);
-        if ($http_code !== 200 || empty($json['result'])) {
-            Log::error("SMTP.BZ API ERROR: " . $response . " [HTTP Code: $http_code]");
-            return false;
-        }
-
-        return true;
     }
 }

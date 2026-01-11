@@ -68,7 +68,7 @@ class DashboardController extends Controller
             $url = route('organizations.create');
             return [
                 'state' => 'no_org',
-                'text'  => '<a href="' . $url . '">Создайте организацию</a> для использования всех возможностей сервиса.',
+                'text'  => '<a class="link-default" href="' . $url . '">Создайте организацию</a> для использования всех возможностей сервиса.',
             ];
         }
 
@@ -79,7 +79,7 @@ class DashboardController extends Controller
             $url = route('organizations.index');
             return [
                 'state' => 'need_select',
-                'text'  => '<a href="' . $url . '">Выберите организацию</a> чтобы создавать заказы, получать документы и пользоваться всеми возможностями сервиса.',
+                'text'  => '<a class="link-default" href="' . $url . '">Выберите организацию</a> чтобы создавать заказы, получать документы и пользоваться всеми возможностями сервиса.',
             ];
         }
 

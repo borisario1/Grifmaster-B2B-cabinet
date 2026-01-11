@@ -24,9 +24,6 @@ class DadataService
      */
     public function __construct()
     {
-        //$this->token = config('services.dadata.token');
-        //$this->url   = config('services.dadata.base_url');
-        //$this->secret = config('services.dadata.secret');
         $this->token  = config('b2b.dadata.key');
         $this->secret = config('b2b.dadata.secret');
         $this->url    = config('b2b.dadata.url_party');

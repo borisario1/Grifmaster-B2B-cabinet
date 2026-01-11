@@ -22,7 +22,8 @@ class ImportProducts extends Command
     {
         $this->info('Ищу файл с данными...');
         
-        $csvUrl = "http://data.grifmaster.ru/files/dq9/data/products.csv";
+        // Получаем URL из конфигурации
+        $csvUrl = config('b2b.1c_csv_price.csv_source');
         
         try {
             // .withoutVerifying() отключает проверку SSL

@@ -103,17 +103,25 @@
                                 <input type="hidden" name="mode" value="set"> 
                                 
                                 <div class="cart-input-group">
-                                    <button type="button" class="btn-qty-step" onclick="this.nextElementSibling.stepDown(); this.closest('form').classList.add('needs-save')">
+                                    {{-- Минус --}}
+                                    <button type="button" class="btn-qty-step" 
+                                            onclick="handleMinus(this, {{ $item->product_id }}, '{{ addslashes($item->product->name) }}')">
                                         <i class="bi bi-dash"></i>
                                     </button>
                                     
-                                    <input type="number" min="1" name="qty" class="qty-field" value="{{ $item->qty }}" onchange="this.closest('form').classList.add('needs-save')">
+                                    <input type="number" min="1" name="qty" class="qty-field" 
+                                        value="{{ $item->qty }}" 
+                                        data-original="{{ $item->qty }}" {{-- Обязательно для работы handleInput --}}
+                                        oninput="handleInput(this)">
                                     
-                                    <button type="button" class="btn-qty-step" onclick="this.previousElementSibling.stepUp(); this.closest('form').classList.add('needs-save')">
+                                    {{-- Плюс --}}
+                                    <button type="button" class="btn-qty-step" 
+                                            onclick="this.previousElementSibling.stepUp(); handleInput(this.previousElementSibling)">
                                         <i class="bi bi-plus"></i>
                                     </button>
 
-                                    <button type="submit" class="btn-qty-apply" title="Сохранить">
+                                    {{-- Кнопка сохранения (по умолчанию disabled) --}}
+                                    <button type="submit" class="btn-qty-apply" disabled title="Сохранить">
                                         <i class="bi bi-check2"></i>
                                     </button>
                                 </div>
@@ -121,7 +129,7 @@
 
                             {{-- Кнопка удаления --}}
                             <button class="btn-cart-remove" 
-                                    onclick="openModal('universalConfirm', () => { removeItem({{ $item->product_id }}) }, 'Удаление товара', 'Точно удалить «{{ $item->product->name }}»?', 0, 'Да, удалить')">
+                                    onclick="openModal('universalConfirm', () => { removeItem({{ $item->product_id }}, '{{ addslashes($item->product->name) }}') }, 'Удаление товара', 'Точно удалить «{{ $item->product->name }}»?', 0, 'Да, удалить')">
                                 <i class="bi bi-x-lg"></i>
                             </button>
                         </div>
@@ -211,15 +219,57 @@
 
 @push('scripts')
 <script>
-    // 1. AJAX обновление количества (кнопка ОК)
+    // 1. Умный ввод (контроль кнопки сохранения)
+    function handleInput(input) {
+        const form = input.closest('form');
+        const applyBtn = form.querySelector('.btn-qty-apply');
+        
+        const originalValue = parseInt(input.getAttribute('data-original') || 0);
+        const currentValue = parseInt(input.value);
+
+        // В корзине минимальный порог — 1. Если 0 — это удаление через handleMinus
+        if (isNaN(currentValue) || currentValue < 1) {
+            applyBtn.disabled = true;
+            return;
+        }
+
+        if (currentValue !== originalValue) {
+            form.classList.add('needs-save');
+            applyBtn.disabled = false;
+        } else {
+            form.classList.remove('needs-save');
+            applyBtn.disabled = true; 
+        }
+    }
+
+    // 2. Умный минус (модалка удаления на значении 1)
+    function handleMinus(btn, productId, productName) {
+        const input = btn.nextElementSibling;
+        const currentValue = parseInt(input.value);
+
+        if (currentValue > 1) {
+            input.stepDown();
+            handleInput(input);
+        } else if (currentValue === 1) {
+            // Если в корзине жмут минус на единице — это запрос на удаление
+            openModal('universalConfirm', () => { removeItem(productId, productName) }, 
+                    'Удаление товара', `Вы уверены, что хотите удалить «${productName}» из заказа?`, 0, 'Да, удалить');
+        }
+    }
+
+    // 3. AJAX обновление количества (кнопка ОК)
     document.addEventListener('submit', function(e) {
         const form = e.target.closest('.ajax-cart-form');
         if (!form) return;
         e.preventDefault();
         
-        const btn = form.querySelector('button');
+        const btn = form.querySelector('.btn-qty-apply');
+        const icon = btn.querySelector('i');
         const formData = new FormData(form);
+        const productName = form.closest('tr').querySelector('.store-name div').innerText.trim();
+
         btn.disabled = true;
+        icon.className = 'bi bi-hourglass-split';
 
         fetch(form.action, {
             method: 'POST',
@@ -229,25 +279,23 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // ОБНОВЛЯЕМ ТОПБАР МГНОВЕННО
-                if (window.updateTopbarCart && data.summary) {
-                    window.updateTopbarCart(data.summary);
-                }
+                if (window.updateTopbarCart && data.summary) window.updateTopbarCart(data.summary);
                 
-                showToast(`Количество обновлено`, 'bi-check-circle');
+                showToast(`<strong>Количество обновлено</strong><br>${productName} <br><strong>в заказе: ${data.total_qty} шт.</strong>`, 'bi-check-circle');
                 
-                // Перезагрузка нужна для обновления итогов в самой таблице и подвале
-                setTimeout(() => location.reload(), 800);
+                // Перезагрузка обязательна, чтобы PHP пересчитал суммы и выгоду в строке
+                setTimeout(() => location.reload(), 600);
             }
         })
         .catch(error => {
             btn.disabled = false;
-            showToast('Ошибка при обновлении', 'bi-exclamation-triangle', true);
+            icon.className = 'bi bi-check2';
+            showToast('Ошибка сервера', 'bi-exclamation-triangle', true);
         });
     });
 
-    // 2. Удаление одной позиции
-    function removeItem(productId) {
+    // 4. Удаление позиции
+    function removeItem(productId, productName) {
         const formData = new FormData();
         formData.append('product_id', productId);
         formData.append('qty', 0);
@@ -261,42 +309,33 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // ОБНОВЛЯЕМ ТОПБАР МГНОВЕННО
-                if (window.updateTopbarCart && data.summary) {
-                    window.updateTopbarCart(data.summary);
-                }
-                
-                showToast('Товар удален', 'bi-trash');
-                setTimeout(() => location.reload(), 800);
+                if (window.updateTopbarCart && data.summary) window.updateTopbarCart(data.summary);
+                showToast(`${productName}<br><strong>удален из заказа</strong>`, 'bi-trash');
+                setTimeout(() => location.reload(), 1000);
             }
         });
     }
 
-    // 3. Полная очистка корзины
+    // 5. Очистка всей корзины
     function clearCart() {
         fetch('{{ route("cart.clear") }}', { 
             method: 'POST', 
-            headers: { 
-                'X-CSRF-TOKEN': '{{ csrf_token() }}', 
-                'X-Requested-With': 'XMLHttpRequest' 
-            } 
+            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'X-Requested-With': 'XMLHttpRequest' } 
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // ОБНУЛЯЕМ ТОПБАР МГНОВЕННО
-                if (window.updateTopbarCart) {
-                    window.updateTopbarCart({pos: 0, qty: 0, amount: 0});
-                }
-                
+                if (window.updateTopbarCart) window.updateTopbarCart({pos: 0, qty: 0, amount: 0});
                 showToast('Корзина очищена', 'bi-trash3');
-                setTimeout(() => location.reload(), 800);
+                setTimeout(() => location.reload(), 500);
             }
         });
     }
     
+    // 6. Финальное оформление
     function submitOrder() {
-        openModal('universalConfirm', null, 'Создание заказа...', 'Пожалуйста, подождите...', 0, '', true);
+        // Показываем лоадер (isLoading = true), чтобы не было двойных кликов
+        openModal('universalConfirm', null, 'Оформление заказа...', 'Пожалуйста, подождите, мы резервируем товары...', 0, '', true);
         document.getElementById('checkout-form').submit();
     }
 </script>
