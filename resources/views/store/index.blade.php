@@ -124,7 +124,13 @@
                     <tr>
                         <td><img src="{{ $i->image_url }}" class="store-img"></td>
                         <td class="js-art">{{ $i->article }}</td>
-                        <td class="js-name store-name">{{ $i->name }}</td>
+                        <td class="store-name">
+                            <span class="js-name">{{ $i->name }}</span>
+                            {{-- Скрытые данные для фильтрации --}}
+                            <span class="js-coll hidden-data">{{ $i->collection ?? 'Без названия' }}</span>
+                            <span class="js-cat hidden-data">{{ $i->product_category }}</span>
+                            <span class="js-type hidden-data">{{ $i->product_type }}</span>
+                        </td>
                         <td class="js-brand">{{ $i->brand }}</td>
                         <td class="js-stock" data-stock="{{ $i->free_stock }}">{{ $i->free_stock }}</td>
                         <td class="js-price" data-price="{{ $i->price }}">{!! str_replace(' ', '&nbsp;', number_format($i->price, 2, ',', ' ')) !!}&nbsp;₽</td>

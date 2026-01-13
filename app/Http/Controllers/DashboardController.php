@@ -21,35 +21,30 @@ class DashboardController extends Controller
     public function index()
     {
         $user = Auth::user();
-
-        // 1. Получаем меню
         $menu = config('b2b_menu');
 
-        // 2. Статус организации
-        $orgStatus = $this->getOrgStatus($user);
+        // 1. Получаем объект текущей организации (если ID выбран)
+        $currentOrg = $user->selected_org_id 
+            ? $user->organizations()->find($user->selected_org_id) 
+            : null;
 
-        // 3. Логика даты предыдущего входа
+        // 2. Статус организации (передаем уже найденную орг, чтобы не искать дважды)
+        $orgStatus = $this->getOrgStatus($user, $currentOrg);
+
+        // 3. Логика даты входа
         $prevLoginDate = $user->previous_login;
-        if ($prevLoginDate) {
-            $lastLoginText = \Carbon\Carbon::parse($prevLoginDate)
-                ->timezone('Europe/Moscow')
-                ->format('d.m.Y в H:i');
-        } else {
-            $lastLoginText = 'только что';
-        }
+        $lastLoginText = $prevLoginDate 
+            ? \Carbon\Carbon::parse($prevLoginDate)->timezone('Europe/Moscow')->format('d.m.Y в H:i') 
+            : 'только что';
 
-        // 4. Человекопонятное название роли
-        $roleNames = [
-            'admin'   => 'Администратор',
-            'manager' => 'Менеджер',
-            'partner' => 'Партнёр'
-        ];
+        // 4. Роль
+        $roleNames = ['admin' => 'Администратор', 'manager' => 'Менеджер', 'partner' => 'Партнёр'];
         $roleName = $roleNames[$user->role] ?? $user->role;
 
-        // Отдаем всё во вьюху
         return view('dashboard', [
             'menu'          => $menu,
             'org_status'    => $orgStatus,
+            'currentOrg'    => $currentOrg,
             'lastLoginText' => $lastLoginText,
             'roleName'      => $roleName
         ]);
@@ -58,10 +53,9 @@ class DashboardController extends Controller
     /**
      * Вспомогательный метод для формирования текста статуса
      */
-    private function getOrgStatus($user)
+    private function getOrgStatus($user, $currentOrg) // Добавили аргумент $currentOrg
     {
-        // Считаем количество организаций пользователя
-        // Используем связь organizations(), чтобы Eloquent сам учел user_id
+        // 1. Считаем общее кол-во компаний
         $count = $user->organizations()->count();
 
         if ($count === 0) {
@@ -72,10 +66,8 @@ class DashboardController extends Controller
             ];
         }
 
-        // Проверяем, выбрана ли организация в профиле
-        $selectedId = $user->selected_org_id;
-
-        if (!$selectedId) {
+        // 2. Если нет выбранной организации (или она не найдена в базе)
+        if (!$currentOrg) {
             $url = route('organizations.index');
             return [
                 'state' => 'need_select',
@@ -83,28 +75,11 @@ class DashboardController extends Controller
             ];
         }
 
-        // Пытаемся найти эту организацию среди организаций пользователя
-        // Метод find() внутри связи organizations() гарантирует, 
-        // что мы не найдем чужую организацию, даже если подставим чужой ID.
-        $org = $user->organizations()->find($selectedId);
-
-        // Если организация не найдена (например, была удалена или ID неверный)
-        if (!$org) {
-            return [
-                'state' => 'need_select',
-                'text'  => 'Выберите организацию для использования сервиса.',
-            ];
-        }
-
-        // Формируем текст уведомления
-        // Если ИП -> показываем ОГРН, Если Юрлицо -> КПП
-        $extra = ($org->type === 'ip') 
-            ? 'ОГРНИП: ' . ($org->ogrn ?: '—') 
-            : 'КПП: ' . ($org->kpp ?: '—');
-
+        // 3. Если всё хорошо
         return [
             'state' => 'selected',
-            'text'  => "Выбрана организация: <strong>{$org->name}</strong>, ИНН: {$org->inn}, {$extra}",
+            'text'  => '', // Текст пустой, так как алерт мы скроем
         ];
     }
+
 }

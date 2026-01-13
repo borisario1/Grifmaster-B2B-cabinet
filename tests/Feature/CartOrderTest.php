@@ -158,6 +158,6 @@ test('если корзина не пуста, в списке заказов о
     $response = $this->actingAs($this->user)->get(route('orders.index'));
 
     $response->assertStatus(200);
-    $response->assertSee('У вас есть незавершенный заказ');
+    $response->assertSee('У вас есть неотправленный заказ. Не забыли подтвердить его?');
     $response->assertSee('Перейти в корзину');
 });

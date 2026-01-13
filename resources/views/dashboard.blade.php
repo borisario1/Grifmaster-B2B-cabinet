@@ -16,7 +16,7 @@
     @endphp
 
     {{-- Уведомление о статусе (например, о необходимости выбрать организацию) --}}
-    @if(isset($org_status) && !empty($org_status['text']))
+    @if(isset($org_status) && $org_status['state'] !== 'selected')
         <div class="cart-alert-panel" style="margin-top: 20px; margin-bottom: 10px;">
             <div style="display: flex; align-items: center; gap: 15px;">
                 <div class="cart-alert-icon"><i class="bi bi-info-circle"></i></div>
@@ -26,17 +26,44 @@
             </div>
         </div>
     @endif
-
     {{-- ЗАГОЛОВОК --}}
     <h1 class="page-title">
         Здравствуйте, {{ $profile->first_name ?? 'Уважаемый' }} {{ $profile->middle_name ?? 'партнёр' }}!
     </h1>
 
     {{-- ИНФО-БЛОК --}}
-    <div class="card-info" style="padding: 15px 20px; border-radius: var(--min_radius);">
-        <div style="font-size: 15px; color: #666; display: flex; flex-wrap: wrap; gap: 20px;">
-            <div>Последний вход: <strong style="color: #001F33; font-weight: 500;">{{ $lastLoginText }}</strong></div>
-            <div>Ваш статус: <strong style="color: #001F33; font-weight: 500;">{{ $roleName }}</strong></div>
+    <div class="card-info" style="padding: 18px 22px; border-radius: var(--min_radius);">
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+            
+            {{-- Верхняя строка: Вход и Статус --}}
+            <div style="font-size: 15px; color: #666; display: flex; flex-wrap: wrap; column-gap: 25px; row-gap: 8px; align-items: center;">
+                <div>Последний вход: <strong style="color: #001F33; font-weight: 500;">{{ $lastLoginText }}</strong></div>
+                <div>Ваш статус: <strong style="color: #001F33; font-weight: 500;">{{ $roleName }}</strong></div>
+            @if(!$currentOrg)
+                <div style="font-size: 15px; display: flex; align-items: center; gap: 8px;">
+                    <i class="bi bi-exclamation-triangle-fill" style="color: #e53e3e; font-size: 16px;"></i>
+                    <span style="color: #e53e3e; font-weight: 500;">
+                        {{ (isset($org_status['state']) && $org_status['state'] === 'no_org') ? 'Вы еще не создали организацию' : 'Организация не выбрана' }}
+                    </span>
+                </div>
+            @endif
+            </div>
+
+            @if($currentOrg)
+                {{-- Разделитель --}}
+                <div style="height: 1px; background: rgba(0,0,0,0.06); margin: 4px 0;"></div>
+
+                {{-- Нижняя строка: Организация --}}
+                <div style="font-size: 16px; color: #666; display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+                    <span>Выбрана организация:</span>
+                    <strong style="color: #001F33; font-weight: 500;">
+                        {{ $currentOrg->name }}, ИНН: {{ $currentOrg->inn }}
+                        @if($currentOrg->type !== 'ip' && $currentOrg->kpp)
+                            , КПП: {{ $currentOrg->kpp }}
+                        @endif
+                    </strong>
+                </div>
+            @endif
         </div>
     </div>
    

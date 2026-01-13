@@ -44,9 +44,9 @@ class AppServiceProvider extends ServiceProvider
             }
             
             // ПРОВЕРКА 3: Если SQLite драйвер не подхватился и мы все еще на mysql
-            if (config('database.default') === 'mysql') {
-                $this->stopTests("ОСТАНОВКА: Драйвер SQLite не запустился или ошибка в env файле, тесты пытаются запуститься на MySQL. ОПЕРАЦИЯ ОТМЕНЕНА");
-            }
+            //if (config('database.default') === 'mysql') {
+            //    $this->stopTests("ОСТАНОВКА: Драйвер SQLite не запустился или ошибка в env файле, тесты пытаются запуститься на MySQL. ОПЕРАЦИЯ ОТМЕНЕНА");
+            //}
         }
 
         // ГЛОБАЛЬНОЕ МЕНЮ

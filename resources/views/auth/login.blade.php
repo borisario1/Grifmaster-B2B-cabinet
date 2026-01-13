@@ -66,7 +66,7 @@
         <div class="text-center mt-3">
             {{-- Используем именованный роут для регистрации --}}
             <a href="{{ route('register') }}" class="auth-link flash-text mx-2" id="flashText">
-                Создать аккаунт
+                Регистрация
             </a>
             <a href="{{ route('recovery.pass') }}" class="auth-link" id="flashText">
                 Забыли пароль?
@@ -83,7 +83,7 @@
 {{-- Твой оригинальный JS для "мигающего" текста --}}
 document.addEventListener("DOMContentLoaded", () => {
     const el = document.getElementById("flashText");
-    let baseText = "Создать аккаунт";
+    let baseText = "Регистрация";
     let altText = "Стать богаче";
 
     function randomFlash() {
