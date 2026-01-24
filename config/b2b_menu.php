@@ -144,7 +144,7 @@ return [
         'icon'    => 'bi-life-preserver',
         'url'     => '/requests',
         'group'   => 'settings',
-        'show_in' => ['dashboard', 'burger', 'toolbar'],
+        'show_in' => ['dashboard', 'burger'],
     ],
 
     // =============================

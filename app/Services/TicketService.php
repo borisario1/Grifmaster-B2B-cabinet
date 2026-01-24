@@ -103,6 +103,40 @@ class TicketService
     }
 
     /**
+     * Закрытие тикета пользователем
+     */
+    public function closeTicket(User $user, Ticket $ticket): void
+    {
+        if ($ticket->user_id !== $user->id) {
+            throw new Exception("Вы не можете закрыть чужое обращение.");
+        }
+
+        DB::transaction(function () use ($user, $ticket) {
+            $ticket->update(['status' => 'closed']);
+
+            // Добавляем системное сообщение в историю чата
+            TicketMessage::create([
+                'request_id'  => $ticket->id,
+                'sender_type' => 'system',
+                'sender_id'   => $user->id,
+                'message'     => "Обращение закрыто пользователем.",
+                'is_read'     => true,
+            ]);
+
+            $this->notificationService->send(
+                $user->id,
+                'ticket_closed',
+                "Обращение закрыто",
+                "Вы закрыли обращение №{$ticket->request_code}.",
+                route('tickets.show', $ticket->request_code)
+            );
+        });
+
+        // Принудительно добавляем flash-сообщение для вывода в шаблоне
+        session()->flash('success', 'Обращение успешно закрыто.');
+    }
+
+    /**
      * Генерация кода обращения (Uxxxx-REQyyy или Rxxxx-REQyyy)
      */
     protected function generateRequestCode(int $userId, ?int $orgId): string

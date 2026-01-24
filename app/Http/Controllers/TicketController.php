@@ -83,9 +83,12 @@ class TicketController extends Controller
             ->where('user_id', Auth::id())
             ->firstOrFail();
 
-        $ticket->status = 'closed';
-        $ticket->save();
+        try {
+            $this->ticketService->closeTicket(Auth::user(), $ticket);
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => $e->getMessage()]);
+        }
 
-        return back()->with('success', 'Обращение закрыто');
+        return back();
     }
 }

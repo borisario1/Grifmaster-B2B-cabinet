@@ -76,9 +76,16 @@
                     <i class="bi bi-send-fill"></i> Отправить
                 </button>
 
-                <a href="{{ route('tickets.close', $ticket->request_code) }}" 
+                <a href="#" 
                    class="btn btn-secondary" 
-                   onclick="return confirm('Вы уверены, что хотите закрыть обращение?');">
+                   onclick="event.preventDefault(); openModal(
+                       'universalConfirm',
+                       () => window.location.href = '{{ route('tickets.close', $ticket->request_code) }}',
+                       'Закрытие обращения',
+                       'Вы действительно хотите закрыть это обращение? Если передумаете, вам придется создать новое.',
+                       5,
+                       'Закрыть'
+                   )">
                     Закрыть обращение
                 </a>
             </div>
