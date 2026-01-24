@@ -14,6 +14,8 @@ use App\Http\Controllers\Auth\RecoveryPassController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\TicketController;
 
 /**
  * Название: Базовые редиректы
@@ -63,9 +65,9 @@ Route::middleware(['auth', 'check.profile'])->group(function () {
     Route::post('/profile/notify', [ProfileController::class, 'updateNotification'])->name('profile.notify');
     
     // Уведомления
-    Route::get('/notifications', function () {
-        return view('notifications.index'); // Создадим этот файл позже
-    })->name('notifications.index');
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read.all');
 
     // ОРГАНИЗАЦИИ 
     // 1. AJAX поиск (ставим до resource, чтобы не конфликтовало с show)
@@ -93,6 +95,15 @@ Route::middleware(['auth', 'check.profile'])->group(function () {
     // Заказы
     Route::get('/store/orders', [App\Http\Controllers\OrderController::class, 'index'])->name('orders.index');
     Route::get('/store/order/{code}', [App\Http\Controllers\OrderController::class, 'show'])->name('orders.show');
+
+    // Обращения (Тикеты)
+    Route::get('/requests', [TicketController::class, 'index'])->name('tickets.index');
+    Route::get('/requests/new', [TicketController::class, 'create'])->name('tickets.create');
+    Route::post('/requests/save', [TicketController::class, 'store'])->name('tickets.store');
+    // Route::get('/requests/success/{code}', [TicketController::class, 'success'])->name('tickets.success'); // Используем редирект на show
+    Route::get('/requests/view/{code}', [TicketController::class, 'show'])->name('tickets.show');
+    Route::post('/requests/message/{code}', [TicketController::class, 'sendMessage'])->name('tickets.message');
+    Route::get('/requests/close/{code}', [TicketController::class, 'close'])->name('tickets.close');
 });
 
 /**

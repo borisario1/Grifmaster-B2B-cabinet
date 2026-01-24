@@ -1,208 +1,143 @@
-/* =========================================================
-   REQUEST CARDS — список обращений
-   ========================================================= */
-
 .request-list {
     display: flex;
     flex-direction: column;
-    gap: 18px;
-    margin-top: 25px;
+    gap: 15px;
 }
 
 .request-card {
     display: block;
-    background: #f6f9fc;
-    border: 1px solid #e5e8ef;
-    border-radius: 18px;
-    padding: 18px 22px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
     text-decoration: none;
-    color: #001F33;
-    transition: 0.25s;
+    transition: 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
 }
 
 .request-card:hover {
-    background: #e9f3fb;
-    border-color: #cfd8e3;
+    border-color: #3295D1;
     transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(50,149,209,0.15);
 }
 
-/* Верх карточки */
 .request-card-head {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
+    align-items: flex-start;
+    margin-bottom: 10px;
 }
 
 .request-title {
-    font-size: 17px;
+    font-size: 18px;
     font-weight: 600;
     color: #001F33;
 }
 
-/* Статусы */
 .request-status {
-    padding: 6px 14px;
-    border-radius: 14px;
     font-size: 13px;
+    padding: 4px 10px;
+    border-radius: 6px;
     font-weight: 600;
-    text-transform: capitalize;
+    text-transform: uppercase;
 }
 
-/* Цвета статусов */
-.status-open {
-    background: #eaf4ff;
-    color: #0b466e;
-    border: 1px solid #cfe4ff;
-}
+.status-open { background: #e6fffa; color: #047857; }
+.status-closed { background: #edf2f7; color: #4a5568; }
+.status-wait { background: #fffaf0; color: #c05621; }
 
-.status-closed {
-    background: #e9f9ee;
-    color: #0c6b2f;
-    border: 1px solid #d0efd8;
-}
-
-.status-wait {
-    background: #fff8e6;
-    color: #9c6b00;
-    border: 1px solid #f5d98c;
-}
-
-/* Метаданные карточки */
 .request-meta {
+    font-size: 13px;
+    color: #718096;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 14px;
-    color: #4a5568;
-    margin-top: 6px;
+    gap: 15px;
 }
 
+/* Chat */
 .chat-box {
-    background: #f5f7fa;
-    border: 1px solid #d9e2ec;
-    padding: 15px;
-    max-height: 480px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+    height: 400px;
     overflow-y: auto;
-    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
     margin-bottom: 20px;
 }
 
 .msg {
-    max-width: 70%;
-    padding: 10px 14px;
+    max-width: 80%;
+    padding: 12px 16px;
     border-radius: 12px;
-    margin-bottom: 12px;
+    font-size: 15px;
+    line-height: 1.5;
     position: relative;
-    font-size: 14px;
-    line-height: 1.45;
-    border-radius: 10px !important;
 }
 
 .msg-user {
+    align-self: flex-end;
     background: #3295D1;
     color: #fff;
-    margin-left: auto;
     border-bottom-right-radius: 2px;
 }
 
 .msg-staff {
-    background: #ffffff;
-    border: 1px solid #d9e2ec;
-    color: #1a1a1a;
-    margin-right: auto;
+    align-self: flex-start;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    color: #1a202c;
     border-bottom-left-radius: 2px;
+}
+
+.msg-system {
+    align-self: center;
+    background: transparent;
+    color: #718096;
+    font-size: 13px;
+    text-align: center;
+    font-style: italic;
+    max-width: 100%;
 }
 
 .msg-time {
     font-size: 11px;
-    opacity: 0.7;
     margin-top: 4px;
+    opacity: 0.8;
     text-align: right;
 }
 
-.chat-send {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    border-radius: 12px !important;
-}
-
-.btn-send {
-    padding: 10px 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.alert {
-    padding: 14px 20px;
-    border-radius: 14px;
-    margin: 20px 0;
-    font-size: 15px;
-}
-
-.alert-info {
-    background: #eaf4ff;
-    border: 1px solid #cfe4ff;
-    color: #003b66;
-}
-
-.alert-danger {
-    background: #ffeaea;
-    border: 1px solid #ffb5b5;
-    color: #9c1a1a;
-}
-
-.mt-20 {
-    margin-top: 20px !important;
-}
-
-/* Системные сообщения в чате */
-.msg-system {
-    max-width: 80%;
-    margin: 0 auto 12px;
-    background: #eaf4ff;
-    border: 1px dashed #cfe4ff;
-    color: #003b66;
-    text-align: center;
-    padding: 10px 14px;
+.card-info {
+    background: #f1f5f9;
+    padding: 15px 20px;
     border-radius: 12px;
-    font-size: 13px;
-}
-
-/* SUCCESS блок для обращений (по аналогии с заказами) */
-.success-box {
-    background: #e9f9ee;
-    border: 1px solid #d0efd8;
-    color: #0c6b2f;
-    border-radius: var(--radius);
-    padding: 22px 26px;
-    margin-top: 20px;
-}
-
-.success-title {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 18px;
-    font-weight: 700;
-}
-
-.success-title i {
-    font-size: 26px;
-}
-
-.success-text {
-    margin-top: 12px;
-    font-size: 16px;
-    color: #1b5e36;
-    line-height: 1.55;
-}
-
-.success-actions {
-    margin-top: 30px;
+    margin-bottom: 20px;
     display: flex;
     flex-wrap: wrap;
-    gap: 14px;
+    gap: 20px;
+}
+
+.info-row span {
+    display: block;
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 2px;
+}
+.info-row strong {
+    font-size: 15px;
+    color: #0f172a;
+}
+
+/* Исправление для поля ввода сообщения */
+.chat-send, .form-group textarea.form-input {
+    border-radius: 12px !important; /* Менее скругленные углы для форм ввода текста */
+    font-family: inherit; /* Шрифт в формах ввода текста как на странице */
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+/* Исправление отображения длинных номеров */
+.info-row strong {
+    word-break: break-word; /* Перенос длинных слов/номеров */
 }

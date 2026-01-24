@@ -13,11 +13,19 @@ use Illuminate\Http\Request;
 use App\Models\CartItem;
 use App\Models\Product;
 use App\Services\CartService;
+use App\Services\NotificationService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class CartController extends Controller
 {
+    protected NotificationService $notificationService;
+
+    public function __construct(NotificationService $notificationService)
+    {
+        $this->notificationService = $notificationService;
+    }
+
     public function add(Request $request, CartService $cartService)
     {
         $request->validate([
@@ -173,7 +181,16 @@ class CartController extends Controller
                 'created_at' => now(),
             ]);
 
-            // 6. Очистка корзины
+            // 6. Отправляем уведомление
+            $this->notificationService->send(
+                $user->id,
+                'order_created',
+                'Новый заказ',
+                "Ваш заказ №{$orderCode} успешно оформлен.",
+                route('orders.show', $orderCode)
+            );
+
+            // 7. Очистка корзины
             CartItem::where('user_id', $user->id)->where('org_id', $orgId)->delete();
 
             // Редирект на страницу успеха

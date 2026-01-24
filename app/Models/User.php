@@ -84,4 +84,14 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Organization::class, 'selected_org_id');
     }
+
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class);
+    }
+
+    public function tickets()
+    {
+        return $this->hasMany(Ticket::class);
+    }
 }

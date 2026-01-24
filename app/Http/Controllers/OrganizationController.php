@@ -10,6 +10,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Organization;
+use App\Services\NotificationService;
 use App\Services\DadataService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,6 +19,13 @@ use Illuminate\Validation\Rule;
 
 class OrganizationController extends Controller
 {
+    protected NotificationService $notificationService;
+
+    public function __construct(NotificationService $notificationService)
+    {
+        $this->notificationService = $notificationService;
+    }
+
     /**
      * 1. Список организаций (Мои организации)
      */
@@ -190,6 +198,14 @@ class OrganizationController extends Controller
         // с одной корзины на другую (с одного ID орг на другой)
         if ($user->selected_org_id !== $organization->id) {
             $user->update(['selected_org_id' => $organization->id]);
+
+            // Отправляем уведомление
+            $this->notificationService->send(
+                $user->id,
+                'general',
+                'Смена организации',
+                'Организация была изменена на: ' . $organization->name
+            );
         }
 
         return redirect()->back()->with('ok', 'Выбрана организация: ' . $organization->name);

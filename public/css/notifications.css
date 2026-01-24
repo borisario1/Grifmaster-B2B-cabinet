@@ -11,6 +11,7 @@
     border-radius: 18px;
     border: 1px solid #e2e8f0;
     box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+    transition: 0.2s;
 }
 
 .notif-item.unread {
@@ -27,6 +28,7 @@
     color: #0B466E;
     font-weight: 500;
     white-space: nowrap;
+    transition: 0.2s;
 }
 
 .notif-btn-read:hover {
@@ -53,6 +55,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
 .notif-link {
@@ -72,34 +76,8 @@
     align-items: center;
 }
 
-.pagination {
-    margin-top: 30px;
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-}
-
-.pagination a {
-    padding: 7px 14px;
-    border-radius: 12px;
-    background: #f0f4f8;
-    text-decoration: none;
-    color: #001F33;
-    font-size: 14px;
-}
-
-.pagination a.active {
-    background: #3295D1;
-    color: #fff;
-}
-
 .notif-read-all-wrap {
-    margin-top: 30px;
-    text-align: right;
-}
-
-.notif-all-read {
-    font-size: 14px;
-    color: #4a5568;
-    opacity: 0.85;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: flex-end;
 }

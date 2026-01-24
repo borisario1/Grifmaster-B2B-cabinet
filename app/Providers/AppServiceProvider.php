@@ -67,8 +67,10 @@ class AppServiceProvider extends ServiceProvider
             $view->with([
                 'cartSummary' => ($isAuth && $cartService) ? $cartService->getSummary() : ['qty' => 0, 'pos' => 0, 'amount' => 0],
                 
-                // ВРЕМЕННО: ставим 0, пока не перенесем логику из Notifications.php в новую модель
-                'unreadNotificationsCount' => 0, 
+                // Подсчет непрочитанных уведомлений
+                'unreadNotificationsCount' => $isAuth 
+                    ? \App\Models\Notification::where('user_id', Auth::id())->where('is_read', false)->count() 
+                    : 0,
             ]);
         });
     }
