@@ -1,0 +1,367 @@
+shop.product.getInfo
+Возвращает информацию о товаре.
+
+Параметры
+id GET
+ID товара.
+format GET Необязательно
+Устанавливает формат ответа. Возможные значения: json (по умолчанию), xml.
+
+Возвращаемое значение
+Массив с информацией о товаре со следующими ключами:
+
+id int ID товара.
+name string Наименование.
+summary string Краткое описание.
+meta_title string Значение элемента TITLE страницы товара.
+meta_keywords string Значение метатега keywords.
+meta_description string Значение метатега description.
+description string Полное описание.
+contact_id int ID контакта пользователя, добавившего товар.
+create_datetime datetime Дата и время создания товара.
+edit_datetime datetime Дата и время последнего обновления товара.
+status int Обозначение статуса товара: -1 (снят с публикации), 0 (скрыт), 1 (опубликован).
+type_id int ID типа товара.
+image_id int ID основного изображения.
+video_url string Ссылка на видеоролик.
+sku_id int ID основной модификации.
+url int Редактируемая часть URL страницы товара на витрине.
+rating float Рейтинг товара по результатам его оценки покупателями.
+price float Цена в формате decimal(15,4).
+compare_price float Зачёркнутая цена в формате decimal(15,4).
+currency string Обозначение валюты товара в формате ISO 4217.
+min_price float Минимальная цена модификации в формате decimal(15,4).
+max_price float Максимальная цена модификации в формате decimal(15,4).
+tax_id int ID выбранного налогового правила или 0, если правило не выбрано.
+count float|null Общее количество на складе всех модификаций. Значение null означает, что для некоторых модификаций товара указано бесконечное количество на складе.
+count_denominator int Доступная точность указания складских остатков товара. Возможные значения: 1 (целые штуки), 10 (точность до десятых), 100 (точность до сотых), 1000 (точность до тысячных).
+order_multiplicity_factor float Шаг (кратность) добавления в корзину в формате decimal(15,3).
+stock_unit_id int ID выбранной складской единицы измерения количества.
+base_unit_id int ID выбранной базовой единицы измерения количества.
+stock_base_ratio float Соотношение между складской и базовой единицами измерения количества.
+order_count_min float Минимальное количество товара в заказе в формате decimal(15,3).
+order_count_step float Значение изменения количества кнопками «+/-» в формате decimal(15,3).
+cross_selling int Режим отображения сопутствующих товаров: 0 (выключено), 1 (включено показывать в соответствии с настройками типа товаров), 2 (включено показывать выбранные вручную рекомендуемые товары).
+upselling int Режим отображения схожих и альтернативных товаров: 0 (выключено), 1 (включено показывать в соответствии с настройками типа товаров), 2 (включено показывать выбранные вручную рекомендуемые товары).
+rating_count int Количество отзывов о товаре.
+total_sales float Общая сумма продаж товара, выраженная в основной валюте магазина, в формате decimal(15,4).
+category_id int ID основной категории.
+badge string Обозначение одной из стандартных наклеек либо HTML собственной наклейки для изображений.
+sku_type int Тип выбора модификаций товара на витрине: 0 (по наименованиям артикулов), 1 (по значениям характеристик).
+sku_count int Количество модификаций.
+image_url string URL эскиза основного изображения товара с размером '750x0', если у товара есть изображения.
+skus array Массив информации о модификациях товара. Подмассив каждой модификации содержит значения со следующими ключами:
+skus[]['id'] int ID модификации.
+skus[]['sku'] int Код артикула.
+skus[]['sort'] int Значение сортировки.
+skus[]['name'] string Наименование артикула.
+skus[]['image_id'] int ID изображения, выбранного в свойствах модификации.
+skus[]['price'] float Цена в формате decimal(15,4).
+skus[]['purchase_price'] float Закупочная цена в формате decimal(15,4).
+skus[]['compare_price'] float Зачёркнутая цена в формате decimal(15,4).
+skus[]['count'] float|null Общее количество на складе в формате decimal(15,3) или null, если количество модификации на всех складах бесконечное.
+skus[]['available'] int Флаг (0 или 1), означающий доступность модификации для заказа.
+skus[]['stock_base_ratio'] float Соотношение между складской и базовой единицами измерения количества.
+skus[]['order_count_min'] float Минимальное количество модификации в заказе в формате decimal(15,3).
+skus[]['order_count_step'] float Значение изменения количества кнопками «+/-» в формате decimal(15,3).
+skus[]['status'] int Видимость модификации на витрине.
+skus[]['file_name'] string Имя прикреплённого файла.
+skus[]['file_size'] int Размер прикреплённого файла в байтах.
+skus[]['file_description'] string Описание прикреплённого файла.
+skus[][''stocks']['] array Массив с информацией об остатках на отдельных складах со следующими ключами:
+skus[]['stocks'][]['id'] int ID склада.
+skus[]['stocks'][]['count'] float|null Количество модификации на складе в формате в формате decimal(15,3) или null, если количество бесконечное.
+categories array Массив с информацией о категориях товара со следующими ключами:
+categories[]['id'] int ID категории.
+categories[]['depth'] int Уровень вложенности категории в дереве категорий начиная с 0.
+categories[]['parent_id'] int ID родительской категории или 0, если у категории нет родительской.
+categories[]['name'] string Наименование категории.
+categories[]['meta_title'] string Значение тега <TITLE>.
+categories[]['meta_keywords'] string Значение метатега keywords.
+categories[]['meta_description'] string Значение метатега description.
+categories[]['type'] int Обозначение типа категории: 0 — статическая, 1 — динамическая.
+categories[]['url'] string Редактируемая часть URL категории на витрине магазина.
+categories[]['full_url'] string Относительный URL категории с учётом URL родительских категорий.
+categories[]['count'] int Количество товаров, для которых данная статическая категория является основной. Не используется для динамических категорий.
+categories[]['description'] string Описание категории.
+categories[]['conditions'] string Описание условий для формирования списка товаров в динамической категории. Не используется для статических категорий.
+categories[]['create_datetime'] datetime Дата и время создания категории.
+categories[]['edit_datetime'] datetime Дата и время последнего редактирования категории.
+categories[]['filter'] string Информация о настройках фильтра товаров в категории в виде идентификаторов полей фильтра, разделённых запятой. Идентификаторами полей могут числовые ID характеристик товаров и строка 'price' для обозначения фильтра по цене. Порядок сортировки идентификаторов в этой строке соответствует порядку сортировки полей фильтра.
+categories[]['sort_products'] string Правило сортировки товаров в категории по умолчанию.
+categories[]['include_sub_categories'] int Флаг, обозначающий, должны ли в категории отображаться товары из её подкатегорий: 0 — не должны, 1 — должны.
+categories[]['status'] int Статус видимости категории: 0 — скрытая, 1 — видимая.
+images array Массив с информацией об изображениях товара со следующими ключами:
+images[]['id'] int ID изображения.
+images[]['upload_datetime'] datetime Дата и время загрузки в свойства товара.
+images[]['sort'] int Значение сортировки начиная с 0.
+images[]['width'] int Ширина в пикселях.
+images[]['height'] int Высота в пикселях.
+images[]['size'] int Размер файла в байтах.
+images[]['original_filename'] string Оригинальное имя загруженного файла.
+images[]['ext'] string Расширение имени файла.
+images[]['url_thumb'] string URL эскиза изображения с размером '200x0'.
+features array Массив с информацией о характеристиках товара (ключи массива — идентификаторы характеристик):
+features['...'] mixed Значение характеристики.
+
+Пример
+https://demo1-ru.webasyst.com/api.php/shop.product.getInfo?id=65
+
+shop.product.search
+Возвращает список товаров, соответствующих заданным критериям.
+
+Параметры
+hash GET Необязательно
+Строка с хешем для описания условий поиска товаров, закодированная для передачи в URL.
+
+Примеры:
+id/12,23,34: список ID нужных товаров.
+related/cross_selling/12: товары, выбранные в качестве перекрёстных продаж для товара с id, равным 12.
+related/upselling/12: товары, выбранные в качестве схожих и альтернативных для товара с id, равным 12.
+category/27: товары, содержащиеся в категории с id, равным 27.
+search/query=qwerty: поиск по запросу «qwerty» с учётом параметров поиска, выбранных в настройках магазина.
+search/name=qwerty: точный поиск по запросу «qwerty» в свойстве товаров name. Вместо оператора сравнения = можно использовать другие, поддерживаемые SQL: >, <, >=, <=, !=. Вместо стандартных названий полей товаров можно также использовать tag — для аналогичного поиска по тегам товаров. Можно выполнять поиск сразу по нескольким полям: search/name*=style&tag=fashion.
+search/name*=qwerty: поиск по частям слов по запросу «qwerty» в свойстве товаров name; поддерживаемые операторы: *= (поиск в любой части слов), ^= (поиск в начале слов), $= (поиск в конце слов).
+search/tag=style или tag/style: точный поиск по тегу 'style'; формат search/tag=style можно использовать для поиска по нескольким тегам с условием || (ИЛИ): search/tag=style||fashion.
+search/type_id=1: пример поиска по любому стандартному свойству товара.
+search/color.value_id=4,5,6: поиск товаров с указанными ID значений характеристики с указанным текстовым идентификатором (в этом примере — color).
+search/sku_id=11,22,33: поиск по списку ID модификаций товаров; чтобы получить в найденных товарах только модификации с указанными здесь ID, добавьте поле skus_filtered в список полей в параметре fields.
+search/category_id=7,8,9: поиск товаров, для которых в качестве основной выбраны категории с указанными значениями id.
+search/by_code=01046902280040182157Dyeh93XRdN: поиск товаров по значению характеристики «GTIN», сохранённому в свойствах товара или его модификации, или по значению товарного кода «Честный знак» (в котором содержится код GTIN).
+type/1: поиск по ID типа товаров, синоним search/type_id=1.
+bestsellers/2592000: поиск товаров-бестселлеров за указанное количество секунд (в данном примере за 30 дней = 60*60*24*30).
+bestsellers: поиск товаров-бестселлеров за всё время продаж.
+offset GET Необязательно
+Номер начальной позиции в списке найденных товаров, начиная с которой нужно начинать формировать результат поиска. Допускается указание неотрицательных значений. Если не указано, то используется значение по умолчанию 0 (начинать с первого найденного элемента).
+limit GET Необязательно
+Максимальное количество товаров, которые необходимо получить. Допустимый диапазон значений: от 0 до 1000. Если не указано, используется значение по умолчанию 100.
+fields GET Необязательно
+Список полей со свойствами товаров, которые нужно получить. Может содержать либо только список основных полей товаров, полученный с помощью маски *, либо также названия дополнительных полей, перечисленных ниже, которые можно добавить через запятую, например: *,skus,stock_counts.
+
+Список доступных дополнительных полей:
+images: в содержимое ответа добавляются элементы с ключом images с подробной информацией обо всех изображениях товара включая 3 URL эскизов — с размерами 970, 96x96 и 270x0;
+images2x: аналогично полю images, но в информации об изображениях содержатся URL эскизов в для устройств с двойной плотностью пикселей;
+image: в содержимое ответа добавляются элементы с ключом image с 3 URL эскизов основного изображения товара — с размерами 970, 96x96 и 270x0;
+image_crop_small: в содержимое ответа добавляются элементы с ключом image_crop_small с URL эскиза основного изображения товара с размером 48x48;
+image_count: в содержимое ответа добавляются элементы с ключом image_count с количеством изображений товара;
+skus: в содержимое ответа добавляются элементы с ключом skus с подробной информацией о модификациях товара; если запрошено также поле stock_counts, то в свойствах каждой модификации доступен элемент с ключом stock с информацией об остатках модификации товара на каждом складе; если запрошено также поле skus_image, то в свойствах каждой модификации доступны элементы с ключами ext, image_filename, image_description с информацией об изображении товара, отображающемся на витрине при выборе данной модификации;
+skus_filtered: аналогично полю sku, но в элементе skus содержатся только те модификации, свойства которых соответствуют условиям фильтрации товаров;
+sku_filtered: аналогично полю skus_filtered, но в элементе skus содержится только одна модификация товара, свойства которого соответствуют условиям фильтрации товаров;
+sku: в содержимое ответа добавляются элементы с ключом sku с наименованием основной модификации товара;
+frontend_url: в содержимое ответа добавляются элементы с ключом frontend_url с URL страницы товара относительно URL витрины;
+sales_30days: в содержимое ответа добавляются элементы с ключами sales_30days — с суммарной стоимостью всех модификаций товара в оплаченных заказах в виде числа, соответствующего основной валюте магазина и sales_30days_html — с аналогичным значением, но с обозначением основной валюты магазина, подготовленным для использования в HTML-коде;
+stock_worth: в содержимое ответа добавляются элементы с ключами stock_worth — с суммарной стоимостью всех модификаций товара, доступных на складе, в виде числа, соответствующего основной валюте магазина, и stock_worth_html — с аналогичным значением, но с обозначением основной валюты магазина, подготовленным для использования в HTML-коде.
+params: в содержимое ответа добавляются элементы с ключом params со списком дополнительных параметров товаров в виде массива в формате «ключ→значение».
+feature_[code]: в содержимое ответа для каждого товара и для каждой модификации добавляются элементы с ключами вида feature_[code] (например,feature_gtin), содержащие значения характеристик с кодами, указанными вместо [code].
+filters GET Необязательно
+Закодированный для использования в URL массив параметров дополнительной фильтрации товаров со следующими ключами:
+in_stock_only int 1, если нужно получить только товары с положительными или бесконечными остатками на складе.
+out_of_stock_only int 1, если нужно получить только товары с нулевым остатком на складе (не null и меньше 1).
+price_min float Минимальная цена, выраженная в основной валюте магазина, не ниже которой должна быть цена требуемых товаров.
+price_max float Максимальная цена, выраженная в основной валюте магазина, не выше которой должна быть цена требуемых товаров.
+unit int ID складской или базовой единицы измерения количества, которая должна быть у требуемых товаров.
+stock_unit_id int ID складской единицы измерения количества, которая должна быть у требуемых товаров.
+base_unit_id int ID базовой единицы измерения количества, которая должна быть у требуемых товаров.
+строковый идентификатор характеристики array Массив информации о значениях характеристики с указанным идентификатором, которые должны быть указаны в свойствах товаров. Каждый элемент массива может представлять собой либо массив числовых ID значений характеристики, либо массив с ключами min (минимальное значение), max (максимальное значение), unit (строковый идентификатор единицы измерения характеристики).
+escape GET Необязательно
+Флаг (0 или 1), обозначающий необходимость экранировать свойства полученных товаров name и url для использования в HTML-коде. По умолчанию применяется значение 1.
+format GET Необязательно
+Устанавливает формат ответа. Возможные значения: json (по умолчанию), xml.
+
+Возвращаемое значение
+Массив значений о найденных товарах со следующими ключами:
+
+count int Количество найденных товаров.
+offset int Значение параметра 'offset'.
+limit int Значение параметра 'limit'.
+products array Список найденных товаров. Подмассив со свойствами каждого товара содержит значения со следующими ключами:
+products[]['id'] int ID товара.
+products[]['name'] string Наименование.
+products[]['summary'] string Краткое описание.
+products[]['meta_title'] string Значение элемента TITLE страницы товара.
+products[]['meta_keywords'] string Значение метатега keywords.
+products[]['meta_description'] string Значение метатега description.
+products[]['description'] string Полное описание.
+products[]['contact_id'] int ID контакта пользователя, добавившего товар.
+products[]['create_datetime'] datetime Дата и время создания товара.
+products[]['edit_datetime'] datetime Дата и время последнего обновления товара.
+products[]['status'] int Обозначение статуса товара: -1 (снят с публикации), 0 (скрыт), 1 (опубликован).
+products[]['type_id'] int ID типа товара.
+products[]['image_id'] int ID основного изображения.
+products[]['image_url'] string URL эскиза основного изображения товара с размером '200x0', если у товара есть изображения.
+products[]['video_url'] string Ссылка на видеоролик.
+products[]['sku_id'] int ID основной модификации.
+products[]['url'] int Редактируемая часть URL страницы товара на витрине.
+products[]['rating'] float Рейтинг товара по результатам его оценки покупателями.
+products[]['price'] float Цена в формате decimal(15,4).
+products[]['compare_price'] float Зачёркнутая цена в формате decimal(15,4).
+products[]['currency'] string Обозначение валюты товара в формате ISO 4217.
+products[]['min_price'] float Минимальная цена модификации в формате decimal(15,4).
+products[]['max_price'] float Максимальная цена модификации в формате decimal(15,4).
+products[]['tax_id'] int ID выбранного налогового правила или 0, если правило не выбрано.
+products[]['count'] float|null Общее количество на складе всех модификаций. Значение null означает, что для некоторых модификаций товара указано бесконечное количество на складе.
+products[]['count_denominator'] int Доступная точность указания складских остатков товара. Возможные значения: 1 (целые штуки), 10 (точность до десятых), 100 (точность до сотых), 1000 (точность до тысячных).
+products[]['order_multiplicity_factor'] float Шаг (кратность) добавления в корзину в формате decimal(15,3).
+products[]['stock_unit_id'] int ID выбранной складской единицы измерения количества.
+products[]['base_unit_id'] int ID выбранной базовой единицы измерения количества.
+products[]['stock_base_ratio'] float Соотношение между складской и базовой единицами измерения количества.
+products[]['order_count_min'] float Минимальное количество товара в заказе в формате decimal(15,3).
+products[]['order_count_step'] float Значение изменения количества кнопками «+/-» в формате decimal(15,3).
+products[]['cross_selling'] int Режим отображения сопутствующих товаров: 0 (выключено), 1 (включено показывать в соответствии с настройками типа товаров), 2 (включено показывать выбранные вручную рекомендуемые товары).
+products[]['upselling'] int Режим отображения схожих и альтернативных товаров: 0 (выключено), 1 (включено показывать в соответствии с настройками типа товаров), 2 (включено показывать выбранные вручную рекомендуемые товары).
+products[]['rating_count'] int Количество отзывов о товаре.
+products[]['total_sales'] float Общая сумма продаж товара, выраженная в основной валюте магазина, в формате decimal(15,4).
+products[]['total_sales_html'] string Общая сумма продаж с обозначением валюты товара, подготовленная для использования в HTML-коде.
+products[]['category_id'] int ID основной категории.
+products[]['badge'] string Обозначение одной из стандартных наклеек либо HTML собственной наклейки для изображений.
+products[]['sku_type'] int Тип выбора модификаций товара на витрине: 0 (по наименованиям артикулов), 1 (по значениям характеристик).
+products[]['sku_count'] int Количество модификаций.
+products[]['skus'] array Массив информации о модификациях товара. Присутствует в ответе, если в параметре fields указано одно из значений skus, skus_filtered, sku_filtered. Ключи массива — ID модификаций. Подмассив каждой модификации содержит значения со следующими ключами:
+products[]['skus'][]['id'] int ID модификации.
+products[]['skus'][]['product_id'] int ID товара, к которому относится модификация.
+products[]['skus'][]['sku'] int Код артикула.
+products[]['skus'][]['sort'] int Значение сортировки.
+products[]['skus'][]['name'] string Наименование артикула.
+products[]['skus'][]['image_id'] int ID изображения, выбранного в свойствах модификации.
+products[]['skus'][]['price'] float Цена в формате decimal(15,4).
+products[]['skus'][]['purchase_price'] float Закупочная цена в формате decimal(15,4).
+products[]['skus'][]['compare_price'] float Зачёркнутая цена в формате decimal(15,4).
+products[]['skus'][]['count'] float|null Общее количество на складе в формате decimal(15,3) или null, если количество бесконечное.
+products[]['skus'][]['available'] int Флаг (0 или 1), означающий доступность модификации для заказа.
+products[]['skus'][]['stock_base_ratio'] float Соотношение между складской и базовой единицами измерения количества.
+products[]['skus'][]['order_count_min'] float Минимальное количество модификации в заказе в формате decimal(15,3).
+products[]['skus'][]['order_count_step'] float Значение изменения количества кнопками «+/-» в формате decimal(15,3).
+products[]['skus'][]['status'] int Видимость модификации на витрине.
+products[]['skus'][]['file_name'] string Имя прикреплённого файла.
+products[]['skus'][]['file_size'] int Размер прикреплённого файла в байтах.
+products[]['skus'][]['file_description'] string Описание прикреплённого файла.
+products[]['skus'][]['stock'] array Массив с информацией об остатках на отдельных складах. Присутствует в ответе, если в параметре fields указано значение stock_counts. Ключи массива — ID складов, значения — остатки модификации товара в формате decimal(15,3).
+products[]['images'] array Массив с информацией об изображениях товара. Присутствует в ответе, если в параметре fields указано значение images. Ключи массива — ID изображений. Подмассив каждого изображения содержит значения со следующими ключами:
+products[]['images'][]['id'] int ID изображения.
+products[]['images'][]['product_id'] int ID товара, к которому относится изображение.
+products[]['images'][]['upload_datetime'] datetime Дата и время загрузки в свойства товара.
+products[]['images'][]['description'] string Описание.
+products[]['images'][]['sort'] int Значение сортировки начиная с 0.
+products[]['images'][]['width'] int Ширина в пикселях.
+products[]['images'][]['height'] int Высота в пикселях.
+products[]['images'][]['size'] int Размер файла в байтах.
+products[]['images'][]['original_filename'] string Оригинальное имя загруженного файла.
+products[]['images'][]['ext'] string Расширение имени файла.
+products[]['images'][]['url_thumb'] string URL эскиза изображения с размером '200x0'.
+products[]['images'][]['url_crop'] string URL эскиза изображения с размером '96x96'.
+products[]['images'][]['url_big'] string URL эскиза изображения с размером '970'.
+Пример
+https://demo1-ru.webasyst.com/api.php/shop.product.search?hash=tag%2FSony
+
+
+
+Shop-Script
+Методы
+API
+ai
+shop.ai.gpt
+category
+shop.category.add
+shop.category.delete
+shop.category.getInfo
+shop.category.getParents
+shop.category.getTree
+shop.category.search
+shop.category.update
+coupon
+shop.coupon.getInfo
+shop.coupon.getList
+customer
+shop.customer.add
+shop.customer.search
+dashboard
+shop.dashboard.customers
+shop.dashboard.realtime
+shop.dashboard.sales
+shop.dashboard.salesTotal
+feature
+shop.feature.add
+shop.feature.delete
+shop.feature.getInfo
+shop.feature.getList
+order
+shop.order.action
+shop.order.actions
+shop.order.add
+shop.order.addInvoice
+shop.order.addSale
+shop.order.calculate
+shop.order.comment
+shop.order.complete
+shop.order.contactSave
+shop.order.couriers
+shop.order.delete
+shop.order.getInfo
+shop.order.getPaymentlinks
+shop.order.initpay
+shop.order.log
+shop.order.process
+shop.order.save
+shop.order.saveItem
+shop.order.search
+shop.order.setShippingAddress
+shop.order.ship
+product
+shop.product.add
+shop.product.addTags
+shop.product.addToCategory
+shop.product.addToSet
+shop.product.delete
+shop.product.getInfo
+shop.product.getServices
+shop.product.images.add
+shop.product.images.addMany
+shop.product.images.delete
+shop.product.images.getInfo
+shop.product.images.getList
+shop.product.images.sort
+shop.product.images.update
+shop.product.massUpdate
+shop.product.pages.getInfo
+shop.product.pages.getList
+shop.product.removeFromCategory
+shop.product.removeFromSet
+shop.product.removeTags
+shop.product.reviews.getTree
+shop.product.sales
+shop.product.search
+shop.product.skus.add
+shop.product.skus.delete
+shop.product.skus.getInfo
+shop.product.skus.getList
+shop.product.skus.update
+shop.product.update
+pushnotification
+shop.pushnotification.disable
+shop.pushnotification.enable
+rights
+shop.rights
+set
+shop.set.add
+shop.set.delete
+shop.set.getInfo
+shop.set.getList
+shop.set.update
+settings
+shop.settings.enableHeadless
+shop.settings.get
+shop.settings.getContactFields
+shop.settings.getPaymentTypes
+shop.settings.getProductCodes
+shop.settings.getRegions
+shop.settings.getShippingTypes
+shop.settings.getStockUnits
+shop.settings.onboard
+stock
+shop.stock.getInfo
+shop.stock.getList
+tag
+shop.tag.getList
+type
+shop.type.getInfo
+shop.type.getList

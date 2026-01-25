@@ -143,6 +143,25 @@
                             @endif
                         </td>
                         <td class="col-actions">
+                            <div class="marketing-actions">
+                                {{-- Быстрый просмотр --}}
+                                <button type="button" class="btn-icon-action" 
+                                        onclick="openProductModal({{ $i->id }})" 
+                                        title="Быстрый просмотр">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                
+                                {{-- Лайк (Избранное) --}}
+                                {{-- Если товар уже лайкнут, сервер может вернуть класс (реализуем позже), пока механика клика --}}
+                                <button type="button" class="btn-icon-action btn-like-{{ $i->id }}" 
+                                        onclick="toggleLike(this, {{ $i->id }})" 
+                                        title="В избранное">
+                                    <i class="bi bi-heart"></i>
+                                    {{-- Если хочешь выводить счетчик прямо в кнопке, раскомментируй строку ниже --}}
+                                    {{-- <span class="like-counter" style="font-size: 10px; margin-left: 2px;">{{ $i->details->likes_count ?? '' }}</span> --}}
+                                </button>
+                            </div>
+
                             <div class="cart-controls-container">
                                 @php $isInCart = $i->in_cart; @endphp
                                 <form method="POST" action="{{ route('cart.add') }}" 
@@ -202,6 +221,9 @@
             </button>
         </div>
     </div>
+    
+    {{-- Вставляем компонент модалки просмотра ЗДЕСЬ --}}
+    <x-modal-product-view />
 
 </div>
 @endsection
@@ -624,5 +646,288 @@
                 setTimeout(() => overlay.remove(), 300);
             }
         }, 2000);
+
+    // =========================================================
+    // ЛОГИКА БЫСТРОГО ПРОСМОТРА (FINAL + ZOOM ANIMATION)
+    // =========================================================
+
+    let currentProductGallery = [];
+    let currentImageIndex = 0;
+
+    function closeProductModal() {
+        const modal = document.getElementById('productQuickView');
+        if (modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+            document.body.removeAttribute('inert');
+            closeZoomImage();
+        }
+    }
+
+    // --- ЗУМ (С АНИМАЦИЕЙ) ---
+    function openZoomImage() {
+        const mainImg = document.getElementById('qv-main-img');
+        // Проверка: есть ли картинка и не заглушка ли это
+        if (!mainImg.src || mainImg.src.includes('noimage')) return;
+        
+        const overlay = document.getElementById('qv-zoom-overlay');
+        const zoomImg = document.getElementById('qv-zoom-img');
+        
+        // 1. Ставим картинку
+        zoomImg.src = mainImg.src;
+        
+        // 2. Анимация ФОНА (через класс anim-opacity)
+        overlay.classList.remove('anim-opacity');
+        void overlay.offsetWidth; // Reflow
+        overlay.classList.add('anim-opacity');
+        
+        // 3. Анимация КАРТИНКИ (через класс anim-fade)
+        zoomImg.classList.remove('anim-fade');
+        void zoomImg.offsetWidth; // Reflow
+        zoomImg.classList.add('anim-fade');
+
+        // 4. Показываем
+        overlay.style.display = 'flex';
+        overlay.focus();
+    }
+
+    function closeZoomImage() {
+        document.getElementById('qv-zoom-overlay').style.display = 'none';
+    }
+
+    // --- НАВИГАЦИЯ ---
+    function navigateGallery(direction) {
+        if (currentProductGallery.length <= 1) return;
+
+        currentImageIndex += direction;
+        if (currentImageIndex >= currentProductGallery.length) currentImageIndex = 0;
+        else if (currentImageIndex < 0) currentImageIndex = currentProductGallery.length - 1;
+
+        updateGalleryView();
+    }
+
+    function setGalleryIndex(index) {
+        currentImageIndex = index;
+        updateGalleryView();
+    }
+
+    function updateGalleryView() {
+        const url = currentProductGallery[currentImageIndex];
+        
+        const mainImg = document.getElementById('qv-main-img');
+        const zoomImg = document.getElementById('qv-zoom-img');
+        
+        // 1. Начинаем анимацию исчезновения
+        mainImg.classList.add('img-switching');
+        zoomImg.classList.add('img-switching');
+
+        // 2. Ждем совсем чуть-чуть (пока css отработает), меняем src и возвращаем вид
+        setTimeout(() => {
+            mainImg.src = url;
+            zoomImg.src = url;
+
+            // Возвращаем видимость (CSS сам сделает плавное появление)
+            mainImg.classList.remove('img-switching');
+            zoomImg.classList.remove('img-switching');
+        }, 200); // 200мс задержка (чуть меньше чем transition в CSS, чтобы было динамично)
+
+        // 3. Активная миниатюра (без задержки, мгновенно)
+        document.querySelectorAll('.qv-thumb').forEach((thumb, idx) => {
+            if (idx === currentImageIndex) {
+                thumb.classList.add('active');
+                thumb.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            } else {
+                thumb.classList.remove('active');
+            }
+        });
+    }
+
+    // Клавиатура
+    document.addEventListener('keydown', function(e) {
+        const modal = document.getElementById('productQuickView');
+        if (modal && modal.style.display === 'flex') {
+            if (e.key === 'ArrowLeft') navigateGallery(-1);
+            if (e.key === 'ArrowRight') navigateGallery(1);
+            if (e.key === 'Escape') {
+                document.getElementById('qv-zoom-overlay').style.display === 'flex' ? closeZoomImage() : closeProductModal();
+            }
+        }
+    });
+
+    // --- ОТКРЫТИЕ МОДАЛКИ ---
+    function openProductModal(id) {
+        const modal = document.getElementById('productQuickView');
+        if (!modal) return;
+
+        const NO_IMAGE = 'https://data.grifmaster.ru/files/dq9/data/noimage.png';
+
+        // --- 1. СБРОС СТАРЫХ ДАННЫХ ---
+        currentProductGallery = [];
+        currentImageIndex = 0;
+        
+        const mainImg = document.getElementById('qv-main-img');
+        mainImg.src = NO_IMAGE;
+        mainImg.classList.remove('anim-fade'); 
+
+        document.getElementById('qv-thumbs-list').innerHTML = ''; 
+        document.getElementById('qv-name').innerText = 'Загрузка...';
+        document.getElementById('qv-article').innerText = '...';
+        document.getElementById('qv-price').innerText = '...';
+        document.getElementById('qv-summary').innerHTML = '';
+        document.getElementById('qv-features-list').innerHTML = '';
+        document.getElementById('qv-stars-width').style.width = '0%';
+        document.getElementById('qv-reviews').innerText = '';
+        
+        // Скрываем блоки
+        document.getElementById('qv-site-link-container').style.display = 'none';
+        document.getElementById('qv-zip-container').style.display = 'none';
+        document.getElementById('qv-docs-block').style.display = 'none';
+        document.getElementById('qv-logistics-block').style.display = 'none'; // <-- Сброс логистики
+        
+        document.querySelector('.qv-main-image-box').classList.remove('single-photo');
+        document.getElementById('qv-zoom-overlay').classList.remove('single-photo');
+        
+        const stockWrapper = document.getElementById('qv-stock-wrapper');
+        const stockStatus = document.getElementById('qv-stock-status');
+        if(stockWrapper) {
+            stockWrapper.className = 'qv-stock'; 
+            stockStatus.innerText = '...';
+        }
+
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+
+        // --- 2. ЗАПРОС ---
+        fetch(`/catalog/quick-view/${id}`)
+            .then(r => r.json())
+            .then(data => {
+                if (!data.success) {
+                    showToast('Ошибка загрузки', 'bi-exclamation-triangle', true);
+                    return;
+                }
+
+                document.getElementById('qv-article').innerText = data.article || '-';
+                document.getElementById('qv-name').innerText = data.name;
+                document.getElementById('qv-price').innerText = data.price;
+
+                // Наличие
+                if (stockWrapper) {
+                    const qty = parseFloat(data.stock_qty); 
+                    if (!isNaN(qty) && qty > 0) {
+                        stockWrapper.className = 'qv-stock'; 
+                        stockWrapper.querySelector('i').className = 'bi bi-check-circle-fill';
+                        stockStatus.innerText = 'В наличии';
+                    } else {
+                        stockWrapper.className = 'qv-stock out'; 
+                        stockWrapper.querySelector('i').className = 'bi bi-x-circle-fill';
+                        stockStatus.innerText = 'Нет в наличии';
+                    }
+                }
+
+                // Рейтинг
+                const rating = parseFloat(data.rating || 0);
+                const starPercent = (rating / 5) * 100;
+                document.getElementById('qv-stars-width').style.width = `${starPercent}%`;
+                document.getElementById('qv-reviews').innerText = data.rating_count ? `(${data.rating_count} отз.)` : '';
+
+                // Галерея
+                const thumbsList = document.getElementById('qv-thumbs-list');
+                const mainBox = document.querySelector('.qv-main-image-box');
+                const zoomOverlay = document.getElementById('qv-zoom-overlay');
+
+                currentProductGallery = (data.gallery && data.gallery.length > 0) ? data.gallery : (data.image ? [data.image] : []);
+                if (currentProductGallery.length === 0) currentProductGallery = [NO_IMAGE];
+
+                // Скрываем стрелки если 1 фото
+                if (currentProductGallery.length <= 1) {
+                    mainBox.classList.add('single-photo');
+                    zoomOverlay.classList.add('single-photo');
+                } else {
+                    mainBox.classList.remove('single-photo');
+                    zoomOverlay.classList.remove('single-photo');
+                }
+
+                currentProductGallery.forEach((imgUrl, index) => {
+                    const thumb = document.createElement('img');
+                    thumb.src = imgUrl;
+                    thumb.className = 'qv-thumb';
+                    thumb.onclick = () => setGalleryIndex(index);
+                    thumb.onerror = function() { this.style.display = 'none'; };
+                    thumbsList.appendChild(thumb);
+                });
+
+                setGalleryIndex(0);
+
+                // Кнопки действий
+                const zipContainer = document.getElementById('qv-zip-container');
+                const zipBtn = document.getElementById('qv-download-zip');
+                if (currentProductGallery.length > 0 && currentProductGallery[0] !== NO_IMAGE) {
+                     zipContainer.style.display = 'block';
+                     if (data.download_url) zipBtn.href = data.download_url;
+                }
+                
+                const siteLinkContainer = document.getElementById('qv-site-link-container');
+                const siteLink = document.getElementById('qv-site-link');
+                if (data.product_url) {
+                   siteLink.href = data.product_url;
+                   siteLinkContainer.style.display = 'block';
+                }
+                
+                // Документы
+                const docsBlock = document.getElementById('qv-docs-block');
+                const docsContent = document.getElementById('qv-docs-content');
+                if (data.documents && data.documents.length > 0) {
+                   docsBlock.style.display = 'block';
+                   docsContent.innerHTML = '';
+                   data.documents.forEach(doc => {
+                       const a = document.createElement('a');
+                       a.href = doc.url; a.target = '_blank'; a.className = 'qv-doc-item';
+                       let icon = 'bi-file-earmark-text';
+                       const ext = (doc.ext || '').toLowerCase();
+                       if(ext === 'pdf') icon = 'bi-file-earmark-pdf';
+                       if(['doc', 'docx'].includes(ext)) icon = 'bi-file-earmark-word';
+                       a.innerHTML = `<i class="bi ${icon}"></i> <span>${doc.name}</span>`;
+                       docsContent.appendChild(a);
+                   });
+                }
+
+                // !!! ЛОГИСТИКА (Левая колонка) !!!
+                const logContainer = document.getElementById('qv-logistics-content');
+                const logBlock = document.getElementById('qv-logistics-block');
+                if (data.logistics && data.logistics.length > 0) {
+                    logBlock.style.display = 'block';
+                    logContainer.innerHTML = '';
+                    data.logistics.forEach(item => {
+                        const div = document.createElement('div');
+                        div.className = 'qv-log-item';
+                        div.innerHTML = `<span class="qv-log-name">${item.name}:</span> <span class="qv-log-val">${item.value}</span>`;
+                        logContainer.appendChild(div);
+                    });
+                }
+                
+                // Инфо (Описание)
+                const summaryDiv = document.getElementById('qv-summary');
+                if (data.summary) summaryDiv.innerHTML = data.summary;
+                else if (data.description) summaryDiv.innerHTML = data.description;
+                
+                // Характеристики (Правая колонка - только основные)
+                const featContainer = document.getElementById('qv-features-list');
+                featContainer.innerHTML = '';
+                if (data.features && data.features.length > 0) {
+                   data.features.forEach(feat => {
+                       const div = document.createElement('div');
+                       div.className = 'qv-spec-item'; 
+                       div.innerHTML = `<span class="qv-spec-name">${feat.name}</span><span class="qv-spec-val">${feat.value}</span>`;
+                       featContainer.appendChild(div);
+                   });
+                } else {
+                    featContainer.innerHTML = '<div style="color:#999; font-size:13px; grid-column: 1/-1;">Основные характеристики не указаны</div>';
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showToast('Ошибка сети', 'bi-exclamation-triangle', true);
+            });
+    }
 </script>
 @endpush

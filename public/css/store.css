@@ -493,3 +493,569 @@ th.sort.desc i {
     color: #fff;
     transform: scale(1.1);
 }
+
+/* =========================================================
+   QUICK VIEW MODAL STYLES (FINAL VERSION)
+   ========================================================= */
+
+/* Карточка модалки (Усиленный селектор для переопределения ширины) */
+.custom-modal-content.qv-modal-card {
+    max-width: 1000px !important; /* Принудительно расширяем */
+    width: 95% !important;
+    padding: 0 !important; /* Убираем отступы базовой модалки */
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    background: #fff;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    display: flex; /* Гарантируем корректное поведение детей */
+    flex-direction: column;
+}
+
+/* Кнопка закрытия (абсолютное позиционирование) */
+.qv-close-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: #f1f5f9;
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    font-size: 18px;
+    color: #64748b;
+    cursor: pointer;
+    z-index: 20; /* Поверх всего */
+    transition: 0.2s;
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+}
+.qv-close-btn:hover {
+    background: #e2e8f0; 
+    color: #d9534f;
+    transform: rotate(90deg);
+}
+
+.qv-body {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+/* --- ЛЕВАЯ КОЛОНКА (ФОТО + ДОКУМЕНТЫ) --- */
+.qv-gallery-col {
+    width: 45%;
+    background: #f8fafc;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-right: 1px solid #f1f5f9;
+}
+
+/* Контейнер главного фото с зумом */
+.qv-main-image-box {
+    width: 100%;
+    height: 350px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    background: #fff;
+    border-radius: 8px;
+    padding: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    position: relative;
+    cursor: zoom-in; /* Курсор лупы */
+}
+
+.qv-main-image-box img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+/* Подсказка для зума */
+.qv-zoom-hint {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: rgba(255,255,255,0.9);
+    padding: 6px 9px;
+    border-radius: 6px;
+    color: #64748b;
+    opacity: 0;
+    transition: 0.2s;
+    pointer-events: none;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+.qv-main-image-box:hover .qv-zoom-hint { opacity: 1; }
+
+/* Оверлей для полноэкранного зума */
+.qv-zoom-overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(255, 255, 255, 0.98);
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: zoom-out;
+}
+.qv-zoom-overlay img {
+    max-width: 95%;
+    max-height: 95%;
+    object-fit: contain;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+    border-radius: 4px;
+}
+.qv-zoom-close {
+    position: absolute;
+    top: 20px; right: 20px;
+    background: #f1f5f9; border: none;
+    width: 40px; height: 40px; border-radius: 50%;
+    font-size: 20px; cursor: pointer; color: #64748b;
+}
+.qv-zoom-close:hover { background: #e2e8f0; color: #0f172a; }
+
+/* Бейдж "Хит" или "Новинка" */
+.qv-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: #e11d48;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 4px 8px;
+    border-radius: 4px;
+    z-index: 2;
+}
+
+.qv-thumbs-row {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 5px;
+    justify-content: center;
+}
+
+.qv-thumb {
+    width: 60px; height: 60px;
+    border: 2px solid #fff;
+    border-radius: 6px;
+    cursor: pointer;
+    object-fit: cover;
+    opacity: 0.7;
+    transition: 0.2s;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+.qv-thumb.active, .qv-thumb:hover {
+    opacity: 1;
+    border-color: #3295D1;
+}
+
+/* Действия слева (Скачивание и Документы) */
+.qv-left-actions {
+    width: 100%;
+    margin-top: 15px;
+}
+
+.btn-link-action {
+    background: none; border: none;
+    color: #64748b;
+    font-size: 13px;
+    cursor: pointer;
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 8px 15px;
+    border-radius: 20px;
+    transition: 0.2s;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    text-decoration: none;
+}
+.btn-link-action:hover {
+    background: #f0f7ff;
+    border-color: #3295D1;
+    color: #3295D1;
+}
+
+/* Блок документов */
+.qv-docs-wrapper {
+    margin-top: 25px;
+    width: 100%;
+    text-align: left;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 15px;
+}
+
+.qv-docs-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #94a3b8;
+    margin-bottom: 10px;
+    letter-spacing: 0.5px;
+}
+
+.qv-docs-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.qv-doc-item {
+    font-size: 13px;
+    color: #334155;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    transition: 0.2s;
+}
+
+.qv-doc-item i { font-size: 16px; color: #64748b; }
+
+.qv-doc-item:hover {
+    border-color: #3295D1;
+    color: #3295D1;
+    background: #f0f7ff;
+}
+.qv-doc-item:hover i { color: #3295D1; }
+
+/* --- ПРАВАЯ КОЛОНКА (ИНФО) --- */
+.qv-info-col {
+    width: 55%;
+    padding: 40px 40px 30px;
+    display: flex;
+    flex-direction: column;
+}
+
+.qv-header {
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.qv-sku {
+    font-size: 13px;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.qv-header h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 10px 0;
+    line-height: 1.3;
+}
+
+/* Внешняя ссылка на сайт */
+.btn-external-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #3295D1;
+    text-decoration: none;
+    font-weight: 600;
+    background: #f0f7ff;
+    padding: 6px 12px;
+    border-radius: 20px;
+    transition: 0.2s;
+}
+.btn-external-link:hover { 
+    background: #e0f0ff;
+    text-decoration: none; 
+}
+
+.btn-external-link.full-width, 
+.btn-link-action.full-width {
+    width: 100%;
+    justify-content: center;
+    border: 1px solid #e2e8f0;
+    padding: 10px;
+    background: #fff;
+}
+.btn-external-link.full-width:hover {
+    background: #f0f7ff;
+    border-color: #3295D1;
+}
+
+/* Рейтинг */
+.qv-rating-block {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.stars-outer { display: inline-block; position: relative; font-family: "Bootstrap-icons"; }
+.stars-outer::before { content: "\f588 \f588 \f588 \f588 \f588"; color: #cbd5e1; font-size: 15px; } 
+.stars-inner { position: absolute; top: 0; left: 0; white-space: nowrap; overflow: hidden; width: 0; }
+.stars-inner::before { content: "\f586 \f586 \f586 \f586 \f586"; color: #f59e0b; font-size: 15px; } 
+.qv-reviews-text { font-size: 13px; color: #64748b; }
+
+/* Цена и Наличие */
+.qv-price-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.qv-price {
+    font-size: 28px;
+    font-weight: 800;
+    color: #0B466E;
+}
+
+.qv-stock {
+    font-size: 14px;
+    font-weight: 600;
+    color: #10b981; /* Зеленый */
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #ecfdf5;
+    padding: 6px 12px;
+    border-radius: 20px;
+}
+.qv-stock.out { 
+    color: #ef4444; 
+    background: #fef2f2;
+}
+.qv-stock.out i { color: #ef4444 !important; }
+
+/* Описание */
+.qv-description-block {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #475569;
+    margin-bottom: 25px;
+    max-height: 150px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+.qv-description-block p { margin-bottom: 10px; }
+.qv-description-block ul { padding-left: 20px; margin-bottom: 10px; }
+
+/* Характеристики */
+.qv-specs-block {
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.qv-section-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 15px;
+    color: #334155;
+    text-transform: uppercase;
+}
+
+.qv-specs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 30px;
+    font-size: 13px;
+}
+
+.qv-spec-item {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px dashed #e2e8f0;
+    padding-bottom: 4px;
+}
+
+.qv-spec-name { color: #64748b; }
+.qv-spec-val { color: #0f172a; font-weight: 600; text-align: right; }
+/* Фикс картинок внутри характеристик */
+.qv-spec-val img { max-height: 20px; vertical-align: middle; margin-left: 5px; }
+
+/* Футер */
+.qv-actions-footer {
+    margin-top: auto;
+    text-align: right;
+}
+
+/* СТРЕЛКИ НАВИГАЦИИ (В КАРТОЧКЕ) */
+.qv-nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid #e2e8f0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    color: #334155;
+    transition: 0.2s;
+    opacity: 0; /* Скрыты по умолчанию, покажем при наведении */
+}
+.qv-main-image-box:hover .qv-nav-btn { opacity: 1; }
+.qv-nav-btn:hover {
+    background: #3295D1;
+    color: #fff;
+    border-color: #3295D1;
+}
+.qv-nav-btn.prev { left: 10px; }
+.qv-nav-btn.next { right: 10px; }
+
+/* Блок логистики слева */
+.qv-logistics-wrapper {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.qv-logistics-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.qv-log-item {
+    font-size: 12px;
+    color: #64748b;
+    line-height: 1.4;
+    display: flex;
+    justify-content: space-between;
+}
+
+.qv-log-name {
+    color: #94a3b8;
+}
+
+.qv-log-val {
+    color: #475569;
+    font-weight: 600;
+    text-align: right;
+}
+
+/* СТРЕЛКИ НАВИГАЦИИ (В ЗУМЕ) */
+.qv-zoom-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 50px;
+    height: 50px;
+    background: rgba(0, 0, 0, 0.3);
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 60;
+    color: #fff;
+    font-size: 24px;
+    transition: 0.2s;
+}
+.qv-zoom-nav:hover { background: rgba(0, 0, 0, 0.6); }
+.qv-zoom-nav.prev { left: 30px; }
+.qv-zoom-nav.next { right: 30px; }
+
+/* Скрываем стрелки, если фото одно (класс добавим через JS) */
+.single-photo .qv-nav-btn,
+.single-photo .qv-zoom-nav {
+    display: none !important;
+}
+
+/* =========================================================
+   АНИМАЦИЯ ФОТО (MODERN FADE)
+   ========================================================= */
+
+/* Исходное состояние картинок: видимые, полная непрозрачность */
+#qv-main-img, #qv-zoom-img {
+    transition: all 0.25s ease-in-out;
+    opacity: 1;
+    transform: scale(1);
+}
+
+.img-switching {
+    opacity: 0.4 !important;
+    transform: scale(0.97) !important;
+}
+
+/* Адаптив для мобильных */
+@media (max-width: 900px) {
+    .custom-modal-content.qv-modal-card {
+        max-width: 450px !important; /* На мобильном возвращаем узкий вид */
+        overflow-y: auto;
+        max-height: 90vh;
+    }
+    .qv-body { 
+        flex-direction: column; 
+    }
+    .qv-gallery-col, .qv-info-col { 
+        width: 100%; 
+        border-right: none;
+    }
+    .qv-gallery-col { 
+        padding: 20px; 
+        border-bottom: 1px solid #f1f5f9; 
+    }
+    .qv-info-col { 
+        padding: 25px; 
+    }
+    .qv-specs-grid { 
+        grid-template-columns: 1fr; 
+    }
+}
+
+/* =========================================================
+   MARKETING BUTTONS (В ТАБЛИЦЕ КАТАЛОГА)
+   ========================================================= */
+.marketing-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-bottom: 8px;
+}
+
+.btn-icon-action {
+    width: 34px; height: 34px;
+    border: 1px solid #e2e8f0; 
+    background: #fff;
+    border-radius: 50%;
+    color: #64748b;
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    cursor: pointer; 
+    transition: 0.2s;
+    font-size: 15px;
+}
+.btn-icon-action:hover { 
+    border-color: #3295D1; 
+    color: #3295D1; 
+    background: #f0f7ff; 
+    transform: translateY(-1px);
+}
+
+/* Активное состояние лайка */
+.btn-icon-action.is-liked { 
+    color: #e53e3e; 
+    border-color: #fecaca; 
+    background: #fff5f5; 
+}
+.btn-icon-action.is-liked i::before { 
+    content: "\f415"; /* Закрашенное сердце */ 
+}

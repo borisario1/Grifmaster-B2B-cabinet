@@ -16,6 +16,7 @@ use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\TicketController;
+use App\Http\Controllers\ProductController;
 
 /**
  * Название: Базовые редиректы
@@ -80,6 +81,14 @@ Route::middleware(['auth', 'check.profile'])->group(function () {
     // Магазин (Каталог)
     Route::get('/store', [App\Http\Controllers\StoreController::class, 'index'])->name('catalog.index');
     
+    // МАРКЕТИНГОВЫЕ ФУНКЦИИ
+    // Лайк товара (инкремент счетчика)
+    Route::post('/catalog/like/{id}', [App\Http\Controllers\ProductController::class, 'toggleLike'])->name('product.like');
+    // Данные для модалки быстрого просмотра
+    Route::get('/catalog/quick-view/{id}', [App\Http\Controllers\ProductController::class, 'quickView'])->name('product.quickview');
+    // Отдаем изображения по товару в ZIP архиве
+    Route::get('/catalog/download-images/{id}', [ProductController::class, 'downloadImages'])->name('catalog.download_images');
+
     // Корзина
     Route::get('/store/cart', [App\Http\Controllers\CartController::class, 'index'])->name('cart.index');
     Route::post('/cart/add', [App\Http\Controllers\CartController::class, 'add'])->name('cart.add');

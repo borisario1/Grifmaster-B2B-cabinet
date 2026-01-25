@@ -23,7 +23,23 @@ class Product extends Model
     /**
      * Разрешаем массовое заполнение всех полей (кроме ID)
      */
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'code_1c',
+        'name',
+        'free_stock',
+        'article',
+        'brand',
+        'price',
+        'min_quantity', // Добавлено
+        'status',
+        'is_featured',  // Новый флаг
+        'sort_order',   // Порядок сортировки
+        'product_type',
+        'product_category',
+        'collection',
+        'image_filename',
+        'last_synced_at',
+    ];
 
     /**
      * Аксессор для получения URL изображения.
@@ -60,6 +76,14 @@ class Product extends Model
     }
 
     /**
+     * Get the details for the product.
+     */
+    public function details()
+    {
+        return $this->hasOne(ProductDetail::class);
+    }
+
+    /**
      * Явно указываем типы
      */
     protected function casts(): array
@@ -71,4 +95,16 @@ class Product extends Model
         ];
     }
 
+    /**
+    * Как только товар прилетает из 1С 
+    * (создается или обновляется), у него автоматически 
+    * появляется запись в таблице маркетинга, если её ещё нет. 
+    */
+    protected static function booted()
+    {
+        static::saved(function ($product) {
+            // Гарантируем наличие записи в деталях для хранения лайков/просмотров
+            $product->details()->firstOrCreate([]);
+        });
+    }
 }
