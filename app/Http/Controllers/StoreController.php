@@ -80,4 +80,95 @@ class StoreController extends Controller
             'cartProductIds'
         ))->with('wideLayout', true);
     }
+
+    // Запрос избранного, страница Избранные товары
+    public function wishlist()
+    {
+        $user = Auth::user();
+        $orgId = $user->selected_org_id;
+
+        // 1. Сначала получаем ID товаров, которые УЖЕ в избранном у пользователя
+        // Используем ту же таблицу, что и в index()
+        $wishlistIds = DB::table('b2b_product_interactions')
+            ->where('user_id', $user->id)
+            ->where('type', 'wishlist')
+            ->pluck('product_id')
+            ->toArray();
+
+        // Если избранного нет, можно сразу вернуть пустой результат (опционально)
+        if (empty($wishlistIds)) {
+            $products = collect(); // Пустая коллекция
+        } else {
+            // 2. Грузим товары, но ТОЛЬКО те, что в списке $wishlistIds
+            $products = Product::with('details')
+                ->whereIn('id', $wishlistIds) // <--- Главный фильтр
+                ->orderBy('brand')
+                ->get();
+        }
+
+        // --- ДАЛЕЕ КОПИРУЕМ ЛОГИКУ ОБРАБОТКИ ДАННЫХ ИЗ INDEX() ---
+        // Это необходимо, чтобы на странице избранного работали кнопки корзины, лайки и цены
+
+        // Получаем айтемы корзины
+        $cartItems = CartItem::where('user_id', $user->id)
+            ->where('org_id', $orgId)
+            ->get()
+            ->keyBy('product_id');
+
+        // Получаем лайки (чтобы в избранном можно было лайкнуть товар)
+        // Вишлист нам тут по сути не нужен для проверки (они все и так в вишлисте), 
+        // но оставим логику получения interactions для унификации, если нужно подсветить лайки.
+        $likedIds = DB::table('b2b_product_interactions')
+            ->where('user_id', $user->id)
+            ->where('type', 'like')
+            ->pluck('product_id')
+            ->toArray();
+
+        // Справочники для фильтров (строим только по товарам в избранном)
+        $brands = $products->pluck('brand')->unique()->filter()->sort()->values();
+        $collections = $products->pluck('collection')->unique()->filter()->sort()->values();
+        $categories = $products->pluck('product_category')->unique()->filter()->sort()->values();
+        $types = $products->pluck('product_type')->unique()->filter()->sort()->values();
+
+        $discounts = DB::table('b2b_discounts')
+            ->where('user_id', $user->id)
+            ->get()
+            ->keyBy(fn($d) => $d->brand ?? 'all');
+
+        // Трансформируем продукты
+        $products->transform(function ($item) use ($discounts, $cartItems, $likedIds) {
+            $discount = $discounts->get($item->brand) ?? $discounts->get('all');
+            $percent = $discount ? $discount->discount_percent : 0;
+            
+            $item->discount_percent = $percent;
+            $item->partner_price = $item->getPartnerPrice($percent);
+            
+            $inCart = $cartItems->get($item->id);
+            $item->in_cart = (bool)$inCart;
+            $item->cart_qty = $inCart ? $inCart->qty : 1; 
+            
+            // Флаги активности
+            $item->is_liked = in_array($item->id, $likedIds);
+            $item->is_in_wishlist = true; // Тут мы знаем точно, что это страница избранного
+            
+            return $item;
+        });
+        
+        $cartProductIds = $cartItems->keys()->toArray();
+
+        // Возвращаем ТОТ ЖЕ шаблон, но с дополнительными переменными
+        // В будущем будут и другие страницы: Понравилось, Избранное, Покупали ранее и т.д.
+        return view('store.index', compact(
+            'products', 
+            'brands', 
+            'collections', 
+            'categories', 
+            'types', 
+            'cartProductIds'
+        ))->with([
+            'wideLayout' => true,
+            'pageTitle' => 'Избранные товары', // Чтобы поменять H1 в шаблоне
+            'isWishlist' => true // Флаг для JS/Blade
+        ]);
+    }
 }

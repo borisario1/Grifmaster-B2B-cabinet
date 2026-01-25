@@ -35,19 +35,43 @@
 </div>
 
 <div id="store-app">
+    {{-- Хлебные крошки --}}
     <div class="breadcrumbs">
-        <a href="{{ route('dashboard') }}">Главная</a> → <span>Каталог товаров</span>
+        <a href="{{ route('dashboard') }}">Главная</a> 
+        → <a href="{{ route('catalog.index') }}">Каталог товаров</a>
+        @if(isset($isWishlist) && $isWishlist)
+            → <span>Избранное</span>
+        @endif
     </div>
 
-    <h1 class="page-title">Каталог товаров</h1>
+    {{-- ШАПКА: Заголовок слева, Переключатель справа --}}
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <h1 class="page-title m-0">{{ $pageTitle ?? 'Каталог товаров' }}</h1>
+
+        {{-- ПЕРЕКЛЮЧАТЕЛЬ --}}
+        <div class="mode-switch-container">
+            <a href="{{ route('catalog.index') }}" 
+               class="mode-switch-btn {{ !($isWishlist ?? false) ? 'active' : '' }}">
+                <i class="bi bi-grid-fill"></i> Все товары
+            </a>
+            <a href="{{ route('store.wishlist') }}" 
+               class="mode-switch-btn {{ ($isWishlist ?? false) ? 'active' : '' }}">
+                <i class="bi bi-star-fill" style="{{ ($isWishlist ?? false) ? 'color: #f59e0b;' : '' }}"></i> Избранное
+            </a>
+        </div>
+    </div>
 
     <div class="store-filter-panel">
+        {{-- ВЕРХНИЙ РЯД: Все инпуты в одну линию на десктопе (lg) --}}
         <div class="row g-3">
-            <div class="col-md-4">
+            {{-- Поиск (3/12) --}}
+            <div class="col-lg-3 col-md-6 col-12">
                 <label class="store-filter-label">Живой поиск</label>
                 <input type="text" class="search store-qty-input" placeholder="Артикул или название..." style="width: 100%;">
             </div>
-            <div class="col-md-2">
+            
+            {{-- Бренды (3/12) --}}
+            <div class="col-lg-3 col-md-6 col-12">
                 <label class="store-filter-label" style="margin-top: 10px;">Бренды</label>
                 <div id="brand-tags-container" style="display: flex; flex-wrap: wrap; gap: 5px;">
                     @foreach($brands as $b)
@@ -57,21 +81,23 @@
                     @endforeach
                 </div>
             </div>
-            <div class="col-md-2">
+
+            {{-- 3 ФИЛЬТРА В РЯД (2/12 каждый) --}}
+            <div class="col-lg-2 col-md-4 col-12">
                 <label class="store-filter-label" style="margin-top: 10px;">Коллекция</label>
                 <select id="f-coll" class="store-qty-input" style="width: 100%;">
                     <option value="">Все коллекции</option>
                     @foreach($collections as $c) <option value="{{ $c }}">{{ $c }}</option> @endforeach
                 </select>
             </div>
-            <div class="col-md-2">
+            <div class="col-lg-2 col-md-4 col-12">
                 <label class="store-filter-label" style="margin-top: 10px;">Категория</label>
                 <select id="f-cat" class="store-qty-input" style="width: 100%;">
                     <option value="">Все категории</option>
                     @foreach($categories as $cat) <option value="{{ $cat }}">{{ $cat }}</option> @endforeach
                 </select>
             </div>
-            <div class="col-md-2">
+            <div class="col-lg-2 col-md-4 col-12">
                 <label class="store-filter-label" style="margin-top: 10px;">Тип товара</label>
                 <select id="f-type" class="store-qty-input" style="width: 100%;">
                     <option value="">Все типы</option>
@@ -80,20 +106,21 @@
             </div>
         </div>
 
+        {{-- НИЖНИЙ РЯД: Чекбоксы и Кнопка сброса --}}
         <div class="row g-3 mt-1 align-items-center">
-            <div class="col-md-11">
+            <div class="col-md-10">
                 <div class="filter-checkbox-group">
                     <label><input type="checkbox" id="f-stock"> В наличии</label>
                     <label><input type="checkbox" id="f-no-coll"> Без коллекции</label>
                 </div>
             </div>
-            <div class="col-md-1 text-end">
+            <div class="col-md-2 text-end">
+                {{-- Кнопка осталась без изменений --}}
                 <button onclick="resetFilters()" class="btn-primary btn-big" style="margin-top: 23px;" title="Сбросить">
                     Очистить фильтр
                 </button>
             </div>
         </div>
-    </div>
 
     <div class="store-table-wrapper">
         <table class="store-table">
@@ -254,8 +281,15 @@
 
     {{-- Сообщение о пустом результате (скрыто по умолчанию) --}}
     <div id="no-result-message" style="display: none;" class="alert alert-info text-center mt-4">
-        <i class="bi bi-search"></i> <span id="no-result-text">По вашему запросу ничего не найдено</span>
-    </div>
+    <i class="bi bi-search"></i> 
+    <span id="no-result-text">
+        @if(isset($isWishlist) && $isWishlist)
+            В вашем списке избранного пока нет товаров.
+        @else
+            По вашему запросу ничего не найдено.
+        @endif
+    </span>
+</div>
 
     <div class="text-center mt-4 mb-5">
             {{-- Исправленный счетчик: добавили ID для "найдено" --}}
@@ -345,8 +379,8 @@
         const NO_IMAGE = 'https://data.grifmaster.ru/files/dq9/data/noimage.png';
 
         // 1. ПАРАМЕТРЫ ЗАГРУЗКИ (Infinite Scroll / Показать еще)
-        let itemsPerPage = 50; 
-        const step = 50;
+        let itemsPerPage = 30; 
+        const step = 30;
 
         const options = {
             valueNames: [
@@ -682,6 +716,18 @@
 
     }
 
+    // Удаляем загрузчик 
+    window.jsLoaded = true; 
+    setTimeout(() => {
+        const overlay = document.getElementById('loading-overlay');
+        if (overlay) {
+            overlay.style.transition = 'opacity 0.3s ease';
+            overlay.style.opacity = '0';
+            
+            setTimeout(() => overlay.remove(), 300);
+        }
+    }, 0); //задержка, если нужна 2сек=2000.
+
     // =========================================================
     // ЛОГИКА БЫСТРОГО ПРОСМОТРА + МАРКЕТИНГ (FINAL FIX)
     // =========================================================
@@ -763,18 +809,36 @@
         }
     });
 
-    // --- ОТКРЫТИЕ МОДАЛКИ ---
+    // Открытие товара по клику
     function openProductModal(id) {
+        const cooldownTime = window.B2B_CONFIG?.delays?.short || 5000;
+        const lastClick = parseInt(localStorage.getItem('qv_last_click_time') || 0);
+        const now = Date.now();
+        const timePassed = now - lastClick;
+
+        if (timePassed < cooldownTime) {
+            const secondsLeft = Math.ceil((cooldownTime - timePassed) / 1000);
+            showToast(`Подождите ${secondsLeft} сек. перед открытием`, 'bi-hourglass-split', true);
+            return; 
+        }
+
+        // Запоминаем время этого клика
+        localStorage.setItem('qv_last_click_time', now);
+
+
+        // 2. СТАНДАРТНАЯ ЛОГИКА ОТКРЫТИЯ
         const modal = document.getElementById('productQuickView');
         if (!modal) return;
         const NO_IMAGE = 'https://data.grifmaster.ru/files/dq9/data/noimage.png';
 
-        // 1. Сброс UI
+        // Сброс UI
         currentProductGallery = [];
         currentImageIndex = 0;
         const mainImg = document.getElementById('qv-main-img');
-        mainImg.src = NO_IMAGE;
-        mainImg.classList.remove('anim-fade'); 
+        if (mainImg) {
+            mainImg.src = NO_IMAGE;
+            mainImg.classList.remove('anim-fade');
+        } 
         
         document.getElementById('qv-thumbs-list').innerHTML = ''; 
         document.getElementById('qv-name').innerText = 'Загрузка...';
@@ -785,6 +849,7 @@
         document.getElementById('qv-stars-width').style.width = '0%';
         document.getElementById('qv-reviews').innerText = '';
         
+        // Скрываем блоки
         document.getElementById('qv-site-link-container').style.display = 'none';
         document.getElementById('qv-zip-container').style.display = 'none';
         document.getElementById('qv-docs-block').style.display = 'none';
@@ -793,16 +858,16 @@
         document.querySelector('.qv-main-image-box').classList.remove('single-photo');
         document.getElementById('qv-zoom-overlay').classList.remove('single-photo');
 
-        // Сброс кнопок в шапке (важно снять классы активности)
+        // Сброс кнопок в шапке
         const likeBtn = document.getElementById('qv-btn-like');
         const favBtn  = document.getElementById('qv-btn-fav');
         if(likeBtn) {
-            likeBtn.className = 'qv-header-btn'; // Сброс классов
+            likeBtn.className = 'qv-header-btn';
             likeBtn.innerHTML = '<i class="bi bi-heart"></i>';
             likeBtn.setAttribute('data-id', id);
         }
         if(favBtn) {
-            favBtn.className = 'qv-header-btn'; // Сброс классов
+            favBtn.className = 'qv-header-btn';
             favBtn.innerHTML = '<i class="bi bi-star"></i>';
             favBtn.setAttribute('data-id', id);
         }
@@ -814,138 +879,184 @@
             stockStatus.innerText = '...';
         }
 
+        // ОТКРЫВАЕМ ОКНО (Только если прошли проверку времени)
         modal.style.display = 'flex';
         document.body.style.overflow = 'hidden';
 
-        // 2. Запрос данных
-        fetch(`/catalog/quick-view/${id}`)
-            .then(r => r.json())
-            .then(data => {
-                if (!data.success) {
-                    showToast('Ошибка загрузки', 'bi-exclamation-triangle', true);
-                    return;
-                }
-
-                document.getElementById('qv-article').innerText = data.article || '-';
-                document.getElementById('qv-name').innerText = data.name;
-                document.getElementById('qv-price').innerText = data.price;
-
-                if (stockWrapper) {
-                    const qty = parseFloat(data.stock_qty); 
-                    if (!isNaN(qty) && qty > 0) {
-                        stockWrapper.className = 'qv-stock'; 
-                        stockWrapper.querySelector('i').className = 'bi bi-check-circle-fill';
-                        stockStatus.innerText = 'В наличии';
-                    } else {
-                        stockWrapper.className = 'qv-stock out'; 
-                        stockWrapper.querySelector('i').className = 'bi bi-x-circle-fill';
-                        stockStatus.innerText = 'Нет в наличии';
-                    }
-                }
-
-                const rating = parseFloat(data.rating || 0);
-                const starPercent = (rating / 5) * 100;
-                document.getElementById('qv-stars-width').style.width = `${starPercent}%`;
-                document.getElementById('qv-reviews').innerText = data.rating_count ? `(${data.rating_count} отз.)` : '';
-
-                // Галерея
-                const thumbsList = document.getElementById('qv-thumbs-list');
-                const mainBox = document.querySelector('.qv-main-image-box');
-                const zoomOverlay = document.getElementById('qv-zoom-overlay');
-                currentProductGallery = (data.gallery && data.gallery.length > 0) ? data.gallery : (data.image ? [data.image] : []);
-                if (currentProductGallery.length === 0) currentProductGallery = [NO_IMAGE];
-                if (currentProductGallery.length <= 1) {
-                    mainBox.classList.add('single-photo');
-                    zoomOverlay.classList.add('single-photo');
-                } else {
-                    mainBox.classList.remove('single-photo');
-                    zoomOverlay.classList.remove('single-photo');
-                }
-                currentProductGallery.forEach((imgUrl, index) => {
-                    const thumb = document.createElement('img');
-                    thumb.src = imgUrl;
-                    thumb.className = 'qv-thumb';
-                    thumb.onclick = () => setGalleryIndex(index);
-                    thumb.onerror = function() { this.style.display = 'none'; };
-                    thumbsList.appendChild(thumb);
+        // 3. ЗАПРОС ДАННЫХ
+        fetch(`/catalog/quick-view/${id}`, {
+            headers: {
+                "Content-Type": "application/json",
+                "X-Requested-With": "XMLHttpRequest" // Обязательно для JSON ответа при ошибках
+            }
+        })
+        .then(r => {
+            // Если сервер все-таки вернул 429 (например, открыли в другой вкладке)
+            if (r.status === 429) {
+                return r.json().then(data => {
+                    closeProductModal(); // Сразу закрываем окно обратно
+                    showToast(data.message, 'error');
+                    throw new Error('Throttled');
                 });
-                setGalleryIndex(0);
+            }
+            if (!r.ok) throw new Error('Network error');
+            return r.json();
+        })
+        .then(data => {
+            if (!data.success) {
+                showToast('Ошибка загрузки', 'bi-exclamation-triangle', true);
+                closeProductModal();
+                return;
+            }
 
-                // Доп. инфо
-                const zipContainer = document.getElementById('qv-zip-container');
-                const zipBtn = document.getElementById('qv-download-zip');
-                if (currentProductGallery.length > 0 && currentProductGallery[0] !== NO_IMAGE) {
-                     zipContainer.style.display = 'block';
-                     if (data.download_url) zipBtn.href = data.download_url;
-                }
-                const siteLinkContainer = document.getElementById('qv-site-link-container');
-                const siteLink = document.getElementById('qv-site-link');
-                if (data.product_url) {
-                   siteLink.href = data.product_url;
-                   siteLinkContainer.style.display = 'block';
-                }
-                
-                // Документы и Логистика (ваш код)
-                const docsBlock = document.getElementById('qv-docs-block');
-                const docsContent = document.getElementById('qv-docs-content');
-                if (data.documents && data.documents.length > 0) {
-                   docsBlock.style.display = 'block';
-                   docsContent.innerHTML = '';
-                   data.documents.forEach(doc => {
-                       const a = document.createElement('a');
-                       a.href = doc.url; a.target = '_blank'; a.className = 'qv-doc-item';
-                       let icon = 'bi-file-earmark-text';
-                       const ext = (doc.ext || '').toLowerCase();
-                       if(ext === 'pdf') icon = 'bi-file-earmark-pdf';
-                       if(['doc', 'docx'].includes(ext)) icon = 'bi-file-earmark-word';
-                       a.innerHTML = `<i class="bi ${icon}"></i> <span>${doc.name}</span>`;
-                       docsContent.appendChild(a);
-                   });
-                }
-                const logContainer = document.getElementById('qv-logistics-content');
-                const logBlock = document.getElementById('qv-logistics-block');
-                if (data.logistics && data.logistics.length > 0) {
-                    logBlock.style.display = 'block';
-                    logContainer.innerHTML = '';
-                    data.logistics.forEach(item => {
-                        const div = document.createElement('div');
-                        div.className = 'qv-log-item';
-                        div.innerHTML = `<span class="qv-log-name">${item.name}:</span> <span class="qv-log-val">${item.value}</span>`;
-                        logContainer.appendChild(div);
-                    });
-                }
-                
-                // Описание и Характеристики
-                const summaryDiv = document.getElementById('qv-summary');
-                if (data.summary) summaryDiv.innerHTML = data.summary;
-                else if (data.description) summaryDiv.innerHTML = data.description;
-                const featContainer = document.getElementById('qv-features-list');
-                featContainer.innerHTML = '';
-                if (data.features && data.features.length > 0) {
-                   data.features.forEach(feat => {
-                       const div = document.createElement('div');
-                       div.className = 'qv-spec-item'; 
-                       div.innerHTML = `<span class="qv-spec-name">${feat.name}</span><span class="qv-spec-val">${feat.value}</span>`;
-                       featContainer.appendChild(div);
-                   });
+            // ЗАПОЛНЕНИЕ ДАННЫХ
+            document.getElementById('qv-article').innerText = data.article || '-';
+            document.getElementById('qv-name').innerText = data.name;
+            document.getElementById('qv-price').innerText = data.price;
+
+            if (stockWrapper) {
+                const qty = parseFloat(data.stock_qty); 
+                if (!isNaN(qty) && qty > 0) {
+                    stockWrapper.className = 'qv-stock'; 
+                    stockWrapper.querySelector('i').className = 'bi bi-check-circle-fill';
+                    stockStatus.innerText = 'В наличии';
                 } else {
-                    featContainer.innerHTML = '<div style="color:#999; font-size:13px; grid-column: 1/-1;">Основные характеристики не указаны</div>';
+                    stockWrapper.className = 'qv-stock out'; 
+                    stockWrapper.querySelector('i').className = 'bi bi-x-circle-fill';
+                    stockStatus.innerText = 'Нет в наличии';
                 }
+            }
 
-                // === СИНХРОНИЗАЦИЯ КНОПОК В МОДАЛКЕ (ИЗ ДАННЫХ СЕРВЕРА) ===
-                if (data.is_liked) {
-                    likeBtn.classList.add('is-liked');
-                    likeBtn.innerHTML = '<i class="bi bi-heart-fill"></i>';
-                }
-                if (data.is_in_wishlist) {
-                    favBtn.classList.add('is-faved');
-                    favBtn.innerHTML = '<i class="bi bi-star-fill"></i>';
-                }
-            })
-            .catch(err => {
+            const rating = parseFloat(data.rating || 0);
+            const starPercent = (rating / 5) * 100;
+            document.getElementById('qv-stars-width').style.width = `${starPercent}%`;
+            document.getElementById('qv-reviews').innerText = data.rating_count ? `(${data.rating_count} отз.)` : '';
+
+            // Галерея
+            const thumbsList = document.getElementById('qv-thumbs-list');
+            const mainBox = document.querySelector('.qv-main-image-box');
+            const zoomOverlay = document.getElementById('qv-zoom-overlay');
+            currentProductGallery = (data.gallery && data.gallery.length > 0) ? data.gallery : (data.image ? [data.image] : []);
+            if (currentProductGallery.length === 0) currentProductGallery = [NO_IMAGE];
+
+            if (currentProductGallery.length <= 1) {
+                mainBox.classList.add('single-photo');
+                zoomOverlay.classList.add('single-photo');
+            } else {
+                mainBox.classList.remove('single-photo');
+                zoomOverlay.classList.remove('single-photo');
+            }
+
+            currentProductGallery.forEach((imgUrl, index) => {
+                const thumb = document.createElement('img');
+                thumb.src = imgUrl;
+                thumb.className = 'qv-thumb';
+                thumb.onclick = () => setGalleryIndex(index);
+                thumb.onerror = function() { this.style.display = 'none'; };
+                thumbsList.appendChild(thumb);
+            });
+            setGalleryIndex(0);
+
+            // Доп. инфо
+            const zipContainer = document.getElementById('qv-zip-container');
+            const zipBtn = document.getElementById('qv-download-zip');
+            if (currentProductGallery.length > 0 && currentProductGallery[0] !== NO_IMAGE) {
+                    zipContainer.style.display = 'block';
+                    if (data.download_url) zipBtn.href = data.download_url;
+            } else {
+                zipContainer.style.display = 'none';
+            }
+
+            const siteLinkContainer = document.getElementById('qv-site-link-container');
+            const siteLink = document.getElementById('qv-site-link');
+            if (data.product_url) {
+                siteLink.href = data.product_url;
+                siteLinkContainer.style.display = 'block';
+            } else {
+                siteLinkContainer.style.display = 'none';
+            }
+            
+            // Документы
+            const docsBlock = document.getElementById('qv-docs-block');
+            const docsContent = document.getElementById('qv-docs-content');
+            if (data.documents && data.documents.length > 0) {
+                docsBlock.style.display = 'block';
+                docsContent.innerHTML = '';
+                data.documents.forEach(doc => {
+                    const a = document.createElement('a');
+                    a.href = doc.url; a.target = '_blank'; a.className = 'qv-doc-item';
+                    let icon = 'bi-file-earmark-text';
+                    const ext = (doc.ext || '').toLowerCase();
+                    if(ext === 'pdf') icon = 'bi-file-earmark-pdf';
+                    if(['doc', 'docx'].includes(ext)) icon = 'bi-file-earmark-word';
+                    a.innerHTML = `<i class="bi ${icon}"></i> <span>${doc.name}</span>`;
+                    docsContent.appendChild(a);
+                });
+            } else {
+                docsBlock.style.display = 'none';
+            }
+
+            // Логистика
+            const logContainer = document.getElementById('qv-logistics-content');
+            const logBlock = document.getElementById('qv-logistics-block');
+            if (data.logistics && data.logistics.length > 0) {
+                logBlock.style.display = 'block';
+                logContainer.innerHTML = '';
+                data.logistics.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'qv-log-item';
+                    div.innerHTML = `<span class="qv-log-name">${item.name}:</span> <span class="qv-log-val">${item.value}</span>`;
+                    logContainer.appendChild(div);
+                });
+            } else {
+                logBlock.style.display = 'none';
+            }
+            
+            // Описание
+            const summaryDiv = document.getElementById('qv-summary');
+            if (data.summary) summaryDiv.innerHTML = data.summary;
+            else if (data.description) summaryDiv.innerHTML = data.description;
+            else summaryDiv.innerHTML = '';
+
+            const featContainer = document.getElementById('qv-features-list');
+            featContainer.innerHTML = '';
+            if (data.features && data.features.length > 0) {
+                data.features.forEach(feat => {
+                    const div = document.createElement('div');
+                    div.className = 'qv-spec-item'; 
+                    div.innerHTML = `<span class="qv-spec-name">${feat.name}</span><span class="qv-spec-val">${feat.value}</span>`;
+                    featContainer.appendChild(div);
+                });
+            } else {
+                featContainer.innerHTML = '<div style="color:#999; font-size:13px; grid-column: 1/-1;">Основные характеристики не указаны</div>';
+            }
+
+            // Синхронизация кнопок
+            if (data.is_liked) {
+                likeBtn.classList.add('is-liked');
+                likeBtn.innerHTML = '<i class="bi bi-heart-fill"></i>';
+            }
+            if (data.is_in_wishlist) {
+                favBtn.classList.add('is-faved');
+                favBtn.innerHTML = '<i class="bi bi-star-fill"></i>';
+            }
+            
+            // Проверка глобального таймера скачивания (ZIP)
+            checkGlobalCooldown('qv-download-zip');
+        })
+        .catch(err => {
+            // Если ошибка не Throttled (то есть не 429), выводим в консоль
+            if (err.message !== 'Throttled') {
                 console.error(err);
                 showToast('Ошибка сети', 'bi-exclamation-triangle', true);
-            });
+            }
+            // Закрываем модалку при любой ошибке (чтобы не висел спиннер)
+            // Но делаем это только если она была открыта (для случая Throttled она могла уже закрыться)
+            const m = document.getElementById('productQuickView');
+            if (m && m.style.display === 'flex') {
+               // closeProductModal(); // Раскомментируйте, если хотите закрывать и при ошибке сети
+            }
+        });
     }
 
     // --- КЛИКЕРЫ ВНУТРИ МОДАЛКИ ---
@@ -1057,17 +1168,5 @@
             }
         });
     }
-
-    // Удаляем загрузчик 
-    window.jsLoaded = true; 
-    setTimeout(() => {
-        const overlay = document.getElementById('loading-overlay');
-        if (overlay) {
-            overlay.style.transition = 'opacity 0.3s ease';
-            overlay.style.opacity = '0';
-            
-            setTimeout(() => overlay.remove(), 300);
-        }
-    }, 0); //задержка, если нужна 2сек=2000.
 </script>
 @endpush

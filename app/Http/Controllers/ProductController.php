@@ -130,10 +130,11 @@ class ProductController extends Controller
         $user = Auth::user();
         $product = Product::with('details')->findOrFail($id);
         $details = $product->details;
+        
         $config  = config('b2b_store.quick_view');
         $mediaUrl = rtrim($config['media_url'] ?? 'https://grifmaster.ru', '/');
 
-        // Проверяем состояние для текущего юзера
+        // Лайки/Избранное
         $isLiked = DB::table('b2b_product_interactions')
             ->where('user_id', $user->id)
             ->where('product_id', $id)
@@ -224,11 +225,20 @@ class ProductController extends Controller
             }
         }
 
-        // --- ССЫЛКА НА САЙТ ---
+        // --- ССЫЛКА НА САЙТ (ИСПРАВЛЕНО) ---
         $productUrl = null;
-        if ($details && $details->url_slug) {
-            $cleanSlug = ltrim($details->url_slug, '/');
-            $productUrl = $mediaUrl . '/' . $cleanSlug;
+
+        // ПРОВЕРКА: Показываем кнопку только если товар опубликован (is_active = true)
+        // Поле is_active заполняется скриптом обогащения из статуса API (1 = активен)
+        if ($product->is_active) { 
+            if (!empty($product->frontend_url)) {
+                $productUrl = $product->frontend_url;
+            } elseif (!empty($product->url)) {
+                $productUrl = $mediaUrl . '/' . ltrim($product->url, '/');
+            } elseif ($details && $details->url_slug) {
+                $cleanSlug = ltrim($details->url_slug, '/');
+                $productUrl = $mediaUrl . '/' . $cleanSlug;
+            }
         }
 
         if ($details) {
@@ -247,17 +257,14 @@ class ProductController extends Controller
             'description' => $details->description ?? '',
             'rating'      => ($config['show_rating'] ?? true) ? ($details->rating ?? 0) : 0,
             'rating_count'=> $details->rating_count ?? 0,
-            
-            // Новые поля для статуса
             'is_liked'       => $isLiked,
             'is_in_wishlist' => $isInWishlist,
-            
             'features'    => $featuresMain,
             'logistics'   => $featuresLogistics,
             'stock_status'=> $product->free_stock > 0 ? 'В наличии' : 'Нет в наличии',
             'stock_qty'   => $product->free_stock,
             'documents'   => $docs,
-            'product_url' => $productUrl,
+            'product_url' => $productUrl, // Будет null, если is_active != true
             'download_url'=> route('catalog.download_images', $id)
         ]);
     }

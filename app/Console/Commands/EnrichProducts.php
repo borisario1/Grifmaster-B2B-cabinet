@@ -60,21 +60,28 @@ class EnrichProducts extends Command
                         if (!$debugShown) {
                             $this->line('');
                             $this->info("=== DEBUG DATA FOR: {$product->article} ===");
+                            $this->info("STATUS FROM API: " . ($productData['status'] ?? 'NOT SET'));
                             $this->info("ROOT KEYS: " . implode(', ', array_keys($productData)));
-                            
-                            if (!empty($productData['params'])) {
-                                $this->info("PARAMS: " . print_r($productData['params'], true));
-                            }
-                            // Если files вдруг есть
-                            if (isset($productData['files'])) {
-                                $this->info("FILES FOUND: " . print_r($productData['files'], true));
-                            }
                             $this->info("=== END DEBUG ===");
                             $this->line('');
                             $debugShown = true;
                         }
                         // ---------------------------------------------
 
+                        // 1. ОПРЕДЕЛЯЕМ АКТИВНОСТЬ
+                        // Если status в API == 1, то товар активен (true). Иначе - скрыт (false).
+                        $isActive = (isset($productData['status']) && $productData['status'] == 1);
+
+                        // 2. ОБНОВЛЯЕМ САМ ПРОДУКТ (is_active)
+                        $product->update([
+                            'is_active' => $isActive,
+                            'min_quantity' => isset($productData['order_count_min']) ? (float)$productData['order_count_min'] : $product->min_quantity
+                        ]);
+
+                        // 3. Формируем ссылку (для сохранения в БД)
+                        $finalUrlSlug = $productData['frontend_url'] ?? $productData['url'] ?? null;
+
+                        // 4. Обновляем детали
                         $product->details()->updateOrCreate(
                             ['product_id' => $product->id],
                             [
@@ -84,16 +91,11 @@ class EnrichProducts extends Command
                                 'rating_count'=> $productData['rating_count'] ?? 0,
                                 'features'    => isset($productData['features']) ? json_encode($productData['features']) : null,
                                 'images'      => isset($productData['images']) ? json_encode($productData['images']) : null,
-                                'url_slug'    => $productData['frontend_url'] ?? $productData['url'] ?? null,
-                                // Пока пишем files, если найдем их в отладке - поправим путь
+                                'url_slug'    => $finalUrlSlug,
                                 'documents'   => isset($productData['files']) ? json_encode($productData['files']) : null,
                                 'last_enriched_at' => now(),
                             ]
                         );
-
-                        if (isset($productData['order_count_min'])) {
-                            $product->update(['min_quantity' => (float)$productData['order_count_min']]);
-                        }
                         
                         $enrichedCount++;
                     } else {
@@ -101,13 +103,11 @@ class EnrichProducts extends Command
                     }
                 } catch (\Exception $e) {
                     $errorCount++;
-                    // Логируем ошибку, но не прерываем выполнение
                     Log::error("Enrich error for {$product->article}: " . $e->getMessage());
                 }
 
                 $bar->advance();
             }
-            // Пауза между чанками, чтобы не задушить API
             sleep(1);
         });
 

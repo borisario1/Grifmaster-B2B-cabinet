@@ -21,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Регистрация алиасов Middleware
         $middleware->alias([
             'check.profile' => \App\Http\Middleware\CheckProfileComplete::class,
+            'heavy.throttle' => \App\Http\Middleware\HeavyActionThrottle::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

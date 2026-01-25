@@ -13,7 +13,7 @@
                 <i class="bi bi-heart"></i>
             </button>
             
-            {{-- Кнопка Избранное (НОВАЯ) --}}
+            {{-- Кнопка Избранное --}}
             <button type="button" id="qv-btn-fav" class="qv-header-btn" onclick="toggleWishlistInModal()">
                 <i class="bi bi-star"></i>
             </button>
@@ -56,7 +56,9 @@
 
                     {{-- Скачивание ZIP --}}
                     <div id="qv-zip-container" style="display: none; margin-bottom: 15px;">
-                        <a href="#" id="qv-download-zip" class="btn-link-action full-width">
+                        <a href="#" id="qv-download-zip" 
+                           class="btn-link-action full-width"
+                           onclick="return runHeavyAction(this, 'Создаю архив...', window.B2B_CONFIG.delays.middle)">
                             <i class="bi bi-file-earmark-zip"></i> Скачать все фото (ZIP)
                         </a>
                     </div>

@@ -425,6 +425,7 @@ th.sort.desc i {
 }
 .qty-field {
     -moz-appearance: textfield; /* Для Firefox */
+    appearance: textfield;
 }
 
 /* Кнопка ОК / Применить */
@@ -1189,4 +1190,62 @@ tr:hover .btn-quick-view-overlay {
     color: #f59e0b; /* Желтый */
     border-color: #fcd34d; 
     background: #fffbeb; 
+}
+
+/* =========================================================
+   Блокировка кнопок, временное ограничение (от флуда)
+   ========================================================= */
+.btn-blocked-wait {
+    pointer-events: none;
+    opacity: 0.6;
+    cursor: wait;
+    background-color: #f1f5f9 !important;
+    color: #64748b !important;
+    border-color: #cbd5e1 !important;
+}
+
+/* =========================================================
+    Переключатель (Свитчер)
+   ========================================================= */
+
+.mode-switch-container {
+    display: inline-flex;
+    background: #f4f7f8;
+    padding: 4px;
+    gap: 4px;
+    border-radius: var(--min_radius);
+    border: 1px solid #d6d5d5;
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.mode-switch-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 300;
+    color: #64748b;
+    text-decoration: none;
+    border-radius: var(--xmin_radius);
+    line-height: 1;
+    transition: all 0.2s ease;
+}
+
+.mode-switch-btn:hover {
+    background: #fff;
+    border: 1px solid #d6d5d5;
+    color: #001F33;
+    text-decoration: none;
+}
+
+/* Активная кнопка (Белая плашка) */
+.mode-switch-btn.active {
+    background: #d3eeff;
+    border: 1px solid #aad4ee;
+    color: #0B466E; /* Ваш брендовый синий */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    font-weight: 500;
+    pointer-events: none;
 }

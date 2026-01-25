@@ -39,6 +39,7 @@ class Product extends Model
         'collection',
         'image_filename',
         'last_synced_at',
+        'is_active',
     ];
 
     /**
@@ -92,6 +93,7 @@ class Product extends Model
             'last_synced_at' => 'datetime',
             'price' => 'decimal:2',
             'free_stock' => 'integer',
+            'is_active' => 'boolean',
         ];
     }
 

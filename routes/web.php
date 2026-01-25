@@ -86,19 +86,31 @@ Route::middleware(['auth', 'check.profile'])->group(function () {
     Route::resource('organizations', OrganizationController::class);
 
     // --- КАТАЛОГ И ТОВАРЫ ---
-    Route::get('/store', [StoreController::class, 'index'])->name('catalog.index');
-    
+    //Route::get('/store', [StoreController::class, 'index'])->name('catalog.index');
+    Route::get('/store', [StoreController::class, 'index'])
+        ->name('catalog.index')
+        ->middleware('heavy.throttle:medium'); // Ограничение на обновление 30 секунд.
+
     // Маркетинг (AJAX действия)
     Route::post('/catalog/like/{id}', [ProductController::class, 'toggleLike'])->name('product.like');
     Route::post('/catalog/wishlist/{id}', [ProductController::class, 'toggleWishlist'])->name('catalog.wishlist');
     
     // Инструменты каталога
-    Route::get('/catalog/quick-view/{id}', [ProductController::class, 'quickView'])->name('product.quickview');
-    Route::get('/catalog/download-images/{id}', [ProductController::class, 'downloadImages'])->name('catalog.download_images');
+    Route::get('/catalog/quick-view/{id}', [ProductController::class, 'quickView'])
+    ->name('product.quickview')
+        ->middleware('heavy.throttle:short'); // Ограничение на обновление 5 секунд
+
+    //Формирование архива с изображениями для товара (стоит ограничение на загрузку, default = 15 sec for user, only auth users)
+    Route::get('/catalog/download-images/{id}', [ProductController::class, 'downloadImages'])
+    ->name('catalog.download_images')
+        ->middleware('heavy.throttle:middle'); // Ограничение на обновление 15 секунд.
     
     // Страница избранного
-    Route::get('/store/wishlist', [StoreController::class, 'wishlist'])->name('wishlist');
-
+    //Route::get('/store/wishlist', [StoreController::class, 'wishlist'])->name('wishlist');
+    Route::get('/store/wishlist', [App\Http\Controllers\StoreController::class, 'wishlist'])
+    ->name('store.wishlist')
+    ->middleware('auth');
+    
     // --- КОРЗИНА И ЗАКАЗ ---
     Route::get('/store/cart', [CartController::class, 'index'])->name('cart.index');
     Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
