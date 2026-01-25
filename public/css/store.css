@@ -1019,9 +1019,8 @@ th.sort.desc i {
         grid-template-columns: 1fr; 
     }
 }
-
 /* =========================================================
-   MARKETING BUTTONS (В ТАБЛИЦЕ КАТАЛОГА)
+   MARKETING BUTTONS (Старые кнопки справа, если остались)
    ========================================================= */
 .marketing-actions {
     display: flex;
@@ -1050,12 +1049,144 @@ th.sort.desc i {
     transform: translateY(-1px);
 }
 
-/* Активное состояние лайка */
-.btn-icon-action.is-liked { 
-    color: #e53e3e; 
+/* =========================================================
+   НОВЫЙ UI ТАБЛИЦЫ (ФОТО, МЕТРИКИ, ДЕЙСТВИЯ)
+   ========================================================= */
+
+/* 1. ФОТО С КНОПКОЙ БЫСТРОГО ПРОСМОТРА */
+.store-img-wrapper {
+    position: relative;
+    width: 72px;
+    height: 72px;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.store-img-wrapper img {
+    width: 100%;
+    height: 100%;
+    transition: 0.2s;
+    display: block;
+}
+
+/* Кнопка "Глаз" по центру */
+.btn-quick-view-overlay {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    width: 32px; height: 32px;
+    background: rgba(11, 70, 110, 0.85);
+    color: #fff;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0;
+    transition: 0.2s;
+    pointer-events: none;
+    z-index: 5;
+}
+
+/* Ховер эффект на фото */
+tr:hover .store-img-wrapper img {
+    opacity: 0.6;
+}
+tr:hover .btn-quick-view-overlay {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+/* 2. КНОПКИ ПОД АРТИКУЛОМ (Лайк + Избранное) */
+.sku-actions {
+    display: flex;
+    gap: 12px; /* Расстояние между сердечком и звездой */
+    margin-top: 8px;
+}
+
+.btn-action-small {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-size: 14px;
+    transition: 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: #94a3b8; /* Серый по умолчанию */
+}
+
+/* Стиль Лайка (Сердце) */
+.btn-action-small.btn-like:hover { color: #e11d48; }
+.btn-action-small.btn-like.is-active { color: #e11d48; }
+/* Иконку меняет JS, CSS только красит */
+
+/* Стиль Избранного (Звезда) */
+.btn-action-small.btn-fav:hover { color: #f59e0b; }
+.btn-action-small.btn-fav.is-active { color: #f59e0b; }
+
+/* 3. НАЗВАНИЕ И МЕТРИКИ */
+.store-name-link {
+    cursor: pointer;
+    transition: 0.2s;
+    display: inline-block;
+}
+.store-name-link:hover {
+    color: #3295D1;
+    text-decoration: underline;
+}
+
+.product-meta-row {
+    display: flex;
+    gap: 12px;
+    font-size: 11px;
+    color: #94a3b8;
+    margin-top: 6px;
+    align-items: center;
+}
+.meta-item {
+    display: flex; align-items: center; gap: 4px;
+    cursor: default;
+}
+.meta-item i { font-size: 12px; }
+.meta-item.rating { color: #f59e0b; font-weight: 600; }
+
+/* =========================================================
+   КНОПКИ В ЗАГОЛОВКЕ МОДАЛКИ (QUICK VIEW HEADER)
+   ========================================================= */
+.qv-header-actions {
+    position: absolute;
+    top: 15px; right: 60px; /* Слева от крестика */
+    display: flex; gap: 10px;
+    z-index: 20;
+}
+
+.qv-header-btn {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: #64748b;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; 
+    transition: 0.2s;
+    font-size: 16px;
+}
+
+.qv-header-btn:hover { 
+    background: #fff; 
+    border-color: #3295D1; 
+    color: #3295D1; 
+}
+
+/* Активное состояние ЛАЙКА в модалке */
+.qv-header-btn.is-liked { 
+    color: #e11d48; /* Красный */
     border-color: #fecaca; 
     background: #fff5f5; 
 }
-.btn-icon-action.is-liked i::before { 
-    content: "\f415"; /* Закрашенное сердце */ 
+
+/* Активное состояние ИЗБРАННОГО в модалке */
+.qv-header-btn.is-faved { 
+    color: #f59e0b; /* Желтый */
+    border-color: #fcd34d; 
+    background: #fffbeb; 
 }

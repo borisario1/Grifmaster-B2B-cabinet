@@ -6,6 +6,19 @@
     <div class="custom-modal-backdrop" onclick="closeProductModal()"></div>
     
     <div class="custom-modal-content qv-modal-card">
+        {{-- ВЕРХНЯЯ ЧАСТЬ МОДАЛКИ --}}
+        <div class="qv-header-actions">
+            {{-- Кнопка Лайк --}}
+            <button type="button" id="qv-btn-like" class="qv-header-btn" onclick="toggleLikeInModal()">
+                <i class="bi bi-heart"></i>
+            </button>
+            
+            {{-- Кнопка Избранное (НОВАЯ) --}}
+            <button type="button" id="qv-btn-fav" class="qv-header-btn" onclick="toggleWishlistInModal()">
+                <i class="bi bi-star"></i>
+            </button>
+        </div>
+
         <button type="button" class="qv-close-btn" onclick="closeProductModal()">
             <i class="bi bi-x-lg"></i>
         </button>

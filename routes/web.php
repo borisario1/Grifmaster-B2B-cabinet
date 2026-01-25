@@ -2,123 +2,129 @@
 
 /**
  * Название: web.php (Маршруты веб-интерфейса)
- * Дата-время: 21-12-2025 12:45
+ * Дата-время: 26-01-2026
  * Описание: Главный файл маршрутизации. Управляет доступом 
  * к публичным страницам и защищенной области B2B кабинета.
  */
 
 use Illuminate\Support\Facades\Route;
+
+// Импорт контроллеров (Authentication)
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\RecoveryPassController;
+
+// Импорт контроллеров (Main)
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\TicketController;
+
+// Импорт контроллеров (Store)
+use App\Http\Controllers\StoreController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\OrderController;
 
 /**
- * Название: Базовые редиректы
+ * --------------------------------------------------------------------------
+ * Базовые редиректы
+ * --------------------------------------------------------------------------
  */
 Route::get('/', function () {
     return redirect()->route('login');
 });
 
 /**
- * Название: Группа маршрутов Guest (Гости)
+ * --------------------------------------------------------------------------
+ * Группа: GUEST (Гости)
+ * Доступно только неавторизованным пользователям
+ * --------------------------------------------------------------------------
  */
 Route::middleware('guest')->group(function () {
-    // Авторизация
+    // Вход
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->name('login.post');
     
-    // Регистрация и верификация
+    // Регистрация и Верификация
     Route::get('/register', [RegisterController::class, 'showRegister'])->name('register');
     Route::post('/register_action', [RegisterController::class, 'register'])->name('register.post');
     Route::get('/verify', [RegisterController::class, 'showVerify'])->name('register.verify');
     Route::post('/verify_action', [RegisterController::class, 'verify'])->name('register.verify.post');
 
-    // Сброс и восстановление пароля
+    // Восстановление пароля
     Route::get('/recovery_pass', [RecoveryPassController::class, 'showRecoveryPass'])->name('recovery.pass');
     Route::post('/recovery_pass', [RecoveryPassController::class, 'sendRecoveryCode'])->name('recovery.send');
     Route::get('/recovery_verify', [RecoveryPassController::class, 'showVerifyForm'])->name('recovery.verify.form');
     Route::post('/recovery_verify', [RecoveryPassController::class, 'verifyAndReset'])->name('recovery.verify.post');
 });
 
-
 /**
- * Название: Группа маршрутов Auth (Авторизованные + Проверенные)
- * Описание: Сюда пускаем только тех, кто вошел И заполнил профиль.
+ * --------------------------------------------------------------------------
+ * Группа: AUTH + CHECK PROFILE (Основная рабочая зона)
+ * Доступно только авторизованным с заполненным профилем
+ * --------------------------------------------------------------------------
  */
 Route::middleware(['auth', 'check.profile'])->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-
-    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-
-    // Если кто-то пытается зайти на logout через строку браузера (GET) - сразу кинем на главную
-    // Route::get('/logout', function () {return redirect()->route('dashboard');});
-
-    // Либо этот альт вариант. Мне больше нравится.
-    Route::get('/logout', [AuthController::class, 'logoutGet']);
-
-    // Роут для AJAX переключения (PATCH или POST) - Настройки уведомлений в профиле
-    Route::post('/profile/notify', [ProfileController::class, 'updateNotification'])->name('profile.notify');
     
-    // Уведомления
+    // --- DASHBOARD & SYSTEM ---
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::get('/logout', [AuthController::class, 'logoutGet']); // Альтернативный выход через GET
+
+    // --- УВЕДОМЛЕНИЯ ---
+    Route::post('/profile/notify', [ProfileController::class, 'updateNotification'])->name('profile.notify'); // Настройки
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/{id}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read.all');
 
-    // ОРГАНИЗАЦИИ 
-    // 1. AJAX поиск (ставим до resource, чтобы не конфликтовало с show)
+    // --- ОРГАНИЗАЦИИ ---
+    // Важно: AJAX lookup и select ставим ПЕРЕД resource, чтобы не было конфликта с {id}
     Route::post('/organizations/lookup', [OrganizationController::class, 'lookup'])->name('organizations.lookup');
-    // 2. Выбор организации (select)
     Route::get('/organizations/{organization}/select', [OrganizationController::class, 'select'])->name('organizations.select');
-    // 3. Стандартные действия (index, create, store, destroy, show)
     Route::resource('organizations', OrganizationController::class);
 
-    // Магазин (Каталог)
-    Route::get('/store', [App\Http\Controllers\StoreController::class, 'index'])->name('catalog.index');
+    // --- КАТАЛОГ И ТОВАРЫ ---
+    Route::get('/store', [StoreController::class, 'index'])->name('catalog.index');
     
-    // МАРКЕТИНГОВЫЕ ФУНКЦИИ
-    // Лайк товара (инкремент счетчика)
-    Route::post('/catalog/like/{id}', [App\Http\Controllers\ProductController::class, 'toggleLike'])->name('product.like');
-    // Данные для модалки быстрого просмотра
-    Route::get('/catalog/quick-view/{id}', [App\Http\Controllers\ProductController::class, 'quickView'])->name('product.quickview');
-    // Отдаем изображения по товару в ZIP архиве
+    // Маркетинг (AJAX действия)
+    Route::post('/catalog/like/{id}', [ProductController::class, 'toggleLike'])->name('product.like');
+    Route::post('/catalog/wishlist/{id}', [ProductController::class, 'toggleWishlist'])->name('catalog.wishlist');
+    
+    // Инструменты каталога
+    Route::get('/catalog/quick-view/{id}', [ProductController::class, 'quickView'])->name('product.quickview');
     Route::get('/catalog/download-images/{id}', [ProductController::class, 'downloadImages'])->name('catalog.download_images');
-
-    // Корзина
-    Route::get('/store/cart', [App\Http\Controllers\CartController::class, 'index'])->name('cart.index');
-    Route::post('/cart/add', [App\Http\Controllers\CartController::class, 'add'])->name('cart.add');
-    Route::post('/cart/clear', [App\Http\Controllers\CartController::class, 'clear'])->name('cart.clear');
     
-    // Оформление заказа
-    Route::post('/store/checkout', [App\Http\Controllers\CartController::class, 'checkout'])->name('cart.checkout');
-    Route::get('/store/success/{code}', [App\Http\Controllers\CartController::class, 'success'])->name('cart.success');
+    // Страница избранного
+    Route::get('/store/wishlist', [StoreController::class, 'wishlist'])->name('wishlist');
 
-    // Избранное (чуть позже сделаем контроллер)
-    Route::get('/store/wishlist', [App\Http\Controllers\StoreController::class, 'wishlist'])->name('wishlist');
+    // --- КОРЗИНА И ЗАКАЗ ---
+    Route::get('/store/cart', [CartController::class, 'index'])->name('cart.index');
+    Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
+    Route::post('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
+    
+    Route::post('/store/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
+    Route::get('/store/success/{code}', [CartController::class, 'success'])->name('cart.success');
 
-    // Заказы
-    Route::get('/store/orders', [App\Http\Controllers\OrderController::class, 'index'])->name('orders.index');
-    Route::get('/store/order/{code}', [App\Http\Controllers\OrderController::class, 'show'])->name('orders.show');
+    // --- ИСТОРИЯ ЗАКАЗОВ ---
+    Route::get('/store/orders', [OrderController::class, 'index'])->name('orders.index');
+    Route::get('/store/order/{code}', [OrderController::class, 'show'])->name('orders.show');
 
-    // Обращения (Тикеты)
+    // --- ТЕХПОДДЕРЖКА (TICKETS) ---
     Route::get('/requests', [TicketController::class, 'index'])->name('tickets.index');
     Route::get('/requests/new', [TicketController::class, 'create'])->name('tickets.create');
     Route::post('/requests/save', [TicketController::class, 'store'])->name('tickets.store');
-    // Route::get('/requests/success/{code}', [TicketController::class, 'success'])->name('tickets.success'); // Используем редирект на show
     Route::get('/requests/view/{code}', [TicketController::class, 'show'])->name('tickets.show');
     Route::post('/requests/message/{code}', [TicketController::class, 'sendMessage'])->name('tickets.message');
     Route::get('/requests/close/{code}', [TicketController::class, 'close'])->name('tickets.close');
 });
 
 /**
- * Название: Исключения профиля
- * Описание: Доступно всем залогиненным (даже с пустым профилем), 
- * чтобы они могли этот профиль заполнить или подтвердить почту.
+ * --------------------------------------------------------------------------
+ * Группа: AUTH ONLY (Настройка профиля)
+ * Доступно авторизованным (даже если профиль не заполнен)
+ * --------------------------------------------------------------------------
  */
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

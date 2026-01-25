@@ -122,18 +122,84 @@
             <tbody class="list">
                 @foreach ($products as $i)
                     <tr>
-                        <td><img src="{{ $i->image_url }}" class="store-img"></td>
-                        <td class="js-art">{{ $i->article }}</td>
+                        {{-- 1. ФОТО + ГЛАЗ --}}
+                        <td style="width: 80px;">
+                            <div class="store-img-wrapper" onclick="openProductModal({{ $i->id }})">
+                                <img src="{{ $i->image_url }}" class="store-img" loading="lazy">
+                                <div class="btn-quick-view-overlay">
+                                    <i class="bi bi-eye-fill"></i>
+                                </div>
+                            </div>
+                        </td>
+
+                        {{-- 2. АРТИКУЛ + КНОПКИ (С учетом состояния при загрузке) --}}
+                        <td class="js-art">
+                            <div style="font-weight: 600; color: #334155;">{{ $i->article }}</div>
+                            <div class="sku-actions">
+                                {{-- Лайк --}}
+                                <button type="button" 
+                                        class="btn-action-small btn-like btn-like-{{ $i->id }} {{ $i->is_liked ? 'is-active' : '' }}" 
+                                        onclick="toggleLike(this, {{ $i->id }})" 
+                                        title="Нравится">
+                                    <i class="bi {{ $i->is_liked ? 'bi-heart-fill' : 'bi-heart' }}"></i>
+                                </button>
+
+                                {{-- Избранное --}}
+                                <button type="button" 
+                                        class="btn-action-small btn-fav btn-fav-{{ $i->id }} {{ $i->is_in_wishlist ? 'is-active' : '' }}" 
+                                        onclick="toggleWishlist(this, {{ $i->id }})" 
+                                        title="В избранное">
+                                    <i class="bi {{ $i->is_in_wishlist ? 'bi-star-fill' : 'bi-star' }}"></i>
+                                </button>
+                            </div>
+                        </td>
+
+                        {{-- 3. НАЗВАНИЕ + МЕТРИКИ --}}
                         <td class="store-name">
-                            <span class="js-name">{{ $i->name }}</span>
-                            {{-- Скрытые данные для фильтрации --}}
+                            <span class="js-name store-name-link" onclick="openProductModal({{ $i->id }})">
+                                {{ $i->name }}
+                            </span>
+                            
                             <span class="js-coll hidden-data">{{ $i->collection ?? 'Без названия' }}</span>
                             <span class="js-cat hidden-data">{{ $i->product_category }}</span>
                             <span class="js-type hidden-data">{{ $i->product_type }}</span>
+
+                            <div class="product-meta-row">
+                                <span class="meta-item" title="Просмотры">
+                                    <i class="bi bi-eye"></i> {{ $i->details->views_count ?? 0 }}
+                                </span>
+                                
+                                {{-- Лайки --}}
+                                @if(($i->details->likes_count ?? 0) > 0)
+                                    <span class="meta-item" title="Лайки">
+                                        <i class="bi bi-heart-fill" style="color: #e11d48; opacity: 0.7;"></i> {{ $i->details->likes_count }}
+                                    </span>
+                                @endif
+
+                                {{-- Избранное (Глобальное) --}}
+                                @if(($i->details->wishlist_count ?? 0) > 0)
+                                    <span class="meta-item" title="Добавили в избранное">
+                                        <i class="bi bi-star-fill" style="color: #f59e0b; opacity: 0.7;"></i> {{ $i->details->wishlist_count }}
+                                    </span>
+                                @endif
+                                
+                                {{-- Рейтинг + Отзывы --}}
+                                @if(($i->details->rating ?? 0) > 0)
+                                    <span class="meta-item rating" title="Рейтинг товара">
+                                        <i class="bi bi-star-fill"></i> {{ $i->details->rating }}
+                                        <span style="color: #94a3b8; font-weight: 400; margin-left: 3px;">
+                                            ({{ $i->details->rating_count ?? 0 }})
+                                        </span>
+                                    </span>
+                                @endif
+                            </div>
                         </td>
+
                         <td class="js-brand">{{ $i->brand }}</td>
                         <td class="js-stock" data-stock="{{ $i->free_stock }}">{{ $i->free_stock }}</td>
                         <td class="js-price" data-price="{{ $i->price }}">{!! str_replace(' ', '&nbsp;', number_format($i->price, 2, ',', ' ')) !!}&nbsp;₽</td>
+                        
+                        {{-- Опт --}}
                         <td>
                             @if ($i->discount_percent > 0)
                                 <b>{!! str_replace(' ', '&nbsp;', number_format($i->partner_price, 2, ',', ' ')) !!}&nbsp;₽</b>
@@ -142,26 +208,9 @@
                                 <span class="no-discount">—</span>
                             @endif
                         </td>
-                        <td class="col-actions">
-                            <div class="marketing-actions">
-                                {{-- Быстрый просмотр --}}
-                                <button type="button" class="btn-icon-action" 
-                                        onclick="openProductModal({{ $i->id }})" 
-                                        title="Быстрый просмотр">
-                                    <i class="bi bi-eye"></i>
-                                </button>
-                                
-                                {{-- Лайк (Избранное) --}}
-                                {{-- Если товар уже лайкнут, сервер может вернуть класс (реализуем позже), пока механика клика --}}
-                                <button type="button" class="btn-icon-action btn-like-{{ $i->id }}" 
-                                        onclick="toggleLike(this, {{ $i->id }})" 
-                                        title="В избранное">
-                                    <i class="bi bi-heart"></i>
-                                    {{-- Если хочешь выводить счетчик прямо в кнопке, раскомментируй строку ниже --}}
-                                    {{-- <span class="like-counter" style="font-size: 10px; margin-left: 2px;">{{ $i->details->likes_count ?? '' }}</span> --}}
-                                </button>
-                            </div>
 
+                        {{-- 4. ДЕЙСТВИЯ (Очищено от маркетинга) --}}
+                        <td class="col-actions">
                             <div class="cart-controls-container">
                                 @php $isInCart = $i->in_cart; @endphp
                                 <form method="POST" action="{{ route('cart.add') }}" 
@@ -171,7 +220,6 @@
                                     <input type="hidden" name="mode" value="set">
                                     
                                     <div class="cart-input-group">
-                                        {{-- Минус --}}
                                         <button type="button" class="btn-qty-step" 
                                                 onclick="handleMinus(this, {{ $i->id }}, '{{ $i->name }}')">
                                             <i class="bi bi-dash"></i>
@@ -182,7 +230,6 @@
                                             data-original="{{ $i->in_cart ? $i->cart_qty : 0 }}" 
                                             oninput="handleInput(this)">
                                         
-                                        {{-- Плюс --}}
                                         <button type="button" class="btn-qty-step" 
                                                 onclick="this.previousElementSibling.stepUp(); handleInput(this.previousElementSibling)">
                                             <i class="bi bi-plus"></i>
@@ -634,21 +681,9 @@
             }).finally(() => { btnElement.disabled = false; });
 
     }
-        window.jsLoaded = true; 
-        
-        // Удаляем загрузчик 
-        setTimeout(() => {
-            const overlay = document.getElementById('loading-overlay');
-            if (overlay) {
-                overlay.style.transition = 'opacity 0.3s ease';
-                overlay.style.opacity = '0';
-                
-                setTimeout(() => overlay.remove(), 300);
-            }
-        }, 2000);
 
     // =========================================================
-    // ЛОГИКА БЫСТРОГО ПРОСМОТРА (FINAL + ZOOM ANIMATION)
+    // ЛОГИКА БЫСТРОГО ПРОСМОТРА + МАРКЕТИНГ (FINAL FIX)
     // =========================================================
 
     let currentProductGallery = [];
@@ -664,29 +699,17 @@
         }
     }
 
-    // --- ЗУМ (С АНИМАЦИЕЙ) ---
+    // --- ЗУМ ---
     function openZoomImage() {
         const mainImg = document.getElementById('qv-main-img');
-        // Проверка: есть ли картинка и не заглушка ли это
         if (!mainImg.src || mainImg.src.includes('noimage')) return;
-        
         const overlay = document.getElementById('qv-zoom-overlay');
         const zoomImg = document.getElementById('qv-zoom-img');
-        
-        // 1. Ставим картинку
         zoomImg.src = mainImg.src;
-        
-        // 2. Анимация ФОНА (через класс anim-opacity)
         overlay.classList.remove('anim-opacity');
-        void overlay.offsetWidth; // Reflow
-        overlay.classList.add('anim-opacity');
-        
-        // 3. Анимация КАРТИНКИ (через класс anim-fade)
+        void overlay.offsetWidth; overlay.classList.add('anim-opacity');
         zoomImg.classList.remove('anim-fade');
-        void zoomImg.offsetWidth; // Reflow
-        zoomImg.classList.add('anim-fade');
-
-        // 4. Показываем
+        void zoomImg.offsetWidth; zoomImg.classList.add('anim-fade');
         overlay.style.display = 'flex';
         overlay.focus();
     }
@@ -698,11 +721,9 @@
     // --- НАВИГАЦИЯ ---
     function navigateGallery(direction) {
         if (currentProductGallery.length <= 1) return;
-
         currentImageIndex += direction;
         if (currentImageIndex >= currentProductGallery.length) currentImageIndex = 0;
         else if (currentImageIndex < 0) currentImageIndex = currentProductGallery.length - 1;
-
         updateGalleryView();
     }
 
@@ -713,25 +734,16 @@
 
     function updateGalleryView() {
         const url = currentProductGallery[currentImageIndex];
-        
         const mainImg = document.getElementById('qv-main-img');
         const zoomImg = document.getElementById('qv-zoom-img');
-        
-        // 1. Начинаем анимацию исчезновения
         mainImg.classList.add('img-switching');
         zoomImg.classList.add('img-switching');
-
-        // 2. Ждем совсем чуть-чуть (пока css отработает), меняем src и возвращаем вид
         setTimeout(() => {
             mainImg.src = url;
             zoomImg.src = url;
-
-            // Возвращаем видимость (CSS сам сделает плавное появление)
             mainImg.classList.remove('img-switching');
             zoomImg.classList.remove('img-switching');
-        }, 200); // 200мс задержка (чуть меньше чем transition в CSS, чтобы было динамично)
-
-        // 3. Активная миниатюра (без задержки, мгновенно)
+        }, 200); 
         document.querySelectorAll('.qv-thumb').forEach((thumb, idx) => {
             if (idx === currentImageIndex) {
                 thumb.classList.add('active');
@@ -742,15 +754,12 @@
         });
     }
 
-    // Клавиатура
     document.addEventListener('keydown', function(e) {
         const modal = document.getElementById('productQuickView');
         if (modal && modal.style.display === 'flex') {
             if (e.key === 'ArrowLeft') navigateGallery(-1);
             if (e.key === 'ArrowRight') navigateGallery(1);
-            if (e.key === 'Escape') {
-                document.getElementById('qv-zoom-overlay').style.display === 'flex' ? closeZoomImage() : closeProductModal();
-            }
+            if (e.key === 'Escape') document.getElementById('qv-zoom-overlay').style.display === 'flex' ? closeZoomImage() : closeProductModal();
         }
     });
 
@@ -758,17 +767,15 @@
     function openProductModal(id) {
         const modal = document.getElementById('productQuickView');
         if (!modal) return;
-
         const NO_IMAGE = 'https://data.grifmaster.ru/files/dq9/data/noimage.png';
 
-        // --- 1. СБРОС СТАРЫХ ДАННЫХ ---
+        // 1. Сброс UI
         currentProductGallery = [];
         currentImageIndex = 0;
-        
         const mainImg = document.getElementById('qv-main-img');
         mainImg.src = NO_IMAGE;
         mainImg.classList.remove('anim-fade'); 
-
+        
         document.getElementById('qv-thumbs-list').innerHTML = ''; 
         document.getElementById('qv-name').innerText = 'Загрузка...';
         document.getElementById('qv-article').innerText = '...';
@@ -778,15 +785,28 @@
         document.getElementById('qv-stars-width').style.width = '0%';
         document.getElementById('qv-reviews').innerText = '';
         
-        // Скрываем блоки
         document.getElementById('qv-site-link-container').style.display = 'none';
         document.getElementById('qv-zip-container').style.display = 'none';
         document.getElementById('qv-docs-block').style.display = 'none';
-        document.getElementById('qv-logistics-block').style.display = 'none'; // <-- Сброс логистики
+        document.getElementById('qv-logistics-block').style.display = 'none';
         
         document.querySelector('.qv-main-image-box').classList.remove('single-photo');
         document.getElementById('qv-zoom-overlay').classList.remove('single-photo');
-        
+
+        // Сброс кнопок в шапке (важно снять классы активности)
+        const likeBtn = document.getElementById('qv-btn-like');
+        const favBtn  = document.getElementById('qv-btn-fav');
+        if(likeBtn) {
+            likeBtn.className = 'qv-header-btn'; // Сброс классов
+            likeBtn.innerHTML = '<i class="bi bi-heart"></i>';
+            likeBtn.setAttribute('data-id', id);
+        }
+        if(favBtn) {
+            favBtn.className = 'qv-header-btn'; // Сброс классов
+            favBtn.innerHTML = '<i class="bi bi-star"></i>';
+            favBtn.setAttribute('data-id', id);
+        }
+
         const stockWrapper = document.getElementById('qv-stock-wrapper');
         const stockStatus = document.getElementById('qv-stock-status');
         if(stockWrapper) {
@@ -797,7 +817,7 @@
         modal.style.display = 'flex';
         document.body.style.overflow = 'hidden';
 
-        // --- 2. ЗАПРОС ---
+        // 2. Запрос данных
         fetch(`/catalog/quick-view/${id}`)
             .then(r => r.json())
             .then(data => {
@@ -810,7 +830,6 @@
                 document.getElementById('qv-name').innerText = data.name;
                 document.getElementById('qv-price').innerText = data.price;
 
-                // Наличие
                 if (stockWrapper) {
                     const qty = parseFloat(data.stock_qty); 
                     if (!isNaN(qty) && qty > 0) {
@@ -824,7 +843,6 @@
                     }
                 }
 
-                // Рейтинг
                 const rating = parseFloat(data.rating || 0);
                 const starPercent = (rating / 5) * 100;
                 document.getElementById('qv-stars-width').style.width = `${starPercent}%`;
@@ -834,11 +852,8 @@
                 const thumbsList = document.getElementById('qv-thumbs-list');
                 const mainBox = document.querySelector('.qv-main-image-box');
                 const zoomOverlay = document.getElementById('qv-zoom-overlay');
-
                 currentProductGallery = (data.gallery && data.gallery.length > 0) ? data.gallery : (data.image ? [data.image] : []);
                 if (currentProductGallery.length === 0) currentProductGallery = [NO_IMAGE];
-
-                // Скрываем стрелки если 1 фото
                 if (currentProductGallery.length <= 1) {
                     mainBox.classList.add('single-photo');
                     zoomOverlay.classList.add('single-photo');
@@ -846,7 +861,6 @@
                     mainBox.classList.remove('single-photo');
                     zoomOverlay.classList.remove('single-photo');
                 }
-
                 currentProductGallery.forEach((imgUrl, index) => {
                     const thumb = document.createElement('img');
                     thumb.src = imgUrl;
@@ -855,17 +869,15 @@
                     thumb.onerror = function() { this.style.display = 'none'; };
                     thumbsList.appendChild(thumb);
                 });
-
                 setGalleryIndex(0);
 
-                // Кнопки действий
+                // Доп. инфо
                 const zipContainer = document.getElementById('qv-zip-container');
                 const zipBtn = document.getElementById('qv-download-zip');
                 if (currentProductGallery.length > 0 && currentProductGallery[0] !== NO_IMAGE) {
                      zipContainer.style.display = 'block';
                      if (data.download_url) zipBtn.href = data.download_url;
                 }
-                
                 const siteLinkContainer = document.getElementById('qv-site-link-container');
                 const siteLink = document.getElementById('qv-site-link');
                 if (data.product_url) {
@@ -873,7 +885,7 @@
                    siteLinkContainer.style.display = 'block';
                 }
                 
-                // Документы
+                // Документы и Логистика (ваш код)
                 const docsBlock = document.getElementById('qv-docs-block');
                 const docsContent = document.getElementById('qv-docs-content');
                 if (data.documents && data.documents.length > 0) {
@@ -890,8 +902,6 @@
                        docsContent.appendChild(a);
                    });
                 }
-
-                // !!! ЛОГИСТИКА (Левая колонка) !!!
                 const logContainer = document.getElementById('qv-logistics-content');
                 const logBlock = document.getElementById('qv-logistics-block');
                 if (data.logistics && data.logistics.length > 0) {
@@ -905,12 +915,10 @@
                     });
                 }
                 
-                // Инфо (Описание)
+                // Описание и Характеристики
                 const summaryDiv = document.getElementById('qv-summary');
                 if (data.summary) summaryDiv.innerHTML = data.summary;
                 else if (data.description) summaryDiv.innerHTML = data.description;
-                
-                // Характеристики (Правая колонка - только основные)
                 const featContainer = document.getElementById('qv-features-list');
                 featContainer.innerHTML = '';
                 if (data.features && data.features.length > 0) {
@@ -923,11 +931,143 @@
                 } else {
                     featContainer.innerHTML = '<div style="color:#999; font-size:13px; grid-column: 1/-1;">Основные характеристики не указаны</div>';
                 }
+
+                // === СИНХРОНИЗАЦИЯ КНОПОК В МОДАЛКЕ (ИЗ ДАННЫХ СЕРВЕРА) ===
+                if (data.is_liked) {
+                    likeBtn.classList.add('is-liked');
+                    likeBtn.innerHTML = '<i class="bi bi-heart-fill"></i>';
+                }
+                if (data.is_in_wishlist) {
+                    favBtn.classList.add('is-faved');
+                    favBtn.innerHTML = '<i class="bi bi-star-fill"></i>';
+                }
             })
             .catch(err => {
                 console.error(err);
                 showToast('Ошибка сети', 'bi-exclamation-triangle', true);
             });
     }
+
+    // --- КЛИКЕРЫ ВНУТРИ МОДАЛКИ ---
+    window.toggleLikeInModal = function() {
+        const btn = document.getElementById('qv-btn-like');
+        const prodId = btn.getAttribute('data-id');
+        const tableBtn = document.querySelector(`.btn-like-${prodId}`);
+        if(tableBtn) toggleLike(tableBtn, prodId);
+    };
+
+    window.toggleWishlistInModal = function() {
+        const btn = document.getElementById('qv-btn-fav');
+        const prodId = btn.getAttribute('data-id');
+        const tableBtn = document.querySelector(`.btn-fav-${prodId}`);
+        if(tableBtn) toggleWishlist(tableBtn, prodId);
+    };
+
+
+    // =========================================================
+    // МАРКЕТИНГОВЫЕ ДЕЙСТВИЯ (AJAX)
+    // =========================================================
+
+    // 1. ЛАЙК (LIKE)
+    function toggleLike(btn, id) {
+        const isActive = btn.classList.contains('is-active');
+        const icon = btn.querySelector('i');
+        const modalBtn = document.getElementById('qv-btn-like');
+
+        // Оптимистичное обновление UI
+        if (isActive) {
+            btn.classList.remove('is-active');
+            icon.className = 'bi bi-heart';
+            if(modalBtn && modalBtn.getAttribute('data-id') == id) {
+                modalBtn.classList.remove('is-liked');
+                modalBtn.innerHTML = '<i class="bi bi-heart"></i>';
+            }
+        } else {
+            btn.classList.add('is-active');
+            icon.className = 'bi bi-heart-fill';
+            if(modalBtn && modalBtn.getAttribute('data-id') == id) {
+                modalBtn.classList.add('is-liked');
+                modalBtn.innerHTML = '<i class="bi bi-heart-fill"></i>';
+            }
+        }
+
+        fetch(`/catalog/like/${id}`, {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                if (data.active) showToast('Вам понравилось!', 'bi-heart-fill');
+                // Обновляем счетчик лайков, если он есть на странице
+                const countSpan = btn.closest('.js-art')?.parentElement?.querySelector('.store-name .product-meta-row .meta-item[title="Лайки"]');
+                if(countSpan && data.count > 0) {
+                     countSpan.innerHTML = `<i class="bi bi-heart-fill" style="color: #e11d48; opacity: 0.7;"></i> ${data.count}`;
+                     countSpan.style.display = 'inline-flex';
+                } else if (countSpan && data.count === 0) {
+                     countSpan.style.display = 'none';
+                }
+            }
+        });
+    }
+
+    // 2. ИЗБРАННОЕ (WISHLIST)
+    function toggleWishlist(btn, id) {
+        const isActive = btn.classList.contains('is-active');
+        const icon = btn.querySelector('i');
+        const modalBtn = document.getElementById('qv-btn-fav');
+
+        // Оптимистичное обновление UI
+        if (isActive) {
+            btn.classList.remove('is-active');
+            icon.className = 'bi bi-star';
+            if(modalBtn && modalBtn.getAttribute('data-id') == id) {
+                modalBtn.classList.remove('is-faved');
+                modalBtn.innerHTML = '<i class="bi bi-star"></i>';
+            }
+        } else {
+            btn.classList.add('is-active');
+            icon.className = 'bi bi-star-fill';
+            btn.style.transform = "scale(1.2)";
+            setTimeout(() => btn.style.transform = "scale(1)", 200);
+            if(modalBtn && modalBtn.getAttribute('data-id') == id) {
+                modalBtn.classList.add('is-faved');
+                modalBtn.innerHTML = '<i class="bi bi-star-fill"></i>';
+            }
+        }
+
+        fetch(`/catalog/wishlist/${id}`, {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(r => r.json())
+        .then(data => {
+             if (data.success) {
+                if(data.active) showToast('Добавлено в избранное', 'bi-bookmark-check');
+                else showToast('Удалено из избранного', 'bi-bookmark-dash');
+                
+                // Обновляем счетчик вишлиста (если есть)
+                const countSpan = btn.closest('.js-art')?.parentElement?.querySelector('.store-name .product-meta-row .meta-item[title="В избранном у других"]');
+                if(countSpan && data.count > 0) {
+                     countSpan.innerHTML = `<i class="bi bi-star-fill" style="color: #f59e0b; opacity: 0.7;"></i> ${data.count}`;
+                     countSpan.style.display = 'inline-flex';
+                } else if (countSpan && data.count === 0) {
+                     countSpan.style.display = 'none';
+                }
+            }
+        });
+    }
+
+    // Удаляем загрузчик 
+    window.jsLoaded = true; 
+    setTimeout(() => {
+        const overlay = document.getElementById('loading-overlay');
+        if (overlay) {
+            overlay.style.transition = 'opacity 0.3s ease';
+            overlay.style.opacity = '0';
+            
+            setTimeout(() => overlay.remove(), 300);
+        }
+    }, 0); //задержка, если нужна 2сек=2000.
 </script>
 @endpush

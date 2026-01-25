@@ -6,27 +6,77 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use ZipArchive;
 
 class ProductController extends Controller
 {
     /**
-     * Поставить лайк
+     * Универсальный метод переключения (Лайк или Вишлист)
      */
-    public function toggleLike($id)
+    /**
+     * Универсальный метод переключения (Лайк или Вишлист)
+     */
+    private function toggleInteraction($id, $type, $counterField)
     {
+        $user = Auth::user();
         $product = Product::findOrFail($id);
-        $details = $product->details()->firstOrCreate([]);
-        $details->increment('likes_count');
         
+        // 1. Проверяем наличие записи
+        $existing = DB::table('b2b_product_interactions')
+            ->where('user_id', $user->id)
+            ->where('product_id', $id)
+            ->where('type', $type)
+            ->first();
+
+        $isActive = false;
+
+        if ($existing) {
+            // УДАЛЯЕМ
+            DB::table('b2b_product_interactions')->where('id', $existing->id)->delete();
+            $isActive = false;
+        } else {
+            // ДОБАВЛЯЕМ
+            DB::table('b2b_product_interactions')->insert([
+                'user_id' => $user->id,
+                'product_id' => $id,
+                'type' => $type,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+            $isActive = true;
+        }
+
+        // 2. ПЕРЕСЧИТЫВАЕМ И ОБНОВЛЯЕМ СЧЕТЧИК (САМОЕ ВАЖНОЕ!)
+        $realCount = DB::table('b2b_product_interactions')
+            ->where('product_id', $id)
+            ->where('type', $type)
+            ->count();
+
+        $details = $product->details()->firstOrCreate([]);
+        $details->$counterField = $realCount;
+        $details->save();
+
         return response()->json([
             'success' => true,
-            'count'   => $details->likes_count
+            'active'  => $isActive,
+            'count'   => $realCount // Возвращаем реальное число для JS
         ]);
     }
 
+    public function toggleLike($id)
+    {
+        return $this->toggleInteraction($id, 'like', 'likes_count');
+    }
+
+    public function toggleWishlist($id)
+    {
+        return $this->toggleInteraction($id, 'wishlist', 'wishlist_count');
+    }
+
     /**
-     * Скачивание изображений архивом
+     * Скачивание изображений (без изменений, оставляем как было)
      */
     public function downloadImages($id)
     {
@@ -46,15 +96,12 @@ class ProductController extends Controller
         $zipFileName = 'images_' . Str::slug($product->article) . '.zip';
         $zipPath = storage_path('app/public/' . $zipFileName);
 
-        // Используем глобальный класс через слэш для надежности
         $zip = new \ZipArchive;
         if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) === TRUE) {
-            
             foreach ($images as $index => $img) {
                 $url = $img['url_big'] ?? null;
                 if (!$url) continue;
 
-                // Улучшаем качество и добавляем домен
                 if (!Str::startsWith($url, ['http', 'https'])) {
                     $domain = rtrim($config['media_url'] ?? 'https://grifmaster.ru', '/');
                     $url = $domain . '/' . ltrim($url, '/');
@@ -62,16 +109,12 @@ class ProductController extends Controller
                 $url = str_replace('.970.', '.2000.', $url);
 
                 try {
-                    // Используем фасад Http с таймаутом
                     $response = Http::timeout(10)->get($url);
                     if ($response->successful()) {
                         $extension = pathinfo($url, PATHINFO_EXTENSION) ?: 'jpg';
-                        // Имя файла в архиве: article_1.jpg
                         $zip->addFromString($product->article . '_' . ($index + 1) . '.' . $extension, $response->body());
                     }
-                } catch (\Exception $e) {
-                    continue;
-                }
+                } catch (\Exception $e) { continue; }
             }
             $zip->close();
         }
@@ -80,14 +123,28 @@ class ProductController extends Controller
     }
 
     /**
-     * Данные для модального окна
+     * Данные для модального окна (Обновлено)
      */
     public function quickView($id)
     {
+        $user = Auth::user();
         $product = Product::with('details')->findOrFail($id);
         $details = $product->details;
         $config  = config('b2b_store.quick_view');
         $mediaUrl = rtrim($config['media_url'] ?? 'https://grifmaster.ru', '/');
+
+        // Проверяем состояние для текущего юзера
+        $isLiked = DB::table('b2b_product_interactions')
+            ->where('user_id', $user->id)
+            ->where('product_id', $id)
+            ->where('type', 'like')
+            ->exists();
+
+        $isInWishlist = DB::table('b2b_product_interactions')
+            ->where('user_id', $user->id)
+            ->where('product_id', $id)
+            ->where('type', 'wishlist')
+            ->exists();
 
         // --- ЛОГИКА ИЗОБРАЖЕНИЙ ---
         $processImageUrl = function($url) use ($config, $mediaUrl) {
@@ -125,16 +182,13 @@ class ProductController extends Controller
 
         // --- ХАРАКТЕРИСТИКИ ---
         $rawFeatures = ($details && !empty($details->features)) ? json_decode($details->features, true) : [];
-        
-        $featuresMain = [];     // Основные (правая колонка)
-        $featuresLogistics = []; // Логистика (левая колонка)
-
+        $featuresMain = [];
+        $featuresLogistics = [];
         $logisticsCodes = [
             'weight', 'length', 'shirina', 'vysota_sm', 
             'obem_m3', 'material_upakovki', 'shtrikhkod', 
             'nomenklaturnyy_nomer_1s', '1c_status_gusev'
         ];
-
         $allowed = $config['allowed_features'] ?? [];
         $labels  = $config['feature_labels'] ?? [];
 
@@ -142,21 +196,14 @@ class ProductController extends Controller
             foreach ($rawFeatures as $feat) {
                 $code = $feat['code'] ?? null;
                 if (!empty($allowed) && !in_array($code, $allowed)) continue;
-
                 $name = $labels[$code] ?? $feat['name'] ?? $feat['feature_name'] ?? 'Хар-ка';
                 $val  = $feat['value'] ?? $feat['text_value'] ?? $feat['value_name'] ?? '-';
-
                 if (is_string($val) && str_contains($val, 'src="/')) {
                     $val = str_replace('src="/', 'src="' . $mediaUrl . '/', $val);
                 }
-
                 $item = ['name' => $name, 'value' => $val];
-
-                if (in_array($code, $logisticsCodes)) {
-                    $featuresLogistics[] = $item;
-                } else {
-                    $featuresMain[] = $item;
-                }
+                if (in_array($code, $logisticsCodes)) $featuresLogistics[] = $item;
+                else $featuresMain[] = $item;
             }
         }
 
@@ -169,7 +216,6 @@ class ProductController extends Controller
                 if (!Str::startsWith($url, ['http', 'https'])) {
                     $url = $mediaUrl . '/' . ltrim($url, '/');
                 }
-                
                 $docs[] = [
                     'name' => $doc['name'] ?? 'Документ',
                     'ext'  => $doc['ext'] ?? pathinfo($url, PATHINFO_EXTENSION),
@@ -185,7 +231,6 @@ class ProductController extends Controller
             $productUrl = $mediaUrl . '/' . $cleanSlug;
         }
 
-        // Метрики
         if ($details) {
             $details->increment('views_count');
             $details->update(['last_viewed_at' => now()]);
@@ -203,9 +248,12 @@ class ProductController extends Controller
             'rating'      => ($config['show_rating'] ?? true) ? ($details->rating ?? 0) : 0,
             'rating_count'=> $details->rating_count ?? 0,
             
+            // Новые поля для статуса
+            'is_liked'       => $isLiked,
+            'is_in_wishlist' => $isInWishlist,
+            
             'features'    => $featuresMain,
             'logistics'   => $featuresLogistics,
-            
             'stock_status'=> $product->free_stock > 0 ? 'В наличии' : 'Нет в наличии',
             'stock_qty'   => $product->free_stock,
             'documents'   => $docs,

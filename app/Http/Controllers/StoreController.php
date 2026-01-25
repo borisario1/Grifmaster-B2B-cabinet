@@ -21,13 +21,24 @@ class StoreController extends Controller
         $user = Auth::user();
         $orgId = $user->selected_org_id; 
 
-        $products = Product::orderBy('brand')->get();
+        // Грузим товары с деталями
+        $products = Product::with('details')->orderBy('brand')->get();
 
-        // 1. Получаем айтемы корзины и индексируем их по product_id для быстрого поиска
+        // 1. Получаем айтемы корзины
         $cartItems = CartItem::where('user_id', $user->id)
             ->where('org_id', $orgId)
             ->get()
             ->keyBy('product_id');
+
+        // 2. ПОЛУЧАЕМ СПИСОК ЛАЙКОВ И ВИШЛИСТА ТЕКУЩЕГО ЮЗЕРА
+        $interactions = DB::table('b2b_product_interactions')
+            ->where('user_id', $user->id)
+            ->get()
+            ->groupBy('type'); // Группируем по типу: 'like', 'wishlist'
+
+        // Массивы ID товаров
+        $likedIds = isset($interactions['like']) ? $interactions['like']->pluck('product_id')->toArray() : [];
+        $wishlistIds = isset($interactions['wishlist']) ? $interactions['wishlist']->pluck('product_id')->toArray() : [];
 
         $brands = $products->pluck('brand')->unique()->filter()->sort()->values();
         $collections = $products->pluck('collection')->unique()->filter()->sort()->values();
@@ -39,25 +50,25 @@ class StoreController extends Controller
             ->get()
             ->keyBy(fn($d) => $d->brand ?? 'all');
 
-        // 2. Трансформируем продукты
-        $products->transform(function ($item) use ($discounts, $cartItems) {
+        // 3. Трансформируем продукты
+        $products->transform(function ($item) use ($discounts, $cartItems, $likedIds, $wishlistIds) {
             $discount = $discounts->get($item->brand) ?? $discounts->get('all');
             $percent = $discount ? $discount->discount_percent : 0;
             
             $item->discount_percent = $percent;
             $item->partner_price = $item->getPartnerPrice($percent);
             
-            // 3. Проверяем наличие через коллекцию корзины
             $inCart = $cartItems->get($item->id);
-            
             $item->in_cart = (bool)$inCart;
-            // Если в корзине — берем реальное кол-во, если нет — ставим 1
             $item->cart_qty = $inCart ? $inCart->qty : 1; 
+            
+            // Проставляем флаги активности
+            $item->is_liked = in_array($item->id, $likedIds);
+            $item->is_in_wishlist = in_array($item->id, $wishlistIds);
             
             return $item;
         });
         
-        // Передаем cartProductIds для List.js (извлекаем ключи из коллекции)
         $cartProductIds = $cartItems->keys()->toArray();
 
         return view('store.index', compact(
