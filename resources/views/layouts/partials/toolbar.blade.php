@@ -8,31 +8,35 @@
                     
                     $isActive = ($currentPath === $itemPath) || (str_starts_with($currentPath, $itemPath . '/'));
                     
-                    if ($itemPath === '/store') {
-                        if (str_contains($currentPath, '/store/cart') || str_contains($currentPath, '/store/order')) {
+                    if ($itemPath === '/catalog') {
+                        if (str_contains($currentPath, '/catalog/cart') || str_contains($currentPath, '/catalog/order')) {
                             $isActive = false;
                         }
                     }
 
-                    if ($itemPath === '/store/orders') {
-                        if (str_contains($currentPath, '/store/order') || str_contains($currentPath, '/store/cart')) {
+                    if ($itemPath === '/catalog/orders') {
+                        if (str_contains($currentPath, '/catalog/order') || str_contains($currentPath, '/catalog/cart')) {
                             $isActive = true;
                         }
-                        if ($currentPath === '/store') {
+                        if ($currentPath === '/catalog') {
                             $isActive = false;
                         }
                     }
+
+                    $displayText = !empty($item['title_in_burger']) 
+                        ? $item['title_in_burger'] 
+                        : ($item['title'] ?? null);
                 @endphp
                 
+                {{-- Используем $displayText для проверок классов и вывода текста --}}
                 <a href="{{ $item['url'] }}" 
-                   class="toolbar-item {{ $isActive ? 'active' : '' }} {{ empty($item['title']) ? 'toolbar-icon-only' : '' }}"
-                   @if(!empty($item['title'])) title="{{ $item['title'] }}" @endif>
+                   class="toolbar-item {{ $isActive ? 'active' : '' }} {{ empty($displayText) ? 'toolbar-icon-only' : '' }}"
+                   @if(!empty($displayText)) title="{{ $displayText }}" @endif>
                     
                     <i class="bi {{ $item['icon'] }}"></i>
                     
-                    {{-- Выводим текст только если он есть в конфиге --}}
-                    @if(!empty($item['title']))
-                        <span>{{ $item['title'] }}</span>
+                    @if(!empty($displayText))
+                        <span>{{ $displayText }}</span>
                     @endif
                 </a>
             @endif

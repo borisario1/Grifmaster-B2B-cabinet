@@ -57,7 +57,7 @@
                         @endphp
                         <a href="{{ $item['url'] }}" class="burger-grid-item {{ $isActive ? 'active' : '' }}">
                             <i class="bi {{ $item['icon'] }}"></i>
-                            <span>{{ $item['title'] }}</span>
+                            <span>{{ $item['title_in_burger'] }}</span>
                         </a>
                     @endif
                 @endforeach

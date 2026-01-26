@@ -1217,35 +1217,68 @@ tr:hover .btn-quick-view-overlay {
     border: 1px solid #d6d5d5;
     margin-bottom: 20px;
     position: relative;
+    
+    /* Для мобильных: чтобы не вылезало за экран */
+    max-width: 100%; 
+    box-sizing: border-box;
 }
 
 .mode-switch-btn {
     display: inline-flex;
     align-items: center;
+    justify-content: center; /* Центрируем контент */
     gap: 8px;
-    padding: 10px 20px;
+    padding: 10px 16px; /* Чуть меньше боковые отступы для компактности */
     font-size: 14px;
-    font-weight: 300;
+    font-weight: 400; /* 300 часто слишком тонко для мелкого текста */
     color: #64748b;
     text-decoration: none;
-    border-radius: var(--xmin_radius);
+    border-radius: var(--min_radius);
     line-height: 1;
     transition: all 0.2s ease;
+    white-space: nowrap; /* Запрещаем перенос текста */
+    
+    /* ФИКС ПОДМАРГИВАНИЯ: */
+    /* Задаем прозрачную границу сразу, чтобы кнопка занимала место */
+    border: 1px solid transparent; 
 }
 
 .mode-switch-btn:hover {
     background: #fff;
-    border: 1px solid #d6d5d5;
+    /* Теперь меняем только цвет, размер не скачет */
+    border-color: #d6d5d5; 
     color: #001F33;
     text-decoration: none;
 }
 
-/* Активная кнопка (Белая плашка) */
+/* Активная кнопка */
 .mode-switch-btn.active {
     background: #d3eeff;
-    border: 1px solid #aad4ee;
-    color: #0B466E; /* Ваш брендовый синий */
+    border-color: #aad4ee;
+    color: #0B466E;
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     font-weight: 500;
     pointer-events: none;
+}
+
+/* =========================================================
+    Адаптив под мобильные (Горизонтальный скролл)
+   ========================================================= */
+@media (max-width: 768px) {
+    .mode-switch-container {
+        display: flex; /* Растягиваем на всю ширину */
+        overflow-x: auto; /* Включаем скролл */
+        overflow-y: hidden;
+        /* Прячем скроллбар для красоты (опционально) */
+        -webkit-overflow-scrolling: touch; 
+        scrollbar-width: none; /* Firefox */
+    }
+    
+    .mode-switch-container::-webkit-scrollbar {
+        display: none; /* Chrome/Safari */
+    }
+
+    .mode-switch-btn {
+        flex-shrink: 0; /* Запрещаем сжимать кнопки */
+    }
 }

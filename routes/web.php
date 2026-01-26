@@ -86,15 +86,20 @@ Route::middleware(['auth', 'check.profile'])->group(function () {
     Route::resource('organizations', OrganizationController::class);
 
     // --- КАТАЛОГ И ТОВАРЫ ---
-    //Route::get('/store', [StoreController::class, 'index'])->name('catalog.index');
-    Route::get('/store', [StoreController::class, 'index'])
+    //Route::get('/catalog', [StoreController::class, 'index'])->name('catalog.index');
+    Route::get('/catalog', [StoreController::class, 'index'])
         ->name('catalog.index')
         ->middleware('heavy.throttle:medium'); // Ограничение на обновление 30 секунд.
 
     // Маркетинг (AJAX действия)
-    Route::post('/catalog/like/{id}', [ProductController::class, 'toggleLike'])->name('product.like');
-    Route::post('/catalog/wishlist/{id}', [ProductController::class, 'toggleWishlist'])->name('catalog.wishlist');
-    
+    Route::post('/catalog/like-do/{id}', [ProductController::class, 'toggleLike'])
+        ->name('product.like-do')
+        ->middleware('heavy.throttle:min'); // 1 запрос в 1 сек (или 800мс)
+
+    Route::post('/catalog/wishlist-do/{id}', [ProductController::class, 'toggleWishlist'])
+        ->name('catalog.wishlist-do')
+        ->middleware('heavy.throttle:min'); // 1 запрос в 1 сек (или 800мс)
+
     // Инструменты каталога
     Route::get('/catalog/quick-view/{id}', [ProductController::class, 'quickView'])
     ->name('product.quickview')
@@ -106,22 +111,27 @@ Route::middleware(['auth', 'check.profile'])->group(function () {
         ->middleware('heavy.throttle:middle'); // Ограничение на обновление 15 секунд.
     
     // Страница избранного
-    //Route::get('/store/wishlist', [StoreController::class, 'wishlist'])->name('wishlist');
-    Route::get('/store/wishlist', [App\Http\Controllers\StoreController::class, 'wishlist'])
-    ->name('store.wishlist')
+    //Route::get('/catalog/wishlist', [StoreController::class, 'wishlist'])->name('wishlist');
+    Route::get('/catalog/wishlist', [App\Http\Controllers\StoreController::class, 'wishlist'])
+    ->name('catalog.wishlist')
     ->middleware('auth');
-    
+
+    // Пример маршрутов
+    Route::get('/catalog/liked', [StoreController::class, 'likedProducts'])->name('catalog.liked');
+    Route::get('/catalog/ordered', [StoreController::class, 'orderedProducts'])->name('catalog.ordered');
+    Route::get('/catalog/viewed', [StoreController::class, 'viewedProducts'])->name('catalog.viewed');
+
     // --- КОРЗИНА И ЗАКАЗ ---
-    Route::get('/store/cart', [CartController::class, 'index'])->name('cart.index');
+    Route::get('/catalog/cart', [CartController::class, 'index'])->name('cart.index');
     Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
     Route::post('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
     
-    Route::post('/store/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
-    Route::get('/store/success/{code}', [CartController::class, 'success'])->name('cart.success');
+    Route::post('/catalog/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
+    Route::get('/catalog/success/{code}', [CartController::class, 'success'])->name('cart.success');
 
     // --- ИСТОРИЯ ЗАКАЗОВ ---
-    Route::get('/store/orders', [OrderController::class, 'index'])->name('orders.index');
-    Route::get('/store/order/{code}', [OrderController::class, 'show'])->name('orders.show');
+    Route::get('/catalog/orders', [OrderController::class, 'index'])->name('orders.index');
+    Route::get('/catalog/order/{code}', [OrderController::class, 'show'])->name('orders.show');
 
     // --- ТЕХПОДДЕРЖКА (TICKETS) ---
     Route::get('/requests', [TicketController::class, 'index'])->name('tickets.index');

@@ -581,6 +581,112 @@ body {
 }
 
 /* =========================================================
+   DASHBOARD BANNER SLIDER (тестирую)
+   ========================================================= */
+.dashboard-banner-wrapper {
+    margin: 25px 0 40px;
+    width: 100%;
+    position: relative;
+    border-radius: var(--radius);
+    overflow: hidden;
+    /* Соотношение сторон, чтобы блок не скакал при загрузке. 
+       Например 3:1 (33.33%) или подстройте под ваши баннеры */
+    padding-top: 40%; 
+    background-color: #f0f4f8;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+}
+
+.banner-slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 0.8s ease-in-out;
+    z-index: 1;
+}
+
+.banner-slide.active {
+    opacity: 1;
+    z-index: 2;
+}
+
+.banner-slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Заполняет блок, обрезая лишнее */
+    display: block;
+}
+
+/* Точки навигации (Dots) */
+.banner-dots {
+    position: absolute;
+    bottom: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+    display: flex;
+    gap: 8px;
+}
+
+.banner-dot {
+    width: 10px;
+    height: 10px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: 0.3s;
+    backdrop-filter: blur(2px);
+}
+
+.banner-dot:hover {
+    background: rgba(255, 255, 255, 0.8);
+}
+
+.banner-dot.active {
+    background: #fff;
+    transform: scale(1.2);
+    box-shadow: 0 0 5px rgba(0,0,0,0.2);
+}
+
+/* =========================================================
+   DASH CARD IMAGES (тестирую)
+   ========================================================= */
+.dash-card {
+    position: relative; /* Чтобы позиционировать картинку абсолютно внутри */
+    overflow: hidden;   /* Чтобы картинка не вылезала за скругления */
+}
+
+/* Изображение в правом верхнем углу карточки */
+.dash-card-image {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 60px;  /* Базовый размер */
+    height: 60px; /* Базовый размер */
+    object-fit: contain;
+    opacity: 0.15; /* Легкая прозрачность по умолчанию, чтобы не мешать тексту */
+    transition: all 0.3s ease;
+    z-index: 0;
+    pointer-events: none; /* Чтобы не перекрывало клик */
+}
+
+/* Эффект при наведении на карточку */
+.dash-card:hover .dash-card-image {
+    opacity: 1; /* Полная яркость */
+    transform: scale(1.1) rotate(5deg); /* Небольшое увеличение и поворот */
+}
+
+/* Убеждаемся, что контент (текст и иконка) выше картинки */
+.dash-card i, 
+.dash-card-title, 
+.dash-card-desc {
+    position: relative;
+    z-index: 1;
+}
+
+/* =========================================================
    FOOTER
    ========================================================= */
 .dashboard-footer {

@@ -48,16 +48,50 @@
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
         <h1 class="page-title m-0">{{ $pageTitle ?? 'Каталог товаров' }}</h1>
 
-        {{-- ПЕРЕКЛЮЧАТЕЛЬ --}}
+        {{-- ПЕРЕКЛЮЧАТЕЛЬ РЕЖИМОВ --}}
         <div class="mode-switch-container">
+            
+            {{-- 1. Все товары --}}
             <a href="{{ route('catalog.index') }}" 
-               class="mode-switch-btn {{ !($isWishlist ?? false) ? 'active' : '' }}">
+               class="mode-switch-btn {{ request()->routeIs('catalog.index') ? 'active' : '' }}">
                 <i class="bi bi-grid-fill"></i> Все товары
             </a>
-            <a href="{{ route('store.wishlist') }}" 
-               class="mode-switch-btn {{ ($isWishlist ?? false) ? 'active' : '' }}">
-                <i class="bi bi-star-fill" style="{{ ($isWishlist ?? false) ? 'color: #f59e0b;' : '' }}"></i> Избранное
+
+            {{-- 2. Избранное (Wishlist) --}}
+            <a href="{{ route('catalog.wishlist') }}" 
+               class="mode-switch-btn {{ request()->routeIs('catalog.wishlist') ? 'active' : '' }}">
+                <i class="bi bi-star-fill" 
+                   style="{{ request()->routeIs('catalog.wishlist') ? 'color: #f59e0b;' : '' }}"></i> 
+                Избранное
             </a>
+
+            {{-- 3. Понравилось (Likes) --}}
+            {{-- Убедитесь, что роут catalog.liked существует, или замените на свой --}}
+            <a href="{{ route('catalog.liked') }}" 
+               class="mode-switch-btn {{ request()->routeIs('catalog.liked') ? 'active' : '' }}">
+                <i class="bi bi-heart-fill" 
+                   style="{{ request()->routeIs('catalog.liked') ? 'color: #ef4444;' : '' }}"></i> 
+                Понравилось
+            </a>
+
+            {{-- 4. Ранее заказывали (History/Orders) --}}
+            {{-- Убедитесь, что роут catalog.ordered существует --}}
+            <a href="{{ route('catalog.ordered') }}" 
+               class="mode-switch-btn {{ request()->routeIs('catalog.ordered') ? 'active' : '' }}">
+                <i class="bi bi-bag-check-fill" 
+                   style="{{ request()->routeIs('catalog.ordered') ? 'color: #10b981;' : '' }}"></i> 
+                Ранее заказывали
+            </a>
+
+            {{-- 5. Недавно смотрели (Viewed) --}}
+            {{-- Убедитесь, что роут catalog.viewed существует --}}
+            <a href="{{ route('catalog.viewed') }}" 
+               class="mode-switch-btn {{ request()->routeIs('catalog.viewed') ? 'active' : '' }}">
+                <i class="bi bi-eye-fill" 
+                   style="{{ request()->routeIs('catalog.viewed') ? 'color: #3b82f6;' : '' }}"></i> 
+                Недавно смотрели
+            </a>
+            
         </div>
     </div>
 
@@ -378,7 +412,7 @@
     document.addEventListener('DOMContentLoaded', function() {
         const NO_IMAGE = 'https://data.grifmaster.ru/files/dq9/data/noimage.png';
 
-        // 1. ПАРАМЕТРЫ ЗАГРУЗКИ (Infinite Scroll / Показать еще)
+        // 1. ИНИЦИАЛИЗАЦИЯ LIST.JS
         let itemsPerPage = 30; 
         const step = 30;
 
@@ -393,21 +427,122 @@
 
         const storeList = new List('store-app', options);
 
-        // 2. ЭЛЕМЕНТЫ УПРАВЛЕНИЯ UI
+        // 2. ПЕРЕМЕННЫЕ И ЭЛЕМЕНТЫ UI
         const loadMoreBtn = document.getElementById('load-more-btn');
         const showingInfo = document.getElementById('showing-info');
         const noResultMessage = document.getElementById('no-result-message');
         const noResultText = document.getElementById('no-result-text');
+        
+        // Переменные фильтров
+        const selectedBrands = new Set();
+        const brandTags = document.querySelectorAll('.brand-tag');
+        const selects = {
+            coll: document.getElementById('f-coll'),
+            cat: document.getElementById('f-cat'),
+            type: document.getElementById('f-type')
+        };
+        const fStock = document.getElementById('f-stock');
+        const fNoColl = document.getElementById('f-no-coll');
+
+        // 3. ФУНКЦИИ СИНХРОНИЗАЦИИ URL (ИСПРАВЛЕНО: перемещено сюда, где переменные уже существуют)
+        let isRestoringState = false;
+
+        const updateURL = () => {
+            if (isRestoringState) return; // Не меняем URL пока восстанавливаемся
+
+            const params = new URLSearchParams();
+
+            // Поиск
+            const searchVal = document.querySelector('.search').value.trim();
+            if (searchVal) params.set('q', searchVal);
+
+            // Бренды
+            if (selectedBrands.size > 0) {
+                params.set('brands', Array.from(selectedBrands).join(','));
+            }
+
+            // Селекты
+            if (selects.coll.value) params.set('coll', selects.coll.value);
+            if (selects.cat.value)  params.set('cat', selects.cat.value);
+            if (selects.type.value) params.set('type', selects.type.value);
+
+            // Чекбоксы
+            if (fStock.checked) params.set('stock', '1');
+            if (fNoColl.checked) params.set('nocoll', '1');
+
+            // Обновляем URL без перезагрузки страницы
+            const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+            window.history.pushState({}, '', newUrl);
+        };
+
+        const restoreFromURL = () => {
+            isRestoringState = true; // Блокируем запись в историю
+            
+            const params = new URLSearchParams(window.location.search);
+
+            // 1. Поиск
+            if (params.has('q')) {
+                const val = params.get('q');
+                document.querySelector('.search').value = val;
+                storeList.search(val);
+            } else {
+                // Если в URL нет поиска, но в поле что-то осталось (кэш браузера) — чистим
+                document.querySelector('.search').value = '';
+                storeList.search();
+            }
+
+            // 2. Бренды
+            selectedBrands.clear();
+            brandTags.forEach(t => t.classList.replace('btn-primary', 'btn-secondary'));
+            
+            if (params.has('brands')) {
+                const brandsFromUrl = params.get('brands').split(',');
+                brandsFromUrl.forEach(b => {
+                    selectedBrands.add(b);
+                    // Ищем кнопку бренда и активируем визуально
+                    const tag = document.querySelector(`.brand-tag[data-brand="${b}"]`);
+                    if (tag) tag.classList.replace('btn-secondary', 'btn-primary');
+                });
+            }
+
+            // 3. Селекты
+            if (params.has('coll')) selects.coll.value = params.get('coll');
+            else selects.coll.value = "";
+
+            if (params.has('cat'))  selects.cat.value  = params.get('cat');
+            else selects.cat.value = "";
+
+            if (params.has('type')) selects.type.value = params.get('type');
+            else selects.type.value = "";
+
+            // 4. Чекбоксы
+            fStock.checked = params.has('stock');
+            fNoColl.checked = params.has('nocoll');
+
+            // Применяем фильтры
+            applyAllFilters();
+
+            isRestoringState = false; // Снимаем блокировку
+        };
+
+        // 4. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ UI
+        function validateImages() {
+            const images = document.querySelectorAll('.store-img');
+            images.forEach(img => {
+                img.onerror = function() { if (this.src !== NO_IMAGE) this.src = NO_IMAGE; };
+                if (img.complete && img.naturalWidth === 0) img.src = NO_IMAGE;
+                if (!img.getAttribute('src')) img.src = NO_IMAGE;
+            });
+        }
 
         function updateLoadMoreUI() {
-            const totalItems = storeList.items.length; // Всего в базе
-            const matched = storeList.matchingItems.length; // Найдено фильтром
-            const shown = storeList.visibleItems.length; // Видно сейчас
+            const totalItems = storeList.items.length;
+            const matched = storeList.matchingItems.length;
+            const shown = storeList.visibleItems.length;
             
-            // 1. Обработка пустых состояний
             if (totalItems === 0) {
                 noResultMessage.style.display = 'block';
-                noResultText.innerText = "Каталог товаров в настоящее время пуст, попробуйте обновить страницу позже";
+                noResultText.innerText = "Каталог товаров пуст.";
                 if(showingInfo) showingInfo.style.display = 'none';
             } else if (matched === 0) {
                 noResultMessage.style.display = 'block';
@@ -422,52 +557,17 @@
                 }
             }
             
-            // 2. Видимость кнопки "Показать еще"
             if (loadMoreBtn) {
                 loadMoreBtn.style.display = (shown >= matched || matched === 0) ? 'none' : 'inline-block';
             }
         }
 
-        // Кнопка теперь работает строго по клику (шаг 50)
-        if (loadMoreBtn) {
-            loadMoreBtn.addEventListener('click', function() {
-                itemsPerPage += step;
-                storeList.show(1, itemsPerPage);
-                updateLoadMoreUI();
-                validateImages();
-            });
-        }
-
-        // 3. ЛОГИКА ФИЛЬТРОВ
-        const selectedBrands = new Set();
-        const brandTags = document.querySelectorAll('.brand-tag');
-        const selects = {
-            coll: document.getElementById('f-coll'),
-            cat: document.getElementById('f-cat'),
-            type: document.getElementById('f-type')
-        };
-        const fStock = document.getElementById('f-stock');
-        const fNoColl = document.getElementById('f-no-coll');
-
-        function validateImages() {
-            const images = document.querySelectorAll('.store-img');
-            images.forEach(img => {
-                img.onerror = function() { if (this.src !== NO_IMAGE) this.src = NO_IMAGE; };
-                if (img.complete && img.naturalWidth === 0) img.src = NO_IMAGE;
-                if (!img.getAttribute('src')) img.src = NO_IMAGE;
-            });
-        }
-
-        // "Умное" обновление списков (не опустошает само себя)
         const updateSelectOptions = () => {
             const filterKeys = ['brand', 'coll', 'cat', 'type'];
             
             filterKeys.forEach(currentKey => {
                 const otherActiveFilters = {};
-                
-                if (currentKey !== 'brand') {
-                    if (selectedBrands.size > 0) otherActiveFilters.brand = selectedBrands;
-                }
+                if (currentKey !== 'brand' && selectedBrands.size > 0) otherActiveFilters.brand = selectedBrands;
                 
                 Object.keys(selects).forEach(key => {
                     if (key !== currentKey && selects[key].value !== "") {
@@ -495,21 +595,14 @@
                         if (val) availableOptions.add(val);
                     }
                 });
-                    if (currentKey === 'brand') {
+
+                if (currentKey === 'brand') {
                     brandTags.forEach(tag => {
                         const b = tag.getAttribute('data-brand');
-                        
                         if (availableOptions.has(b)) {
-                            // Бренд доступен
                             tag.classList.remove('disabled');
                         } else {
-                            // Бренд недоступен из-за других фильтров
                             tag.classList.add('disabled');
-                            
-                            // Если вдруг этот бренд был выбран, но теперь стал недоступен
-                            // (например, сменили категорию), мы можем либо оставить его, 
-                            // либо принудительно снять выбор. 
-                            // Обычно лучше снять, чтобы фильтр был честным:
                             if (selectedBrands.has(b)) {
                                 selectedBrands.delete(b);
                                 tag.classList.replace('btn-primary', 'btn-secondary');
@@ -529,6 +622,7 @@
             });
         };
 
+        // 5. ГЛАВНАЯ ФУНКЦИЯ ФИЛЬТРАЦИИ
         const applyAllFilters = () => {
             storeList.filter(item => {
                 const v = item.values();
@@ -541,15 +635,31 @@
                 return matchBrand && matchColl && matchCat && matchType && matchStock && matchNoColl;
             });
 
-            // Сброс лимита до 50 при новой фильтрации
+            // Сброс пагинации
             itemsPerPage = 50;
             storeList.show(1, itemsPerPage);
             
             updateSelectOptions();
             updateLoadMoreUI();
             validateImages();
+            
+            // ВАЖНО: Обновляем URL при каждом изменении фильтров
+            updateURL(); 
         };
 
+        // 6. НАЗНАЧЕНИЕ СЛУШАТЕЛЕЙ СОБЫТИЙ
+
+        // Кнопка "Показать еще"
+        if (loadMoreBtn) {
+            loadMoreBtn.addEventListener('click', function() {
+                itemsPerPage += step;
+                storeList.show(1, itemsPerPage);
+                updateLoadMoreUI();
+                validateImages();
+            });
+        }
+
+        // Клик по брендам
         brandTags.forEach(tag => {
             tag.addEventListener('click', function() {
                 const brand = this.getAttribute('data-brand');
@@ -564,35 +674,46 @@
             });
         });
 
+        // Селекты и чекбоксы
         Object.values(selects).forEach(el => el.addEventListener('change', applyAllFilters));
         [fStock, fNoColl].forEach(el => el.addEventListener('change', applyAllFilters));
 
+        // Поиск (событие от List.js)
         storeList.on('searchComplete', updateLoadMoreUI);
+        
+        // Поиск: Добавляем обновление URL при вводе (с задержкой/debounce)
+        const searchInput = document.querySelector('.search');
+        if (searchInput) {
+            let debounceTimer;
+            searchInput.addEventListener('input', function() { // Используем input вместо keyup
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    updateURL(); // Только обновляем URL, сам поиск делает List.js
+                }, 800);
+            });
+        }
 
+        // Кнопка сброса
         window.resetFilters = () => {
             selectedBrands.clear();
             brandTags.forEach(t => t.classList.replace('btn-primary', 'btn-secondary'));
             Object.values(selects).forEach(s => s.value = "");
             fStock.checked = false; 
             fNoColl.checked = false;
-            const sInput = document.querySelector('.search');
-            if(sInput) sInput.value = "";
+            if(searchInput) searchInput.value = "";
             
-            itemsPerPage = 50;
-            storeList.search(); 
-            storeList.filter();
-            storeList.show(1, itemsPerPage);
-            
-            updateSelectOptions(); 
-            updateLoadMoreUI();
-            validateImages();
+            storeList.search(); // Сброс поиска в List.js
+            applyAllFilters();  // Сброс остальных фильтров + обновление URL (очистка)
         };
 
-        // Стартовый запуск
-        updateSelectOptions();
-        updateLoadMoreUI();
-        validateImages();
+        // Слушаем кнопки браузера Назад/Вперед (Popstate)
+        window.addEventListener('popstate', function() {
+            restoreFromURL();
+        });
 
+        // 7. ЗАПУСК ПРИ ЗАГРУЗКЕ
+        // Сначала восстанавливаем из URL, это само вызовет applyAllFilters
+        restoreFromURL();
     });
 
     // Функция показа тоста
@@ -1081,12 +1202,27 @@
 
     // 1. ЛАЙК (LIKE)
     function toggleLike(btn, id) {
-        const isActive = btn.classList.contains('is-active');
-        const icon = btn.querySelector('i');
-        const modalBtn = document.getElementById('qv-btn-like');
+        // --- 1. Client-Side защита (UX) ---
+        const cooldownTime = 800; 
+        const lastClick = parseInt(localStorage.getItem('like_last_click_time') || 0);
+        const now = Date.now();
+        const timePassed = now - lastClick;
 
-        // Оптимистичное обновление UI
-        if (isActive) {
+        if (timePassed < cooldownTime) {
+            // Если кликнул слишком быстро - просто игнорируем или показываем тост
+            // (можно убрать showToast, если раздражает)
+            return; 
+        }
+        localStorage.setItem('like_last_click_time', now);
+
+        // --- 2. Запоминаем состояние ДО изменения (для отката) ---
+        const wasActive = btn.classList.contains('is-active');
+        const icon = btn.querySelector('i');
+        const modalBtn = document.getElementById('qv-btn-like'); // Кнопка в модалке
+
+        // --- 3. Оптимистичное обновление (меняем сразу) ---
+        if (wasActive) {
+            // Убираем лайк
             btn.classList.remove('is-active');
             icon.className = 'bi bi-heart';
             if(modalBtn && modalBtn.getAttribute('data-id') == id) {
@@ -1094,6 +1230,7 @@
                 modalBtn.innerHTML = '<i class="bi bi-heart"></i>';
             }
         } else {
+            // Ставим лайк
             btn.classList.add('is-active');
             icon.className = 'bi bi-heart-fill';
             if(modalBtn && modalBtn.getAttribute('data-id') == id) {
@@ -1102,21 +1239,61 @@
             }
         }
 
-        fetch(`/catalog/like/${id}`, {
+        // --- 4. Отправка на сервер ---
+        fetch(`/catalog/like-do/${id}`, {
             method: 'POST',
-            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+            headers: { 
+                'X-CSRF-TOKEN': '{{ csrf_token() }}', 
+                'Content-Type': 'application/json', 
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json' // Важно для получения текста ошибки 429
+            }
         })
-        .then(r => r.json())
+        .then(r => {
+            // Если сервер вернул ошибку (429, 500, 401 и т.д.)
+            if (!r.ok) {
+                return r.json().then(err => { throw new Error(err.message || 'Ошибка сервера'); });
+            }
+            return r.json();
+        })
         .then(data => {
             if (data.success) {
+                // Все хорошо, обновляем счетчики
                 if (data.active) showToast('Вам понравилось!', 'bi-heart-fill');
-                // Обновляем счетчик лайков, если он есть на странице
+                else showToast('Вам больше не нравится', 'bi-heartbreak');
+                
                 const countSpan = btn.closest('.js-art')?.parentElement?.querySelector('.store-name .product-meta-row .meta-item[title="Лайки"]');
-                if(countSpan && data.count > 0) {
-                     countSpan.innerHTML = `<i class="bi bi-heart-fill" style="color: #e11d48; opacity: 0.7;"></i> ${data.count}`;
-                     countSpan.style.display = 'inline-flex';
-                } else if (countSpan && data.count === 0) {
-                     countSpan.style.display = 'none';
+                if(countSpan) {
+                    if (data.count > 0) {
+                        countSpan.innerHTML = `<i class="bi bi-heart-fill" style="color: #e11d48; opacity: 0.7;"></i> ${data.count}`;
+                        countSpan.style.display = 'inline-flex';
+                    } else {
+                        countSpan.style.display = 'none';
+                    }
+                }
+            }
+        })
+        .catch(error => {
+            // --- 5. ОТКАТ (ROLLBACK) ---
+            // Если произошла ошибка (429 или сеть), возвращаем всё как было
+            console.error(error);
+            showToast(error.message, 'bi-exclamation-triangle', true); // Покажем "Слишком часто..."
+
+            if (wasActive) {
+                // Было активно -> мы убрали -> надо вернуть назад (добавить)
+                btn.classList.add('is-active');
+                icon.className = 'bi bi-heart-fill';
+                if(modalBtn && modalBtn.getAttribute('data-id') == id) {
+                    modalBtn.classList.add('is-liked');
+                    modalBtn.innerHTML = '<i class="bi bi-heart-fill"></i>';
+                }
+            } else {
+                // Было неактивно -> мы добавили -> надо убрать
+                btn.classList.remove('is-active');
+                icon.className = 'bi bi-heart';
+                if(modalBtn && modalBtn.getAttribute('data-id') == id) {
+                    modalBtn.classList.remove('is-liked');
+                    modalBtn.innerHTML = '<i class="bi bi-heart"></i>';
                 }
             }
         });
@@ -1124,12 +1301,24 @@
 
     // 2. ИЗБРАННОЕ (WISHLIST)
     function toggleWishlist(btn, id) {
-        const isActive = btn.classList.contains('is-active');
+        // --- 1. Client-Side ---
+        const cooldownTime = 800; 
+        const lastClick = parseInt(localStorage.getItem('fav_last_click_time') || 0);
+        const now = Date.now();
+        const timePassed = now - lastClick;
+
+        if (timePassed < cooldownTime) {
+            return; 
+        }
+        localStorage.setItem('fav_last_click_time', now);
+
+        // --- 2. Состояние ДО ---
+        const wasActive = btn.classList.contains('is-active');
         const icon = btn.querySelector('i');
         const modalBtn = document.getElementById('qv-btn-fav');
 
-        // Оптимистичное обновление UI
-        if (isActive) {
+        // --- 3. Оптимистичное UI ---
+        if (wasActive) {
             btn.classList.remove('is-active');
             icon.className = 'bi bi-star';
             if(modalBtn && modalBtn.getAttribute('data-id') == id) {
@@ -1139,31 +1328,68 @@
         } else {
             btn.classList.add('is-active');
             icon.className = 'bi bi-star-fill';
+            // Эффект увеличения
             btn.style.transform = "scale(1.2)";
             setTimeout(() => btn.style.transform = "scale(1)", 200);
+            
             if(modalBtn && modalBtn.getAttribute('data-id') == id) {
                 modalBtn.classList.add('is-faved');
                 modalBtn.innerHTML = '<i class="bi bi-star-fill"></i>';
             }
         }
 
-        fetch(`/catalog/wishlist/${id}`, {
+        // --- 4. Запрос ---
+        fetch(`/catalog/wishlist-do/${id}`, {
             method: 'POST',
-            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+            headers: { 
+                'X-CSRF-TOKEN': '{{ csrf_token() }}', 
+                'Content-Type': 'application/json', 
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
         })
-        .then(r => r.json())
+        .then(r => {
+            if (!r.ok) {
+                return r.json().then(err => { throw new Error(err.message || 'Ошибка сервера'); });
+            }
+            return r.json();
+        })
         .then(data => {
              if (data.success) {
-                if(data.active) showToast('Добавлено в избранное', 'bi-bookmark-check');
+                if(data.active) showToast('Добавлено в избранное!', 'bi-bookmark-fill');
                 else showToast('Удалено из избранного', 'bi-bookmark-dash');
                 
-                // Обновляем счетчик вишлиста (если есть)
                 const countSpan = btn.closest('.js-art')?.parentElement?.querySelector('.store-name .product-meta-row .meta-item[title="В избранном у других"]');
-                if(countSpan && data.count > 0) {
-                     countSpan.innerHTML = `<i class="bi bi-star-fill" style="color: #f59e0b; opacity: 0.7;"></i> ${data.count}`;
-                     countSpan.style.display = 'inline-flex';
-                } else if (countSpan && data.count === 0) {
-                     countSpan.style.display = 'none';
+                if(countSpan) {
+                    if (data.count > 0) {
+                        countSpan.innerHTML = `<i class="bi bi-star-fill" style="color: #f59e0b; opacity: 0.7;"></i> ${data.count}`;
+                        countSpan.style.display = 'inline-flex';
+                    } else {
+                        countSpan.style.display = 'none';
+                    }
+                }
+            }
+        })
+        .catch(error => {
+            // --- 5. ОТКАТ (ROLLBACK) ---
+            console.error(error);
+            showToast(error.message, 'bi-exclamation-triangle', true);
+
+            if (wasActive) {
+                // Возвращаем активность
+                btn.classList.add('is-active');
+                icon.className = 'bi bi-star-fill';
+                if(modalBtn && modalBtn.getAttribute('data-id') == id) {
+                    modalBtn.classList.add('is-faved');
+                    modalBtn.innerHTML = '<i class="bi bi-star-fill"></i>';
+                }
+            } else {
+                // Убираем активность
+                btn.classList.remove('is-active');
+                icon.className = 'bi bi-star';
+                if(modalBtn && modalBtn.getAttribute('data-id') == id) {
+                    modalBtn.classList.remove('is-faved');
+                    modalBtn.innerHTML = '<i class="bi bi-star"></i>';
                 }
             }
         });
