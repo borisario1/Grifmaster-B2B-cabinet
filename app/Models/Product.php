@@ -30,10 +30,10 @@ class Product extends Model
         'article',
         'brand',
         'price',
-        'min_quantity', // Добавлено
+        'min_quantity',
         'status',
-        'is_featured',  // Новый флаг
-        'sort_order',   // Порядок сортировки
+        'is_featured',
+        'sort_order',
         'product_type',
         'product_category',
         'collection',

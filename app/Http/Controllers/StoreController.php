@@ -22,7 +22,10 @@ class StoreController extends Controller
         $orgId = $user->selected_org_id; 
 
         // Грузим товары с деталями
-        $products = Product::with('details')->orderBy('brand')->get();
+        $products = Product::where('is_active', true)
+            ->with('details')
+            ->orderBy('brand')
+            ->get();
 
         // 1. Получаем айтемы корзины
         $cartItems = CartItem::where('user_id', $user->id)
@@ -100,8 +103,9 @@ class StoreController extends Controller
             $products = collect(); // Пустая коллекция
         } else {
             // 2. Грузим товары, но ТОЛЬКО те, что в списке $wishlistIds
-            $products = Product::with('details')
-                ->whereIn('id', $wishlistIds) // <--- Главный фильтр
+            $products = Product::where('is_active', true) 
+                ->with('details')
+                ->whereIn('id', $wishlistIds)
                 ->orderBy('brand')
                 ->get();
         }

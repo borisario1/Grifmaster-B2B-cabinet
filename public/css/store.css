@@ -2,12 +2,6 @@
    STORE TABLE
    ========================================================= */
 
-.store-table-wrapper {
-    overflow-x: auto;
-    margin-top: 25px;
-    border-radius: var(--min_radius);
-}
-
 .store-table {
     width: 100%;
     border-collapse: collapse;
@@ -135,11 +129,38 @@ th.sort.desc i {
 }
 
 .store-filter-panel .store-qty-input {
-    width: 100%;
     height: 42px;
 }
 
-/* Фикс кнопок фильтрации */
+
+/* Группа чекбоксов под селектами */
+.filter-checkbox-group { 
+    display: flex; 
+    gap: 20px; 
+    align-items: center; 
+    padding-top: 10px; 
+}
+
+.filter-checkbox-group label { 
+    display: flex; 
+    align-items: center; 
+    gap: 8px; 
+    cursor: pointer; 
+    font-size: 14px; 
+    font-weight: 500; 
+}
+
+.filter-checkbox-group input { 
+    width: 18px; 
+    height: 18px; 
+    accent-color: #0B466E; 
+}
+
+/* Скрытие служебных данных (категории, коллекции) для List.js */
+.hidden-data { 
+    display: none !important; 
+}
+
 .filter-actions {
     display: flex;
     gap: 10px;
@@ -1281,4 +1302,71 @@ tr:hover .btn-quick-view-overlay {
     .mode-switch-btn {
         flex-shrink: 0; /* Запрещаем сжимать кнопки */
     }
+}
+
+/* =========================================================
+   NEW TABLE LOADING EFFECTS (BLUR & PULSE)
+   ========================================================= */
+
+/* Контейнер-обертка для позиционирования лоадера */
+.store-table-container {
+    position: relative;
+    min-height: 400px; /* Чтобы футер не прыгал при загрузке */
+    margin-top: 25px;
+}
+
+/* Переопределяем старый wrapper для поддержки перекрытия */
+.store-table-wrapper {
+    overflow-x: auto;
+    border-radius: var(--min_radius);
+    background: #fff;
+    /* transition для плавного проявления из блюра */
+    transition: opacity 0.4s ease, filter 0.4s ease;
+}
+
+/* Эффект пульсации (только для контента таблицы) */
+@keyframes tablePulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 0.9; }
+    100% { opacity: 0.6; }
+}
+
+.table-loading-pulse {
+    animation: tablePulse 2s infinite ease-in-out;
+    pointer-events: none;
+    user-select: none;
+    opacity: 0.2;
+    filter: blur(2px);
+}
+
+/* Слой лоадера поверх таблицы */
+#table-loader {
+    position: absolute; 
+    top: 0; left: 0; right: 0; bottom: 0; 
+    z-index: 10; 
+    display: flex; 
+    flex-direction: column;
+    align-items: center; 
+    justify-content: flex-start; /* Текст наверху */
+    padding-top: 100px; /* Тот самый отступ сверху */
+    background: rgba(255, 255, 255, 0.7); 
+    backdrop-filter: blur(4px);
+    transition: opacity 0.3s ease;
+}
+
+#table-loader span {
+    font-weight: 600; 
+    color: #0B466E; 
+    text-align: center; 
+    line-height: 1.6; 
+    text-shadow: 0 0 15px #fff;
+    font-size: 16px;
+    max-width: 320px;
+}
+
+#table-loader .loader-spinner {
+    width: 45px; 
+    height: 45px; 
+    border-top-color: #3295D1; 
+    margin-bottom: 20px;
 }

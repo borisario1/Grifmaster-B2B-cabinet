@@ -22,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'check.profile' => \App\Http\Middleware\CheckProfileComplete::class,
             'heavy.throttle' => \App\Http\Middleware\HeavyActionThrottle::class,
+            'cache.response' => \App\Http\Middleware\CacheResponse::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

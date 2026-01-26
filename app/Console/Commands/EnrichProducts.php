@@ -20,7 +20,8 @@ class EnrichProducts extends Command
         $article = $this->argument('article');
         $onlyNew = $this->option('only-new');
 
-        $query = Product::query();
+        //Проверяем только активные товары из 1С
+        $query = Product::where('is_active', true);
 
         if ($article) {
             $query->where('article', $article);

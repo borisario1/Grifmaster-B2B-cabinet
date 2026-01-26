@@ -16,57 +16,92 @@ class HeavyActionThrottle
      */
     public function handle(Request $request, Closure $next, string $level = null)
     {
-        // 1. Если не авторизован - пропускаем
-        if (!Auth::check()) {
-            return $next($request);
+        // 1. Идентификация
+        $identifier = Auth::check() ? Auth::id() : $request->ip();
+        
+        // --- [ЭТАП 1] ПРОВЕРКА ГЛОБАЛЬНОГО БАНА ---
+        // Если этот ключ существует — пользователь в "штрафном боксе".
+        // Мы отбиваем запрос СРАЗУ, даже не проверяя тайминги.
+        $banKey = "ban:heavy:{$identifier}";
+        
+        if (Cache::has($banKey)) {
+            return $this->response429($request, "
+            Доступ ограничен для вас на 1-3 минуты. 
+            Если вы будете продолжать осуществлять запросы так часто, доступ будет ограничен на более длинный период. 
+            Если вы уверены, что это ошибка, обратитесь к администратору: 232@grifmaster.ru");
         }
 
-        $userId = Auth::id();
-        
-        // Ключ кэша
+        // --- [ЭТАП 2] ПРОВЕРКА КОНКРЕТНОГО ДЕЙСТВИЯ ---
         $actionKey = md5($request->route()->getName() ?? $request->path());
-        $cacheKey = "throttle:{$userId}:{$actionKey}";
+        $throttleKey = "throttle:{$identifier}:{$actionKey}";
 
-        // 2. ПОЛУЧАЕМ ЛИМИТ (в секундах, мб дробным, например 0.8)
+        // Получаем лимит для этого действия (например, 0.8 сек или 5 сек)
         $delays = config('b2b.system.delays', []);
         $limit = $delays[$level] ?? config('b2b.system.heavy_action_delay', 15);
 
-        // 3. ПРОВЕРКА ЧЕРЕЗ MICROTIME
-        // Текущее время с миллисекундами (float)
         $now = microtime(true);
 
-        if (Cache::has($cacheKey)) {
-            $lastHit = (float) Cache::get($cacheKey);
-            
-            // Сколько прошло времени с последнего клика
+        if (Cache::has($throttleKey)) {
+            $lastHit = (float) Cache::get($throttleKey);
             $passed = $now - $lastHit;
 
-            // Если прошло меньше лимита — БЛОКИРУЕМ
+            // Если прошло меньше положенного времени — ЭТО НАРУШЕНИЕ (429)
             if ($passed < $limit) {
-                // Вычисляем, сколько осталось ждать (для красоты вывода)
+                
+                // --- [ЭТАП 3] ФИКСАЦИЯ НАРУШЕНИЯ ---
+                // Неважно, какой был лимит. Факт нарушения есть.
+                // Записываем страйк.
+                $this->registerStrike($identifier, $banKey);
+                // -----------------------------------
+
                 $wait = number_format($limit - $passed, 1); 
-                $msg = "Слишком часто. Подождите {$wait} сек.";
-
-                if ($request->wantsJson() || $request->ajax()) {
-                    return response()->json([
-                        'success' => false, 
-                        'message' => $msg
-                    ], 429);
-                }
-
-                abort(429, $msg);
+                return $this->response429($request, "Ваши действия осуществляются слишком часто. Подождите {$wait} сек.");
             }
         }
 
-        // 4. ЗАПИСЬ В КЭШ
-        // Мы кладем туда текущее время ($now).
-        // Время жизни кэша (TTL) ставим чуть больше лимита (например, лимит + 2 сек),
-        // чтобы запись сама исчезла, когда она станет неактуальной.
-        // Округляем TTL до целого вверх, так как драйверы требуют int.
+        // Если всё чисто — обновляем таймер действия
         $ttl = (int) ceil($limit + 5); 
-
-        Cache::put($cacheKey, $now, $ttl);
+        Cache::put($throttleKey, $now, $ttl);
 
         return $next($request);
+    }
+
+    /**
+     * Надежная регистрация нарушения
+     */
+    private function registerStrike($identifier, $banKey)
+    {
+        $strikeKey = "strikes:heavy:{$identifier}";
+        
+        // 1. Явно получаем текущее значение (или 0, если нет)
+        $strikes = (int) Cache::get($strikeKey, 0);
+        
+        // 2. Увеличиваем
+        $strikes++;
+
+        // 3. Если набрал 3 нарушения — БАН
+        if ($strikes >= 3) {
+            // Ставим бан на 60 секунд
+            Cache::put($banKey, true, 120);
+            
+            // Удаляем счетчик страйков
+            Cache::forget($strikeKey);
+        } else {
+            // 4. Если бана нет, сохраняем счетчик с жизнью 10 секунд
+            // (Обновляем таймер при каждом нарушении, чтобы ловить серии кликов)
+            Cache::put($strikeKey, $strikes, 30);
+        }
+    }
+
+    private function response429(Request $request, string $message)
+    {
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => false, 
+                'message' => $message
+            ], 429);
+        }
+
+        abort(429, $message);
     }
 }
