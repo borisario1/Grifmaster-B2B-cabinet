@@ -47,6 +47,7 @@ return [
         'group'   => 'orders',
         'priority' => 'high', // Высокий приоритет - отображается первым в бургер меню
         'show_in' => ['dashboard', 'burger'],
+        'image'   => 'img/menu/cart.png',
     ],
     
     'wishlist' => [
@@ -56,6 +57,7 @@ return [
         'url'     => '/catalog/wishlist',
         'group'   => 'orders',
         'show_in' => ['dashboard', 'burger'],
+        'image'   => 'img/menu/wishlist.png',
     ],
 
     'orders' => [
@@ -67,15 +69,28 @@ return [
         'group'   => 'orders',
         'priority' => 'high', // Высокий приоритет - отображается первым в бургер меню
         'show_in' => ['dashboard', 'burger', 'toolbar'],
+        'image'   => 'img/menu/orders.png',
     ],
 
-    'favorites' => [
+    'liked' => [
         'title'   => 'Понравилось',
         'desc'    => 'Товары, которые понравились вам и другим пользователям',
         'icon'    => 'bi-heart',
-        'url'     => '/catalog/favorites',
+        'url'     => '/catalog/liked',
         'group'   => 'orders',
         'show_in' => ['dashboard'],
+        'image'   => 'img/menu/liked.png',
+    ],
+
+    'ordered' => [
+        'title'   => 'Заказывали ранее',
+        'title_in_burger' => 'Заказывали',
+        'desc'    => 'Товары, которые вы заказали ранее',
+        'icon'    => 'bi bi-bag-check',
+        'url'     => '/catalog/ordered',
+        'group'   => 'orders',
+        'show_in' => ['dashboard'],
+        'image'   => 'img/menu/ordered.png',
     ],
 
 
@@ -189,7 +204,7 @@ return [
     // =============================
     'banners' => [
         [
-            'image'  => 'img/banners/1_2.png', // Путь к файлу в public/
+            'image'  => 'img/banners/1_1_2.jpg', // Путь к файлу в public/
             'url'    => '/catalog/sale', // Куда ведет клик
             'alt'    => 'Распродажа сезона',
             'target' => '_blank', // или '_blank'

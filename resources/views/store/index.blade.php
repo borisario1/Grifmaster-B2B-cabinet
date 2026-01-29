@@ -134,6 +134,24 @@
             </div>
         </div>
 
+    @if($products->isEmpty())
+    <div class="empty-list-message">
+        <i class="bi bi-info-circle"></i>
+        <h4>
+            @if(isset($isWishlist) && $isWishlist)
+                В вашем списке отложенных товаров пока ничего нет.
+            @elseif(isset($isLiked) && $isLiked)
+                Вам еще ничего не понравилось.
+            @elseif(isset($isOrdered) && $isOrdered)
+                Вы еще ничего не заказали.
+            @elseif(isset($isViewed) && $isViewed)
+                Ваша история просмотренных товаров пока пуста.
+            @else
+                Список товаров пуст.
+            @endif
+        </h4>
+    </div>
+@else
     {{-- КОНТЕЙНЕР ТАБЛИЦЫ С ЛОАДЕРОМ --}}
     <div class="store-table-container" style="position: relative; min-height: 400px;">
         
@@ -340,6 +358,7 @@
             </button>
         </div>
     </div>
+@endif
     
     {{-- Вставляем компонент модалки просмотра ЗДЕСЬ --}}
     <x-modal-product-view />
@@ -362,7 +381,8 @@
             cartAdd: "{{ route('cart.add') }}",
             likeBase: "/catalog/like-do/", 
             wishlistBase: "/catalog/wishlist-do/",
-            quickViewBase: "/catalog/quick-view/"
+            quickViewBase: "/catalog/quick-view/",
+            recordViewBase: "/catalog/record-view/"
         },
         assets: {
             noImage: "https://data.grifmaster.ru/files/dq9/data/noimage.png"

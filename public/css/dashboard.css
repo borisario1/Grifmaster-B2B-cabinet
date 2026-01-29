@@ -640,12 +640,12 @@ body {
 /* Изображение в правом верхнем углу карточки */
 .dash-card-image {
     position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 60px;  /* Базовый размер */
-    height: 60px; /* Базовый размер */
+    top: 5px;
+    right: 5px;
+    width: 75px;  /* Базовый размер */
+    height: 75px; /* Базовый размер */
     object-fit: contain;
-    opacity: 0.15; /* Легкая прозрачность по умолчанию, чтобы не мешать тексту */
+    opacity: 1; /* Легкая прозрачность по умолчанию, чтобы не мешать тексту */
     transition: all 0.3s ease;
     z-index: 0;
     pointer-events: none; /* Чтобы не перекрывало клик */
@@ -653,8 +653,8 @@ body {
 
 /* Эффект при наведении на карточку */
 .dash-card:hover .dash-card-image {
-    opacity: 1; /* Полная яркость */
-    transform: scale(1.1) rotate(5deg); /* Небольшое увеличение и поворот */
+    opacity: 0.8; /* Полная яркость */
+    transform: scale(1.5) rotate(15deg); /* Небольшое увеличение и поворот */
 }
 
 /* Убеждаемся, что контент (текст и иконка) выше картинки */

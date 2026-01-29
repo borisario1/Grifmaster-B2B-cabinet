@@ -622,6 +622,15 @@ window.openProductModal = function(id) {
     modal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
 
+    fetch(window.StoreConfig.urls.recordViewBase + id, {
+        method: 'POST',
+        headers: {
+            "Content-Type": "application/json",
+            "X-Requested-With": "XMLHttpRequest",
+            'X-CSRF-TOKEN': window.StoreConfig.csrf
+        }
+    });
+
     fetch(window.StoreConfig.urls.quickViewBase + id, {
         headers: {
             "Content-Type": "application/json",

@@ -88,6 +88,10 @@ Route::middleware(['auth', 'check.profile'])->group(function () {
         ->name('product.quickview')
         ->middleware('heavy.throttle:short');
 
+    Route::post('/catalog/record-view/{id}', [ProductController::class, 'recordView'])
+        ->name('product.record-view')
+        ->middleware('heavy.throttle:min');
+
     Route::get('/catalog/download-images/{id}', [ProductController::class, 'downloadImages'])
         ->name('catalog.download_images')
         ->middleware('heavy.throttle:middle');

@@ -75,6 +75,20 @@ class ProductController extends Controller
         return $this->toggleInteraction($id, 'wishlist', 'wishlist_count');
     }
 
+    public function recordView($id)
+    {
+        $user = Auth::user();
+        Product::findOrFail($id); // Убедимся, что товар существует
+
+        DB::table('b2b_product_views')->insert([
+            'user_id' => $user->id,
+            'product_id' => $id,
+            'viewed_at' => now(),
+        ]);
+
+        return response()->json(['success' => true]);
+    }
+
     /**
      * Скачивание изображений (без изменений, оставляем как было)
      */
