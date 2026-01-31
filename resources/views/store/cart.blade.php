@@ -97,7 +97,7 @@
                     <td class="col-actions" style="text-align: right; vertical-align: middle;">
                         <div class="cart-controls-container">
                             {{-- Группа изменения количества --}}
-                            <form class="ajax-cart-form" method="POST" action="{{ route('cart.add') }}">
+                            <form class="ajax-cart-form" onsubmit="return false" method="POST" action="{{ route('cart.add') }}">
                                 @csrf
                                 <input type="hidden" name="product_id" value="{{ $item->product_id }}">
                                 <input type="hidden" name="mode" value="set"> 

@@ -8,7 +8,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\{AuthController, RegisterController, RecoveryPassController};
-use App\Http\Controllers\{ProfileController, OrganizationController, DashboardController, NotificationController, TicketController, StoreController, ProductController, CartController, OrderController};
+use App\Http\Controllers\{ProfileController, OrganizationController, DashboardController, NotificationController, TicketController, StoreController, ProductController, CartController, OrderController, DocumentController, SecureDownloadController};
 
 /**
  * --------------------------------------------------------------------------
@@ -73,7 +73,7 @@ Route::middleware(['auth', 'check.profile'])->group(function () {
     Route::get('/catalog', [StoreController::class, 'index'])
         ->name('catalog.index')
         ->middleware([
-            'heavy.throttle:middle',
+            'heavy.throttle:min',
             'cache.response:5'
         ]);
     Route::post('/catalog/like-do/{id}', [ProductController::class, 'toggleLike'])
@@ -119,7 +119,12 @@ Route::middleware(['auth', 'check.profile'])->group(function () {
     Route::get('/catalog/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/catalog/order/{code}', [OrderController::class, 'show'])->name('orders.show');
 
-    // --- ТЕХПОДДЕРЖКА ---
+    // --- ФАЙЛОВЫЙ ЦЕНТР ---
+    Route::get('/files', [DocumentController::class, 'index'])->name('files.index');
+    Route::get('/files/download/{id}', [SecureDownloadController::class, 'download'])
+        ->name('files.download')
+        ->middleware('heavy.throttle:short');
+
     Route::get('/requests', [TicketController::class, 'index'])->name('tickets.index');
     Route::get('/requests/new', [TicketController::class, 'create'])->name('tickets.create');
     Route::post('/requests/save', [TicketController::class, 'store'])->name('tickets.store');

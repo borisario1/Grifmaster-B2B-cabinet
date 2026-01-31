@@ -19,7 +19,7 @@ class TicketResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-chat-bubble-left-right';
 
-    protected static ?string $navigationGroup = 'Продажи';
+    protected static ?string $navigationGroup = 'Поддержка';
 
     protected static ?string $navigationLabel = 'Обращения';
 

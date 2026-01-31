@@ -297,6 +297,7 @@
                             <div class="cart-controls-container">
                                 @php $isInCart = $i->in_cart; @endphp
                                 <form method="POST" action="{{ route('cart.add') }}" 
+                                    onsubmit="return false"
                                     class="ajax-cart-form catalog-qty-group {{ $isInCart ? 'is-in-cart' : '' }}">
                                     @csrf
                                     <input type="hidden" name="product_id" value="{{ $i->id }}">
