@@ -1,7 +1,12 @@
 <div class="dashboard-footer">
     © 2005 - {{ date('Y') }} Grifmaster<br>
     Версия приложения: {{ config('b2b.version') }}, обновлено: {{ config('b2b.updated') }}<br>
-    {{ config('b2b.support.name') }} <a href="mailto:{{ config('b2b.support.email') }}">{{ config('b2b.support.email') }}</a>
+    {{ config('b2b.support.name') }} <a href="mailto:{{ config('b2b.support.email') }}">{{ config('b2b.support.email') }}</a>
+
+    @if(auth()->check() && in_array(auth()->user()->role, ['admin', 'manager']))
+        <br>
+        <a href="/management">Панель управления</a>
+    @endif
 
     @if(config('app.debug') && config('debugbar.debug_footer'))
         @php

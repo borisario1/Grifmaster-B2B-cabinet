@@ -27,6 +27,11 @@ class Ticket extends Model
         return $this->hasMany(TicketMessage::class, 'request_id');
     }
 
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
     /**
      * Получить читаемое название категории
      */

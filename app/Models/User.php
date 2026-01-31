@@ -14,9 +14,25 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class User extends Authenticatable
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
+use Filament\Models\Contracts\HasName;
+
+class User extends Authenticatable implements FilamentUser, HasName
 {
     use HasFactory, Notifiable, SoftDeletes;
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return $this->role === 'admin' || $this->role === 'manager';
+    }
+
+    public function getFilamentName(): string
+    {
+        return $this->profile?->first_name ? "{$this->profile->first_name} {$this->profile->last_name}" : $this->email;
+    }
+
+
 
     /**
      * Имя таблицы в БД

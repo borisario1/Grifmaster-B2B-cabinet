@@ -1,4 +1,13 @@
 <header class="topbar">
+    @if(session('impersonator_id'))
+        <div style="background: #f59e0b; color: #1f2937; text-align: center; padding: 8px 16px; font-weight: 600; font-size: 14px;">
+            <i class="bi bi-eye-fill" style="margin-right: 8px;"></i>
+            Вы вошли под пользователем {{ auth()->user()->email }}
+            <a href="{{ route('impersonate.stop') }}" style="color: #1f2937; margin-left: 15px; text-decoration: underline;">
+                Вернуться к своей сессии
+            </a>
+        </div>
+    @endif
     <div class="topbar-inner">
         <div class="topbar-left">
             <a href="{{ route('dashboard') }}">

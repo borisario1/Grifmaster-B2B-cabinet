@@ -138,3 +138,21 @@ Route::middleware('auth')->group(function () {
     Route::post('/profile/save', [ProfileController::class, 'update'])->name('profile.update');
     Route::post('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
 });
+
+/**
+ * --------------------------------------------------------------------------
+ * Группа: IMPERSONATION (Вход под пользователем)
+ * --------------------------------------------------------------------------
+ */
+// Выход из режима impersonation (требует авторизации web guard)
+Route::middleware('auth:web')->get('/impersonate-stop', [\App\Http\Controllers\ImpersonationController::class, 'stop'])
+    ->name('impersonate.stop');
+
+// Вход по токену (без auth middleware — токен сам авторизует)
+Route::get('/impersonate-login/{token}', [\App\Http\Controllers\ImpersonationController::class, 'loginWithToken'])
+    ->name('impersonate.login');
+
+// Промежуточная страница для открытия URL в новом окне
+Route::get('/impersonate-redirect', function () {
+    return view('impersonate-redirect');
+})->name('impersonate.redirect');
