@@ -18,7 +18,7 @@
                         if (str_contains($currentPath, '/catalog/order') || str_contains($currentPath, '/catalog/cart')) {
                             $isActive = true;
                         }
-                        if ($currentPath === '/catalog') {
+                        if ($currentPath === '/catalog' || $currentPath === '/catalog/ordered') {
                             $isActive = false;
                         }
                     }

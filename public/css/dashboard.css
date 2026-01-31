@@ -566,7 +566,7 @@ body {
     margin: 25px 0 40px;
     width: 100%;
     position: relative;
-    border-radius: var(--radius);
+    border-radius: var(--min_radius);
     overflow: hidden;
     /* Соотношение сторон, чтобы блок не скакал при загрузке. 
        Например 3:1 (33.33%) или подстройте под ваши баннеры */
@@ -630,34 +630,38 @@ body {
 }
 
 /* =========================================================
-   DASH CARD IMAGES (тестирую)
+   DASH CARD IMAGES (эффект фоновой иконки)
    ========================================================= */
 .dash-card {
-    position: relative; /* Чтобы позиционировать картинку абсолютно внутри */
-    overflow: hidden;   /* Чтобы картинка не вылезала за скругления */
+    position: relative; 
+    overflow: hidden;   
 }
 
-/* Изображение в правом верхнем углу карточки */
+/* Изображение изначально увеличено и повернуто */
 .dash-card-image {
     position: absolute;
     top: 5px;
-    right: 5px;
-    width: 75px;  /* Базовый размер */
-    height: 75px; /* Базовый размер */
+    right: 0px;
+    width: 90px;  
+    height: 90px; 
     object-fit: contain;
-    opacity: 1; /* Легкая прозрачность по умолчанию, чтобы не мешать тексту */
-    transition: all 0.3s ease;
+    
+    /* Начальное состояние: уже под градусом и увеличено */
+    opacity: 1; /* Делаем полупрозрачной, чтобы не мешала тексту */
+    transform: scale(1) rotate(-15deg); 
+    
+    transition: all 0.5s cubic-bezier(0.375, 1.185, 0.52, 1.375); /* Плавный отскок */
     z-index: 0;
-    pointer-events: none; /* Чтобы не перекрывало клик */
+    pointer-events: none; 
 }
 
-/* Эффект при наведении на карточку */
+/* При наведении увеличивается еще сильнее и становится ярче */
 .dash-card:hover .dash-card-image {
-    opacity: 0.8; /* Полная яркость */
-    transform: scale(1.5) rotate(15deg); /* Небольшое увеличение и поворот */
+    opacity: 1; 
+    transform: scale(1.3) rotate(-30deg); /* Еще больше масштаб и чуть сильнее поворот */
 }
 
-/* Убеждаемся, что контент (текст и иконка) выше картинки */
+/* Контент всегда поверх картинки */
 .dash-card i, 
 .dash-card-title, 
 .dash-card-desc {

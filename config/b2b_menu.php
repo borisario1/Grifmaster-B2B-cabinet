@@ -29,7 +29,7 @@ return [
     'catalog' => [
         'title'   => 'Каталог',
         'title_in_burger' => 'Каталог', // Как будет называться в бургер меню
-        'desc'    => 'Актуальный список товаров в наличии',
+        'desc'    => 'Актуальный список товаров в наличии, РРЦ и персональные скидки',
         'icon'    => 'bi-grid-3x3-gap-fill',
         'url'     => '/catalog',
         'group'   => 'orders',
@@ -41,8 +41,8 @@ return [
     'cart' => [
         'title'   => 'Корзина',
         'title_in_burger' => 'Корзина', // Как будет называться в бургер меню
-        'desc'    => 'Товары, готовые к заказу',
-        'icon'    => 'bi-basket2-fill',
+        'desc'    => 'Товары, которые вы добавили в корзину. Отправьте заказ онлайн.',
+        'icon'    => 'bi-basket2',
         'url'     => '/catalog/cart',
         'group'   => 'orders',
         'priority' => 'high', // Высокий приоритет - отображается первым в бургер меню
@@ -53,7 +53,7 @@ return [
     'wishlist' => [
         'title'   => 'Избранное',
         'desc'    => 'Товары в избранном, которые вы отложили для будущих покупок.',
-        'icon'    => 'bi-star-fill',
+        'icon'    => 'bi-star',
         'url'     => '/catalog/wishlist',
         'group'   => 'orders',
         'show_in' => ['dashboard', 'burger'],
@@ -63,7 +63,7 @@ return [
     'orders' => [
         'title'   => 'Ваши заказы',
         'title_in_burger' => 'Заказы', // Как будет называться в бургер меню
-        'desc'    => 'История и статус заказов',
+        'desc'    => 'Все созданные вами заказы, их история, статусы доставок и состав.',
         'icon'    => 'bi-receipt-cutoff',
         'url'     => '/catalog/orders',
         'group'   => 'orders',
@@ -85,7 +85,7 @@ return [
     'ordered' => [
         'title'   => 'Заказывали ранее',
         'title_in_burger' => 'Заказывали',
-        'desc'    => 'Товары, которые вы заказали ранее',
+        'desc'    => 'Товары, которые вы заказывали. Повторите заказ, быстро создав его.',
         'icon'    => 'bi bi-bag-check',
         'url'     => '/catalog/ordered',
         'group'   => 'orders',
