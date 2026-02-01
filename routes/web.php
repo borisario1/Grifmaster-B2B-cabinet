@@ -8,7 +8,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\{AuthController, RegisterController, RecoveryPassController};
-use App\Http\Controllers\{ProfileController, OrganizationController, DashboardController, NotificationController, TicketController, StoreController, ProductController, CartController, OrderController, DocumentController, SecureDownloadController};
+use App\Http\Controllers\{ProfileController, OrganizationController, DashboardController, NotificationController, TicketController, StoreController, ProductController, CartController, OrderController, FilesController, SecureDownloadController};
 
 /**
  * --------------------------------------------------------------------------
@@ -73,8 +73,8 @@ Route::middleware(['auth', 'check.profile'])->group(function () {
     Route::get('/catalog', [StoreController::class, 'index'])
         ->name('catalog.index')
         ->middleware([
-            'heavy.throttle:min',
-            'cache.response:5'
+            'heavy.throttle:min'
+            //'cache.response:5'
         ]);
     Route::post('/catalog/like-do/{id}', [ProductController::class, 'toggleLike'])
         ->name('product.like-do')
@@ -120,7 +120,7 @@ Route::middleware(['auth', 'check.profile'])->group(function () {
     Route::get('/catalog/order/{code}', [OrderController::class, 'show'])->name('orders.show');
 
     // --- ФАЙЛОВЫЙ ЦЕНТР ---
-    Route::get('/files', [DocumentController::class, 'index'])->name('files.index');
+    Route::get('/files', [FilesController::class, 'index'])->name('files.index');
     Route::get('/files/download/{id}', [SecureDownloadController::class, 'download'])
         ->name('files.download')
         ->middleware('heavy.throttle:short');
@@ -131,6 +131,7 @@ Route::middleware(['auth', 'check.profile'])->group(function () {
     Route::get('/requests/view/{code}', [TicketController::class, 'show'])->name('tickets.show');
     Route::post('/requests/message/{code}', [TicketController::class, 'sendMessage'])->name('tickets.message');
     Route::get('/requests/close/{code}', [TicketController::class, 'close'])->name('tickets.close');
+    Route::get('/requests/attachment/{id}', [TicketController::class, 'downloadAttachment'])->name('tickets.attachment');
 });
 
 /**

@@ -33,14 +33,8 @@
             <i class="bi bi-info-circle"></i> Основная информация
         </div>
         <div class="order-data-list">
-            <div>Статус: <span class="order-status {{ $order->status }}">
-                @switch($order->status)
-                    @case('new') Новый @break
-                    @case('processing') В&nbsp;работе @break
-                    @case('done') Выполнен @break
-                    @case('cancel') Отменен @break
-                    @default {{ $order->status }}
-                @endswitch
+            <div>Статус: <span class="order-status" style="background-color: {{ $order->status_color ?? '#ccc' }}; color: #fff; border: none;">
+                {{ $order->status_label ?? $order->status }}
             </span></div>
             <div class="info-row"><span>Дата создания:</span> <strong>{{ date('d.m.Y H:i', strtotime($order->created_at)) }}</strong></div>
             <div class="info-row"><span>Сумма к оплате:</span> <strong style="color: #0B466E;">{!! str_replace(' ', '&nbsp;', number_format($order->total_amount, 2, ',', ' ')) !!}&nbsp;₽</strong></div>
@@ -123,15 +117,17 @@
             <div style="font-weight: 500; color: #001F33;">{{ $h->message }}</div>
             @if($h->status_to)
                 <div style="font-size: 13px; color: #666; margin-top: 4px;">
-                    Статус: <span class="order-status {{ $h->status_to }}">
-                        @switch($h->status_to)
-                            @case('new') Новый @break
-                            @case('processing') В&nbsp;работе @break
-                            @case('done') Выполнен @break
-                            @case('cancel') Отменен @break
-                            @default {{ $h->status_to }}
-                        @endswitch
+            @if($h->status_to_label)
+                <div style="font-size: 13px; color: #666; margin-top: 4px;">
+                    Статус: <span class="order-status" style="background-color: {{ $h->status_to_color ?? '#ccc' }}; color: #fff; border: none; font-size: 11px; padding: 2px 6px;">
+                        {{ $h->status_to_label }}
                     </span>
+                </div>
+            @elseif($h->status_to)
+                <div style="font-size: 13px; color: #666; margin-top: 4px;">
+                    Статус: {{ $h->status_to }}
+                </div>
+            @endif
                 </div>
             @endif
         </div>

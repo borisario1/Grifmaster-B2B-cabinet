@@ -16,11 +16,11 @@ class BrandResource extends Resource
     
     protected static ?string $navigationIcon = 'heroicon-o-building-storefront';
     
-    protected static ?string $navigationGroup = 'Файлы';
+    protected static ?string $navigationGroup = '📦 Каталог';
     
     protected static ?string $navigationLabel = 'Бренды';
     
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 2;
     
     public static function form(Form $form): Form
     {

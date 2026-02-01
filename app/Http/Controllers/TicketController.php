@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ticket;
+use App\Models\TicketAttachment;
 use App\Services\TicketService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class TicketController extends Controller
 {
@@ -52,7 +54,7 @@ class TicketController extends Controller
     {
         $ticket = Ticket::where('request_code', $code)
             ->where('user_id', Auth::id())
-            ->with('messages') // Жадная загрузка сообщений
+            ->with('messages.attachments') // Жадная загрузка сообщений с вложениями
             ->firstOrFail();
 
         // Помечаем сообщения от поддержки как прочитанные
@@ -70,9 +72,21 @@ class TicketController extends Controller
             ->where('user_id', Auth::id())
             ->firstOrFail();
 
-        $request->validate(['message' => 'required|string']);
+        $request->validate([
+            'message' => 'required|string',
+            'attachments' => 'nullable|array|max:5',
+            'attachments.*' => 'file|max:102400', // 100MB per file
+        ]);
 
-        $this->ticketService->addMessage($ticket, Auth::user(), $request->input('message'));
+        // Проверяем суммарный размер
+        $files = $request->file('attachments', []);
+        $totalSize = collect($files)->sum(fn($f) => $f->getSize());
+        
+        if ($totalSize > 104857600) { // 100MB total
+            return back()->withErrors(['attachments' => 'Суммарный размер файлов не может превышать 100 МБ']);
+        }
+
+        $this->ticketService->addMessage($ticket, Auth::user(), $request->input('message'), $files);
 
         return back()->with('success', 'Сообщение отправлено');
     }
@@ -90,5 +104,33 @@ class TicketController extends Controller
         }
 
         return back();
+    }
+
+    /**
+     * Скачивание вложения с проверкой прав доступа
+     */
+    public function downloadAttachment($id)
+    {
+        $attachment = TicketAttachment::with('message.ticket')->findOrFail($id);
+        $ticket = $attachment->message->ticket ?? null;
+        
+        if (!$ticket) {
+            abort(404);
+        }
+
+        // Проверяем права: владелец тикета или админ
+        $user = Auth::user();
+        if ($ticket->user_id !== $user->id && !$user->isAdmin()) {
+            abort(403, 'Нет доступа к этому файлу');
+        }
+
+        if (!Storage::disk('private')->exists($attachment->file_path)) {
+            abort(404, 'Файл не найден');
+        }
+
+        return Storage::disk('private')->download(
+            $attachment->file_path,
+            $attachment->original_name
+        );
     }
 }

@@ -32,6 +32,11 @@ class User extends Authenticatable implements FilamentUser, HasName
         return $this->profile?->first_name ? "{$this->profile->first_name} {$this->profile->last_name}" : $this->email;
     }
 
+    public function getNameAttribute(): string
+    {
+        return $this->getFilamentName();
+    }
+
 
 
     /**

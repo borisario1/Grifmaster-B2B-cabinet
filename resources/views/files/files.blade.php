@@ -21,6 +21,12 @@
                         </div>
                         <h3 class="doc-title-large">{{ $resource->title }}</h3>
                         
+                        @if($resource->description)
+                            <div class="doc-description" style="font-size: 0.9em; color: #666; margin-bottom: 8px;">
+                                {!! nl2br(e($resource->description)) !!}
+                            </div>
+                        @endif
+                        
                         <div class="doc-meta-large">
                             @if(!$resource->external_link && $resource->file_path)
                                 <span class="doc-size">{{ bytesToHuman($resource->getFileSize()) }}</span>
@@ -66,7 +72,18 @@
                         <img src="{{ asset($brand->logo_path) }}" alt="{{ $brand->name }}" class="brand-logo">
                         <div class="brand-info">
                             <h4 class="brand-name">{{ $brand->name }}</h4>
-                            <span class="brand-docs-count">{{ $brand->resources_count }} {{ \Illuminate\Support\Str::plural('документ', $brand->resources_count, ['документ', 'документа', 'документов']) }}</span>
+                            <span class="brand-docs-count">
+                                @php
+                                    $count = $brand->resources_count;
+                                    $word = 'файлов';
+                                    if ($count % 10 == 1 && $count % 100 != 11) {
+                                        $word = 'файл';
+                                    } elseif (in_array($count % 10, [2, 3, 4]) && !in_array($count % 100, [12, 13, 14])) {
+                                        $word = 'файла';
+                                    }
+                                @endphp
+                                {{ $count }} {{ $word }}
+                            </span>
                         </div>
                     </div>
                 @endforeach
@@ -82,14 +99,16 @@
         </section>
     @endif
     
+    
     {{-- БЛОК 3: СПИСКИ ФАЙЛОВ ПО ТИПАМ --}}
     <section class="resources-section">
-        <h2 class="section-title">Документы</h2>
-        
-        @foreach(['catalog' => 'Каталоги', 'certificate' => 'Сертификаты', '3d_model' => '3D модели', 'video' => 'Видео'] as $type => $typeLabel)
+        @foreach(['catalog' => ['label' => 'Каталоги', 'icon' => 'book'], 'certificate' => ['label' => 'Сертификаты', 'icon' => 'award'], '3d_model' => ['label' => '3D модели', 'icon' => 'box'], 'video' => ['label' => 'Видео', 'icon' => 'play-circle']] as $type => $config)
             @if(isset($resourcesByType[$type]) && $resourcesByType[$type]->isNotEmpty())
                 <div class="resource-type-group">
-                    <h3 class="resource-type-title">{{ $typeLabel }}</h3>
+                    <h3 class="resource-type-title">
+                        <i class="bi bi-{{ $config['icon'] }}"></i>
+                        {{ $config['label'] }}
+                    </h3>
                     <div class="resources-grid">
                         @foreach($resourcesByType[$type] as $resource)
                             <div class="resource-card" data-brand-id="{{ $resource->brand_id ?? 'general' }}">
@@ -98,6 +117,12 @@
                                 </div>
                                 <div class="resource-content">
                                     <h4 class="resource-title">{{ $resource->title }}</h4>
+                                    
+                                    @if($resource->description)
+                                        <div class="resource-description" style="font-size: 0.85em; color: #777; margin-bottom: 4px; line-height: 1.3;">
+                                            {!! nl2br(e($resource->description)) !!}
+                                        </div>
+                                    @endif
                                     
                                     @if($resource->brand)
                                         <span class="resource-brand">{{ $resource->brand->name }}</span>

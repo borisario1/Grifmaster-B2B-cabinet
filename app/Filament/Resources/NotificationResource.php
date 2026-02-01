@@ -19,7 +19,9 @@ class NotificationResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-bell';
 
-    protected static ?string $navigationGroup = 'Поддержка';
+    protected static ?string $navigationGroup = '🎫 Поддержка';
+    
+    protected static ?int $navigationSort = 2;
 
     protected static ?string $navigationLabel = 'Уведомления';
 

@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS b2b_settings (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `key` VARCHAR(255) NOT NULL UNIQUE,
+    value TEXT,
+    `group` VARCHAR(255) NOT NULL DEFAULT 'general',
+    created_at TIMESTAMP NULL,
+    updated_at TIMESTAMP NULL
+);

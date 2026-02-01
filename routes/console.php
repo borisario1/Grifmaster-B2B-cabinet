@@ -15,4 +15,12 @@ Schedule::command('products:import')
     ->hourlyAt(5)
     ->between('08:00', '18:00')
     ->withoutOverlapping()
-    ->onOneServer();
+    ->onOneServer()
+    ->emailOutputOnFailure('admin@example.com');
+
+// Обогащение товаров: каждую ночь в 03:00
+Schedule::command('products:enrich')
+    ->dailyAt('03:00')
+    ->withoutOverlapping()
+    ->onOneServer()
+    ->emailOutputOnFailure('admin@example.com');

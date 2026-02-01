@@ -6,10 +6,10 @@ use App\Models\Brand;
 use App\Models\Resource;
 use Illuminate\Http\Request;
 
-class DocumentController extends Controller
+class FilesController extends Controller
 {
     /**
-     * Display the documents page.
+     * Display the files page.
      */
     public function index(Request $request)
     {
@@ -33,6 +33,6 @@ class DocumentController extends Controller
             ->get()
             ->groupBy('type');
         
-        return view('files', compact('pinnedResources', 'brands', 'resourcesByType'));
+        return view('files.files', compact('pinnedResources', 'brands', 'resourcesByType'));
     }
 }

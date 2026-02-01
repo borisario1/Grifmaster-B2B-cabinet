@@ -82,7 +82,7 @@ test('страница файлов доступна авторизованны�
     $response = $this->actingAs($this->user)->get(route('files.index'));
     
     $response->assertStatus(200);
-    $response->assertViewIs('files');
+    $response->assertViewIs('files.files');
     $response->assertViewHas('pinnedResources');
     $response->assertViewHas('brands');
     $response->assertViewHas('resourcesByType');

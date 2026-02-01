@@ -142,6 +142,11 @@ class CartController extends Controller
 
             $summary = $cartService->getSummary();
 
+            // Получаем статус по умолчанию
+            $defaultStatus = \App\Models\OrderStatus::default()->first();
+            $statusId = $defaultStatus?->id;
+            $statusName = $defaultStatus?->name ?? 'new';
+
             // 3. Создание заказа
             $orderId = DB::table('b2b_orders')->insertGetId([
                 'order_code'   => $orderCode,
@@ -152,9 +157,11 @@ class CartController extends Controller
                 'org_kpp'      => $org->kpp ?? null,
                 'total_items'  => $summary['pos'],
                 'total_amount' => $summary['amount'],
-                'status'       => 'new',
+                'status'       => $statusName,
+                'status_id'    => $statusId,
                 'created_at'   => now(),
                 'updated_at'   => now(),
+                'last_status_change_at' => now(),
             ]);
 
             // 4. Перенос позиций
@@ -171,23 +178,27 @@ class CartController extends Controller
                 ]);
             }
 
-            // 5. История заказа (Legacy style)
+            // 5. История заказа (Legacy style + New IDs)
             DB::table('b2b_order_history')->insert([
                 'order_id'   => $orderId,
                 'event_type' => 'created',
                 'message'    => "Заказ создан. Сумма: {$summary['amount']} ₽, позиций: {$summary['pos']}",
-                'status_to'  => 'new',
-                'created_by' => $user->id,
+                'status_to'  => $statusName, // Legacy
+                'status_from_id' => null,
+                'status_to_id'   => $statusId,
+                'changed_by_id'  => $user->id,
+                'created_by' => $user->id, // Legacy
                 'created_at' => now(),
             ]);
 
-            // 6. Отправляем уведомление
+            // 6. Отправляем уведомление (с контекстом заказа для менеджеров)
             $this->notificationService->send(
                 $user->id,
                 'order_created',
                 'Новый заказ',
                 "Ваш заказ №{$orderCode} успешно оформлен.",
-                route('orders.show', $orderCode)
+                route('orders.show', $orderCode),
+                ['order_code' => $orderCode] // Контекст для детальных уведомлений
             );
 
             // 7. Очистка корзины

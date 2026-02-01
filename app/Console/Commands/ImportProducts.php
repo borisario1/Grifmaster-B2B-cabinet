@@ -8,47 +8,61 @@ use Illuminate\Support\Facades\Http;
 
 class ImportProducts extends Command
 {
-    protected $signature = 'products:import';
+    use \App\Traits\LoggableCommand;
+
+    protected $signature = 'products:import {--log-id= : ID лога запуска}';
     protected $description = 'Импорт товаров из внешнего CSV файла (1С)';
 
     public function handle()
     {
-        $this->info('Ищу файл с данными...');
-        $csvUrl = config('b2b.1c_csv_price.csv_source');
+        $this->initLog();
         
         try {
+            $this->logToDb('Ищу файл с данными...');
+            $csvUrl = config('b2b.1c_csv_price.csv_source');
+            
             $response = Http::withoutVerifying()->timeout(60)->get($csvUrl);
             
             if ($response->failed()) {
                 throw new \Exception("Не удалось начать импорт. Код сервера: " . $response->status());
             }
 
-            $this->info('Файл получен. Начинаю разбор...');
+            $this->logToDb('Файл получен. Начинаю разбор...');
             $content = $response->body();
             $rows = explode("\n", $content);
+            $totalRows = count($rows);
             
             $processedArticles = [];
             $created = 0;
             $updated = 0;
 
+            // Задаем максимальный прогресс
+            $this->setProgress(0, $totalRows);
+
             foreach ($rows as $index => $row) {
+                // Обновляем прогресс каждые 50 записей или в конце
+                if ($index % 50 === 0 || $index === $totalRows - 1) {
+                     $this->setProgress($index, $totalRows);
+                }
+
                 if ($index === 0 || empty(trim($row))) continue;
 
                 $data = str_getcsv($row, ",");
-                $article = $data[3];
-                $name = $data[1];
+                $article = $data[3] ?? null;
+                $name = $data[1] ?? 'Без названия';
                 
+                if (!$article) continue;
+
                 $processedArticles[] = $article;
 
-                // Ищем товар, чтобы понять статус действия
                 $product = Product::where('article', $article)->first();
                 
                 $payload = [
-                    'code_1c'          => $data[0],
+                    'code_1c'          => $data[0] ?? null,
                     'name'             => $name,
-                    'free_stock'       => (int)$data[2],
-                    'brand'            => $data[4],
-                    'price'            => (float)$data[6],
+                    'free_stock'       => (int)($data[2] ?? 0),
+                    'brand'            => $data[4] ?? null,
+                    'price'            => (float)($data[6] ?? 0),
                     'status'           => $data[10] ?? null,
                     'product_type'     => $data[11] ?? null,
                     'product_category' => $data[12] ?? null,
@@ -60,24 +74,18 @@ class ImportProducts extends Command
 
                 if ($product) {
                     $product->update($payload);
-                    // Используем line для построчного вывода с цветовой меткой
-                    $this->line("<fg=cyan>[UPDATE]</> {$article} — {$name}");
+                    $this->logToDb("[UPDATE] {$article}", 'info');
                     $updated++;
                 } else {
                     Product::create(array_merge(['article' => $article], $payload));
-                    $this->line("<fg=green>[CREATE]</> {$article} — {$name}");
+                    $this->logToDb("[CREATE] {$article}", 'info');
                     $created++;
                 }
             }
 
-            $this->info("\nИмпорт завершен:");
-            $this->line("<fg=green>Создано новых: {$created}</>");
-            $this->line("<fg=cyan>Обновлено: {$updated}</>");
+            $this->logToDb("Импорт завершен. Создано: {$created}. Обновлено: {$updated}.");
 
-            // --- ПРОВЕРКА ПРОПАВШИХ ТОВАРОВ ---
-            $this->info("\nПроверка товаров, пропавших из прайса...");
-            
-            // Получаем список тех, кого будем скрывать, чтобы вывести их построчно
+            // --- ПРОВЕРКА ПРОПАВШИХ ---
             $toDeactivate = Product::where('is_active', true)
                 ->whereNotIn('article', $processedArticles)
                 ->get();
@@ -85,15 +93,16 @@ class ImportProducts extends Command
             if ($toDeactivate->count() > 0) {
                 foreach ($toDeactivate as $item) {
                     $item->update(['is_active' => false]);
-                    $this->line("<fg=yellow>[HIDE]</> {$item->article} — {$item->name}");
+                    $this->logToDb("[HIDE] {$item->article}");
                 }
-                $this->warn("\nСкрыто товаров: " . $toDeactivate->count());
-            } else {
-                $this->info("Все товары в базе актуальны.");
+                $this->logToDb("Скрыто товаров: " . $toDeactivate->count());
             }
-            
+
+            $this->finishLog(true);
+
         } catch (\Exception $e) {
-            $this->error("Ошибка: " . $e->getMessage());
+            $this->logToDb("Error: " . $e->getMessage(), 'error');
+            $this->finishLog(false, $e->getMessage());
         }
     }
 }

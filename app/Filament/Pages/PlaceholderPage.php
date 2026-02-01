@@ -9,6 +9,12 @@ abstract class PlaceholderPage extends Page
 {
     protected static string $view = 'filament.pages.placeholder';
 
+    // Скрываем из навигации
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
+
     // Делаем элемент меню менее ярким (приглушенный)
     public static function getNavigationBadge(): ?string
     {

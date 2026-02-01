@@ -23,10 +23,11 @@ class OrderController extends Controller
     {
         $user = Auth::user();
 
-        // 1. Загружаем заказы с джоинами профиля и организаций
+        // 1. Загружаем заказы с джоинами профиля, организаций и статусов
         $orders = DB::table('b2b_orders as o')
             ->leftJoin('b2b_organizations as org', 'org.id', '=', 'o.org_id')
             ->leftJoin('b2b_user_profile as p', 'p.user_id', '=', 'o.user_id')
+            ->leftJoin('b2b_order_statuses as s', 's.id', '=', 'o.status_id')
             // Подзапрос для получения даты последнего события из истории
             ->leftJoin(DB::raw('(SELECT order_id, MAX(created_at) as last_act FROM b2b_order_history GROUP BY order_id) as h'), 'h.order_id', '=', 'o.id')
             ->where('o.user_id', $user->id)
@@ -36,11 +37,13 @@ class OrderController extends Controller
                 'org.inn as org_inn',
                 'p.work_phone as user_phone', // Используем work_phone из миграции
                 DB::raw("CONCAT(COALESCE(p.first_name, ''), ' ', COALESCE(p.last_name, '')) as user_full_name"),
-                'h.last_act as last_activity_at'
+                'h.last_act as last_activity_at',
+                's.label as status_label',
+                's.color as status_color'
             )
             ->orderBy('o.id', 'desc')
             ->paginate(15);
-
+            
         // 2. Считаем статистику незавершенного заказа для ТЕКУЩЕЙ организации
         // Это нужно для блока-напоминания в шаблоне
         $currentCartStats = DB::table('b2b_cart_items')
@@ -64,10 +67,22 @@ class OrderController extends Controller
     {
         $user = Auth::user();
 
-        // 1. Загружаем заказ с проверкой владельца
-        $order = DB::table('b2b_orders')
-            ->where('order_code', $code)
-            ->where('user_id', $user->id)
+        // 1. Загружаем заказ с проверкой владельца и статусом
+        $order = DB::table('b2b_orders as o')
+            ->leftJoin('b2b_order_statuses as s', 's.id', '=', 'o.status_id')
+            ->leftJoin('b2b_organizations as org', 'org.id', '=', 'o.org_id') // Нужно для org_name
+            ->leftJoin('b2b_user_profile as p', 'p.user_id', '=', 'o.user_id') // Нужно для user_full_name
+            ->where('o.order_code', $code)
+            ->where('o.user_id', $user->id)
+            ->select(
+                'o.*',
+                's.label as status_label',
+                's.color as status_color',
+                'org.name as org_name', 
+                'org.inn as org_inn',
+                'org.kpp as org_kpp',
+                DB::raw("CONCAT(COALESCE(p.first_name, ''), ' ', COALESCE(p.last_name, '')) as user_full_name")
+            )
             ->first();
 
         if (!$order) {
@@ -80,9 +95,12 @@ class OrderController extends Controller
             ->get();
 
         // 3. Получаем историю событий (статусы, комментарии)
-        $history = DB::table('b2b_order_history')
-            ->where('order_id', $order->id)
-            ->orderBy('created_at', 'desc')
+        // Джоиним статусы для отображения истории
+        $history = DB::table('b2b_order_history as h')
+            ->leftJoin('b2b_order_statuses as s_to', 's_to.id', '=', 'h.status_to_id')
+            ->where('h.order_id', $order->id)
+            ->select('h.*', 's_to.label as status_to_label', 's_to.color as status_to_color')
+            ->orderBy('h.created_at', 'desc')
             ->get();
 
         return view('orders.show', compact('order', 'items', 'history'));

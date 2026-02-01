@@ -22,6 +22,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Регистрируем Observer для Ticket
+        \App\Models\Ticket::observe(\App\Observers\TicketObserver::class);
+        
+        // Регистрируем Observer для Order
+        \App\Models\Order::observe(\App\Observers\OrderObserver::class);
+        \App\Models\OrderItem::observe(\App\Observers\OrderItemObserver::class);
+        
         // Включаем логирование запросов только для отладки
         if (config('app.debug') && config('debugbar.debug_footer')) {
             \Illuminate\Support\Facades\DB::enableQueryLog();

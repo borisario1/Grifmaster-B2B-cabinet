@@ -15,11 +15,28 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // Создаем тестового пользователя
+        $user = User::firstOrCreate(
+            ['email' => 'test@example.com'],
+            [
+                'password' => bcrypt('password'),
+                'role' => 'admin', // Даем права админа для доступа к панели
+                'status' => 'active',
+            ]
+        );
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        // Создаем профиль для имени
+        if (!$user->profile()->exists()) {
+            $user->profile()->create([
+                 'first_name' => 'Test',
+                 'last_name' => 'User',
+            ]);
+        }
+
+        $this->call([
+            BrandSeeder::class,
+            ResourceSeeder::class,
+            OrderStatusSeeder::class,
         ]);
     }
 }

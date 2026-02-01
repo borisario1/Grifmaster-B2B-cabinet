@@ -18,14 +18,16 @@ class MailService
      */
     public static function send(string $to, string $subject, string $html, ?string $text = null): bool
     {
-        // Берем конфиги 
+        // Берем конфиги из БД (с фоллбэком на конфиг файл)
         $url = config('b2b.smtpbz.url', 'https://api.smtp.bz/v1/mailer/send');
-        $apiKey = config('b2b.smtpbz.key');
+        $apiKey = \App\Models\Setting::get('smtpbz_api_key', config('b2b.smtpbz.key'));
+        $fromEmail = \App\Models\Setting::get('smtpbz_from_email', config('b2b.smtpbz.from_email'));
+        $fromName = \App\Models\Setting::get('smtpbz_from_name', config('b2b.smtpbz.from_name'));
         
         // Данные формы (согласно документации formData)
         $payload = [
-            'from'    => config('b2b.smtpbz.from_email'),
-            'name'    => config('b2b.smtpbz.from_name'),
+            'from'    => $fromEmail,
+            'name'    => $fromName,
             'to'      => $to,
             'subject' => $subject,
             'html'    => $html,

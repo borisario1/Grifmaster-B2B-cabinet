@@ -12,12 +12,20 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\MailService;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class RegisterController extends Controller
 {
+    protected NotificationService $notificationService;
+
+    public function __construct(NotificationService $notificationService)
+    {
+        $this->notificationService = $notificationService;
+    }
+
     public function showRegister() { return view('auth.register'); }
 
     /**
@@ -148,6 +156,15 @@ class RegisterController extends Controller
         });
 
         auth()->login($user);
+
+        // Уведомление админу о новом пользователе
+        $this->notificationService->send(
+            $user->id,
+            'user_registered',
+            'Новый пользователь зарегистрирован',
+            "Email: {$user->email}, Телефон: {$user->phone}",
+            null
+        );
 
         $message = $isVerified 
             ? 'Ваш аккаунт успешно создан!' 

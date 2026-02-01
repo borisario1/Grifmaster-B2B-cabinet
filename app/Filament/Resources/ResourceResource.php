@@ -17,11 +17,11 @@ class ResourceResource extends FilamentResource
     
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     
-    protected static ?string $navigationGroup = 'Файлы';
+    protected static ?string $navigationGroup = '🎫 Поддержка';
     
-    protected static ?string $navigationLabel = 'Ресурсы';
+    protected static ?string $navigationLabel = 'Ресурсы (файлы)';
     
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 3;
     
     public static function form(Form $form): Form
     {
@@ -32,6 +32,12 @@ class ResourceResource extends FilamentResource
                         ->required()
                         ->label('Название документа')
                         ->maxLength(255),
+                    
+                    Forms\Components\Textarea::make('description')
+                        ->label('Описание')
+                        ->rows(3)
+                        ->maxLength(65535)
+                        ->columnSpanFull(),
                     
                     Forms\Components\Select::make('type')
                         ->options([
@@ -107,6 +113,13 @@ class ResourceResource extends FilamentResource
                     ->label('Название')
                     ->searchable()
                     ->sortable(),
+                
+                Tables\Columns\TextColumn::make('description')
+                    ->label('Описание')
+                    ->limit(50)
+                    ->searchable()
+                    ->toggleable(true)
+                    ->toggledHiddenByDefault(),
                 
                 Tables\Columns\BadgeColumn::make('type')
                     ->label('Тип')

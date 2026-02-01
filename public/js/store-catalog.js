@@ -7,12 +7,12 @@
 window.jsLoaded = false;
 
 // 1. УТИЛИТЫ КОРЗИНЫ
-window.handleInput = function(input) {
+window.handleInput = function (input) {
     const form = input.closest('form');
     const applyBtn = form.querySelector('.btn-qty-apply');
     const applyIcon = applyBtn.querySelector('i');
     const isInCart = form.classList.contains('is-in-cart');
-    
+
     const originalValue = parseInt(input.getAttribute('data-original') || 0);
     const currentValue = parseInt(input.value);
 
@@ -35,7 +35,7 @@ window.handleInput = function(input) {
     }
 };
 
-window.handleMinus = function(btn, productId, productName) {
+window.handleMinus = function (btn, productId, productName) {
     const input = btn.nextElementSibling;
     const currentValue = parseInt(input.value);
     const form = btn.closest('form');
@@ -47,7 +47,7 @@ window.handleMinus = function(btn, productId, productName) {
     } else if (currentValue === 1) {
         if (isInCart) {
             const removeBtn = form.parentElement.querySelector('.btn-cart-remove');
-            openModal('universalConfirm', () => { 
+            openModal('universalConfirm', () => {
                 removeItemInCatalog(removeBtn, productId);
             }, 'Удаление товара', `Вы уверены, что хотите удалить из заказа «${productName}»?`, 0, 'Да, удалить');
         } else {
@@ -57,44 +57,44 @@ window.handleMinus = function(btn, productId, productName) {
     }
 };
 
-window.removeItemInCatalog = function(btnElement, productId) {
+window.removeItemInCatalog = function (btnElement, productId) {
     const formData = new FormData();
     formData.append('product_id', productId);
     formData.append('qty', 0);
     formData.append('_token', window.StoreConfig.csrf);
-    
+
     btnElement.disabled = true;
 
-    fetch(window.StoreConfig.urls.cartAdd, { 
-        method: 'POST', 
-        body: formData, 
-        headers: { 'X-Requested-With': 'XMLHttpRequest' } 
+    fetch(window.StoreConfig.urls.cartAdd, {
+        method: 'POST',
+        body: formData,
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
     })
-    .then(r => r.json())
-    .then(data => {
-        if (data.success) {
-            const container = btnElement.closest('.cart-controls-container');
-            const form = container.querySelector('.ajax-cart-form');
-            const input = form.querySelector('.qty-field');
-            form.classList.remove('is-in-cart', 'needs-save');
-            input.value = 0;
-            input.setAttribute('data-original', 0);
-            btnElement.classList.add('hidden-data');
-            form.querySelector('.btn-qty-apply i').className = 'bi bi-cart-plus';
-            showToast(`${data.product_name} <br><strong>удален из заказа</strong>`, 'bi-trash');
-            if (window.updateTopbarCart && data.summary) window.updateTopbarCart(data.summary);
-        }
-    }).finally(() => { btnElement.disabled = false; });
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                const container = btnElement.closest('.cart-controls-container');
+                const form = container.querySelector('.ajax-cart-form');
+                const input = form.querySelector('.qty-field');
+                form.classList.remove('is-in-cart', 'needs-save');
+                input.value = 0;
+                input.setAttribute('data-original', 0);
+                btnElement.classList.add('hidden-data');
+                form.querySelector('.btn-qty-apply i').className = 'bi bi-cart-plus';
+                showToast(`${data.product_name} <br><strong>удален из заказа</strong>`, 'bi-trash');
+                if (window.updateTopbarCart && data.summary) window.updateTopbarCart(data.summary);
+            }
+        }).finally(() => { btnElement.disabled = false; });
 };
 
 // =========================================================
 // ОСНОВНАЯ ЛОГИКА (БЕЗ DOMContentLoaded, т.к. скрипт defer)
 // =========================================================
-(function() { // Оборачиваем в функцию, чтобы не засорять глобальную область
+(function () { // Оборачиваем в функцию, чтобы не засорять глобальную область
     const NO_IMAGE = window.StoreConfig.assets.noImage;
 
     // 1. ИНИЦИАЛИЗАЦИЯ LIST.JS
-    let itemsPerPage = window.StoreConfig.settings.itemsPerPage; 
+    let itemsPerPage = window.StoreConfig.settings.itemsPerPage;
     const step = 30;
 
     const options = {
@@ -119,12 +119,12 @@ window.removeItemInCatalog = function(btnElement, productId) {
         requestAnimationFrame(() => {
             // Скрываем слой лоадера
             tableLoader.style.opacity = '0';
-            
+
             // Убираем размытие и пульсацию
             tableContent.classList.remove('table-loading-pulse');
             tableContent.style.opacity = '1';
             tableContent.style.filter = 'blur(0)';
-            
+
             // Полностью удаляем лоадер через 300мс
             setTimeout(() => tableLoader.remove(), 300);
         });
@@ -135,7 +135,7 @@ window.removeItemInCatalog = function(btnElement, productId) {
     const showingInfo = document.getElementById('showing-info');
     const noResultMessage = document.getElementById('no-result-message');
     const noResultText = document.getElementById('no-result-text');
-    
+
     // 3. ФИЛЬТРЫ
     const selectedBrands = new Set();
     const brandTags = document.querySelectorAll('.brand-tag');
@@ -162,7 +162,7 @@ window.removeItemInCatalog = function(btnElement, productId) {
         }
 
         if (selects.coll.value) params.set('coll', selects.coll.value);
-        if (selects.cat.value)  params.set('cat', selects.cat.value);
+        if (selects.cat.value) params.set('cat', selects.cat.value);
         if (selects.type.value) params.set('type', selects.type.value);
 
         if (fStock.checked) params.set('stock', '1');
@@ -184,7 +184,7 @@ window.removeItemInCatalog = function(btnElement, productId) {
         } else {
             // Очистка при пустом URL
             const sInput = document.querySelector('.search');
-            if(sInput && sInput.value !== '') {
+            if (sInput && sInput.value !== '') {
                 sInput.value = '';
                 storeList.search();
             }
@@ -192,7 +192,7 @@ window.removeItemInCatalog = function(btnElement, productId) {
 
         selectedBrands.clear();
         brandTags.forEach(t => t.classList.replace('btn-primary', 'btn-secondary'));
-        
+
         if (params.has('brands')) {
             const brandsFromUrl = params.get('brands').split(',');
             brandsFromUrl.forEach(b => {
@@ -203,7 +203,7 @@ window.removeItemInCatalog = function(btnElement, productId) {
         }
 
         if (params.has('coll')) selects.coll.value = params.get('coll'); else selects.coll.value = "";
-        if (params.has('cat'))  selects.cat.value  = params.get('cat');  else selects.cat.value = "";
+        if (params.has('cat')) selects.cat.value = params.get('cat'); else selects.cat.value = "";
         if (params.has('type')) selects.type.value = params.get('type'); else selects.type.value = "";
 
         fStock.checked = params.has('stock');
@@ -218,7 +218,7 @@ window.removeItemInCatalog = function(btnElement, productId) {
         // Проверяем только видимые картинки внутри списка, чтобы не грузить процессор
         const images = document.querySelector('.list').querySelectorAll('.store-img');
         images.forEach(img => {
-            img.onerror = function() { if (this.src !== NO_IMAGE) this.src = NO_IMAGE; };
+            img.onerror = function () { if (this.src !== NO_IMAGE) this.src = NO_IMAGE; };
             if (img.complete && img.naturalWidth === 0) img.src = NO_IMAGE;
             if (!img.getAttribute('src')) img.src = NO_IMAGE;
         });
@@ -228,24 +228,24 @@ window.removeItemInCatalog = function(btnElement, productId) {
         const totalItems = storeList.items.length;
         const matched = storeList.matchingItems.length;
         const shown = storeList.visibleItems.length;
-        
+
         if (totalItems === 0) {
             noResultMessage.style.display = 'block';
             noResultText.innerText = "Каталог товаров пуст.";
-            if(showingInfo) showingInfo.style.display = 'none';
+            if (showingInfo) showingInfo.style.display = 'none';
         } else if (matched === 0) {
             noResultMessage.style.display = 'block';
             noResultText.innerText = "По вашему запросу ничего не найдено";
-            if(showingInfo) showingInfo.style.display = 'none';
+            if (showingInfo) showingInfo.style.display = 'none';
         } else {
             noResultMessage.style.display = 'none';
-            if(showingInfo) {
+            if (showingInfo) {
                 showingInfo.style.display = 'block';
                 document.getElementById('total-found').innerText = matched;
                 document.getElementById('visible-count').innerText = shown;
             }
         }
-        
+
         if (loadMoreBtn) {
             loadMoreBtn.style.display = (shown >= matched || matched === 0) ? 'none' : 'inline-block';
         }
@@ -256,21 +256,21 @@ window.removeItemInCatalog = function(btnElement, productId) {
         filterKeys.forEach(currentKey => {
             const otherActiveFilters = {};
             if (currentKey !== 'brand' && selectedBrands.size > 0) otherActiveFilters.brand = selectedBrands;
-            
+
             Object.keys(selects).forEach(key => {
                 if (key !== currentKey && selects[key].value !== "") {
                     otherActiveFilters[key] = selects[key].value;
                 }
             });
-            
+
             const stockOnly = fStock.checked;
             const noCollOnly = fNoColl.checked;
             const availableOptions = new Set();
-            
+
             storeList.items.forEach(item => {
                 const v = item.values();
                 let isMatch = true;
-                
+
                 if (otherActiveFilters.brand && !otherActiveFilters.brand.has(v['js-brand'])) isMatch = false;
                 if (otherActiveFilters.coll && v['js-coll'] !== otherActiveFilters.coll) isMatch = false;
                 if (otherActiveFilters.cat && v['js-cat'] !== otherActiveFilters.cat) isMatch = false;
@@ -314,9 +314,9 @@ window.removeItemInCatalog = function(btnElement, productId) {
         storeList.filter(item => {
             const v = item.values();
             const matchBrand = selectedBrands.size === 0 || selectedBrands.has(v['js-brand']);
-            const matchColl  = !selects.coll.value  || v['js-coll'] === selects.coll.value;
-            const matchCat   = !selects.cat.value   || v['js-cat'] === selects.cat.value;
-            const matchType  = !selects.type.value  || v['js-type'] === selects.type.value;
+            const matchColl = !selects.coll.value || v['js-coll'] === selects.coll.value;
+            const matchCat = !selects.cat.value || v['js-cat'] === selects.cat.value;
+            const matchType = !selects.type.value || v['js-type'] === selects.type.value;
             const matchStock = !fStock.checked || parseInt(v['js-stock']) > 0;
             const matchNoColl = !fNoColl.checked || (v['js-coll'] === 'Без названия');
             return matchBrand && matchColl && matchCat && matchType && matchStock && matchNoColl;
@@ -324,7 +324,7 @@ window.removeItemInCatalog = function(btnElement, productId) {
 
         itemsPerPage = 30;
         storeList.show(1, itemsPerPage);
-        
+
         updateSelectOptions();
         updateLoadMoreUI();
         validateImages();
@@ -333,7 +333,7 @@ window.removeItemInCatalog = function(btnElement, productId) {
 
     // Слушатели
     if (loadMoreBtn) {
-        loadMoreBtn.addEventListener('click', function() {
+        loadMoreBtn.addEventListener('click', function () {
             itemsPerPage += step;
             storeList.show(1, itemsPerPage);
             updateLoadMoreUI();
@@ -342,7 +342,7 @@ window.removeItemInCatalog = function(btnElement, productId) {
     }
 
     brandTags.forEach(tag => {
-        tag.addEventListener('click', function() {
+        tag.addEventListener('click', function () {
             const brand = this.getAttribute('data-brand');
             if (selectedBrands.has(brand)) {
                 selectedBrands.delete(brand);
@@ -359,11 +359,11 @@ window.removeItemInCatalog = function(btnElement, productId) {
     [fStock, fNoColl].forEach(el => el.addEventListener('change', applyAllFilters));
 
     storeList.on('searchComplete', updateLoadMoreUI);
-    
+
     const searchInput = document.querySelector('.search');
     if (searchInput) {
         let debounceTimer;
-        searchInput.addEventListener('input', function() {
+        searchInput.addEventListener('input', function () {
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(() => {
                 updateURL();
@@ -375,45 +375,47 @@ window.removeItemInCatalog = function(btnElement, productId) {
         selectedBrands.clear();
         brandTags.forEach(t => t.classList.replace('btn-primary', 'btn-secondary'));
         Object.values(selects).forEach(s => s.value = "");
-        fStock.checked = false; 
+        fStock.checked = false;
         fNoColl.checked = false;
-        if(searchInput) searchInput.value = "";
-        
-        storeList.search(); 
+        if (searchInput) searchInput.value = "";
+
+        storeList.search();
         applyAllFilters();
     };
 
-    window.addEventListener('popstate', function() {
+    window.addEventListener('popstate', function () {
         restoreFromURL();
     });
 
-    // 7. AJAX КОРЗИНА
-    document.querySelectorAll('.ajax-cart-form').forEach(form => {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
+    // 7. AJAX КОРЗИНА (Делегирование событий)
+    document.addEventListener('submit', function (e) {
+        // Ищем форму среди целей события
+        const form = e.target.closest('.ajax-cart-form');
+        if (!form) return;
 
-            const input = this.querySelector('.qty-field');
-            const isInCart = this.classList.contains('is-in-cart');
-            
-            if (!isInCart && parseInt(input.value) === 0) {
-                input.value = 1;
-            }
+        e.preventDefault();
 
-            const btn = this.querySelector('.btn-qty-apply');
-            const icon = btn.querySelector('i');
-            const originalIconClass = icon.className;
-            const formData = new FormData(this);
-            
-            btn.disabled = true;
-            icon.className = 'bi bi-hourglass-split';
+        const input = form.querySelector('.qty-field');
+        const isInCart = form.classList.contains('is-in-cart');
 
-            fetch(this.action, {
-                method: 'POST',
-                body: formData,
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            })
+        if (!isInCart && parseInt(input.value) === 0) {
+            input.value = 1;
+        }
+
+        const btn = form.querySelector('.btn-qty-apply');
+        const icon = btn.querySelector('i');
+        const originalIconClass = icon.className;
+        const formData = new FormData(form);
+
+        btn.disabled = true;
+        icon.className = 'bi bi-hourglass-split';
+
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
             .then(response => {
-                // Если сервер вернул 429 (Бан или Слишком часто)
                 if (!response.ok) {
                     return response.json().then(err => { throw new Error(err.message || 'Ошибка сервера'); });
                 }
@@ -424,7 +426,7 @@ window.removeItemInCatalog = function(btnElement, productId) {
                     const input = form.querySelector('.qty-field');
                     const removeBtn = form.parentElement.querySelector('.btn-cart-remove');
                     const wasInCart = form.classList.contains('is-in-cart');
-                    
+
                     input.setAttribute('data-original', data.total_qty);
                     input.value = data.total_qty;
 
@@ -433,6 +435,7 @@ window.removeItemInCatalog = function(btnElement, productId) {
                         input.setAttribute('data-original', 0);
                         input.value = 0;
                         if (removeBtn) removeBtn.classList.add('hidden-data');
+                        form.querySelector('.btn-qty-apply i').className = 'bi bi-cart-plus';
                         showToast(`${data.product_name} <br><strong>удален из заказа</strong>`, 'bi-trash');
                     } else {
                         form.classList.add('is-in-cart');
@@ -451,11 +454,11 @@ window.removeItemInCatalog = function(btnElement, productId) {
 
                 icon.className = 'bi bi-check-lg';
                 if (window.updateTopbarCart && data.summary) window.updateTopbarCart(data.summary);
-                
-                setTimeout(() => { 
+
+                setTimeout(() => {
                     const isInCart = form.classList.contains('is-in-cart');
                     icon.className = isInCart ? 'bi bi-check2' : 'bi bi-cart-plus';
-                    btn.disabled = true; 
+                    btn.disabled = true;
                 }, 1500);
             })
             .catch(error => {
@@ -463,7 +466,6 @@ window.removeItemInCatalog = function(btnElement, productId) {
                 icon.className = originalIconClass;
                 btn.disabled = false;
             });
-        });
     });
 
     // =========================================================
@@ -485,7 +487,7 @@ window.removeItemInCatalog = function(btnElement, productId) {
 let currentProductGallery = [];
 let currentImageIndex = 0;
 
-window.closeProductModal = function() {
+window.closeProductModal = function () {
     const modal = document.getElementById('productQuickView');
     if (modal) {
         modal.style.display = 'none';
@@ -494,7 +496,7 @@ window.closeProductModal = function() {
     }
 };
 
-window.openZoomImage = function() {
+window.openZoomImage = function () {
     const mainImg = document.getElementById('qv-main-img');
     if (!mainImg.src || mainImg.src.includes('noimage')) return;
     const overlay = document.getElementById('qv-zoom-overlay');
@@ -508,11 +510,11 @@ window.openZoomImage = function() {
     overlay.focus();
 };
 
-window.closeZoomImage = function() {
+window.closeZoomImage = function () {
     document.getElementById('qv-zoom-overlay').style.display = 'none';
 };
 
-window.navigateGallery = function(direction) {
+window.navigateGallery = function (direction) {
     if (currentProductGallery.length <= 1) return;
     currentImageIndex += direction;
     if (currentImageIndex >= currentProductGallery.length) currentImageIndex = 0;
@@ -520,7 +522,7 @@ window.navigateGallery = function(direction) {
     updateGalleryView();
 };
 
-window.setGalleryIndex = function(index) {
+window.setGalleryIndex = function (index) {
     currentImageIndex = index;
     updateGalleryView();
 };
@@ -536,7 +538,7 @@ function updateGalleryView() {
         zoomImg.src = url;
         mainImg.classList.remove('img-switching');
         zoomImg.classList.remove('img-switching');
-    }, 200); 
+    }, 200);
     document.querySelectorAll('.qv-thumb').forEach((thumb, idx) => {
         if (idx === currentImageIndex) {
             thumb.classList.add('active');
@@ -547,7 +549,7 @@ function updateGalleryView() {
     });
 }
 
-document.addEventListener('keydown', function(e) {
+document.addEventListener('keydown', function (e) {
     const modal = document.getElementById('productQuickView');
     if (modal && modal.style.display === 'flex') {
         if (e.key === 'ArrowLeft') navigateGallery(-1);
@@ -556,7 +558,7 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-window.openProductModal = function(id) {
+window.openProductModal = function (id) {
     const cooldownTime = window.StoreConfig.settings.cooldownModal || 5000;
     const lastClick = parseInt(localStorage.getItem('qv_last_click_time') || 0);
     const now = Date.now();
@@ -565,7 +567,7 @@ window.openProductModal = function(id) {
     if (timePassed < cooldownTime) {
         const secondsLeft = Math.ceil((cooldownTime - timePassed) / 1000);
         showToast(`Подождите ${secondsLeft} сек. перед открытием`, 'bi-hourglass-split', true);
-        return; 
+        return;
     }
 
     localStorage.setItem('qv_last_click_time', now);
@@ -580,9 +582,9 @@ window.openProductModal = function(id) {
     if (mainImg) {
         mainImg.src = NO_IMAGE;
         mainImg.classList.remove('anim-fade');
-    } 
-    
-    document.getElementById('qv-thumbs-list').innerHTML = ''; 
+    }
+
+    document.getElementById('qv-thumbs-list').innerHTML = '';
     document.getElementById('qv-name').innerText = 'Загрузка...';
     document.getElementById('qv-article').innerText = '...';
     document.getElementById('qv-price').innerText = '...';
@@ -590,23 +592,23 @@ window.openProductModal = function(id) {
     document.getElementById('qv-features-list').innerHTML = '';
     document.getElementById('qv-stars-width').style.width = '0%';
     document.getElementById('qv-reviews').innerText = '';
-    
+
     document.getElementById('qv-site-link-container').style.display = 'none';
     document.getElementById('qv-zip-container').style.display = 'none';
     document.getElementById('qv-docs-block').style.display = 'none';
     document.getElementById('qv-logistics-block').style.display = 'none';
-    
+
     document.querySelector('.qv-main-image-box').classList.remove('single-photo');
     document.getElementById('qv-zoom-overlay').classList.remove('single-photo');
 
     const likeBtn = document.getElementById('qv-btn-like');
-    const favBtn  = document.getElementById('qv-btn-fav');
-    if(likeBtn) {
+    const favBtn = document.getElementById('qv-btn-fav');
+    if (likeBtn) {
         likeBtn.className = 'qv-header-btn';
         likeBtn.innerHTML = '<i class="bi bi-heart"></i>';
         likeBtn.setAttribute('data-id', id);
     }
-    if(favBtn) {
+    if (favBtn) {
         favBtn.className = 'qv-header-btn';
         favBtn.innerHTML = '<i class="bi bi-star"></i>';
         favBtn.setAttribute('data-id', id);
@@ -614,8 +616,8 @@ window.openProductModal = function(id) {
 
     const stockWrapper = document.getElementById('qv-stock-wrapper');
     const stockStatus = document.getElementById('qv-stock-status');
-    if(stockWrapper) {
-        stockWrapper.className = 'qv-stock'; 
+    if (stockWrapper) {
+        stockWrapper.className = 'qv-stock';
         stockStatus.innerText = '...';
     }
 
@@ -637,184 +639,184 @@ window.openProductModal = function(id) {
             "X-Requested-With": "XMLHttpRequest"
         }
     })
-    .then(r => {
-        if (r.status === 429) {
-            return r.json().then(data => {
-                closeProductModal(); 
-                showToast(data.message, 'error');
-                throw new Error('Throttled');
-            });
-        }
-        if (!r.ok) throw new Error('Network error');
-        return r.json();
-    })
-    .then(data => {
-        if (!data.success) {
-            showToast('Ошибка загрузки', 'bi-exclamation-triangle', true);
-            closeProductModal();
-            return;
-        }
-
-        document.getElementById('qv-article').innerText = data.article || '-';
-        document.getElementById('qv-name').innerText = data.name;
-        document.getElementById('qv-price').innerText = data.price;
-
-        if (stockWrapper) {
-            const qty = parseFloat(data.stock_qty); 
-            if (!isNaN(qty) && qty > 0) {
-                stockWrapper.className = 'qv-stock'; 
-                stockWrapper.querySelector('i').className = 'bi bi-check-circle-fill';
-                stockStatus.innerText = 'В наличии';
-            } else {
-                stockWrapper.className = 'qv-stock out'; 
-                stockWrapper.querySelector('i').className = 'bi bi-x-circle-fill';
-                stockStatus.innerText = 'Нет в наличии';
+        .then(r => {
+            if (r.status === 429) {
+                return r.json().then(data => {
+                    closeProductModal();
+                    showToast(data.message, 'error');
+                    throw new Error('Throttled');
+                });
             }
-        }
+            if (!r.ok) throw new Error('Network error');
+            return r.json();
+        })
+        .then(data => {
+            if (!data.success) {
+                showToast('Ошибка загрузки', 'bi-exclamation-triangle', true);
+                closeProductModal();
+                return;
+            }
 
-        const rating = parseFloat(data.rating || 0);
-        const starPercent = (rating / 5) * 100;
-        document.getElementById('qv-stars-width').style.width = `${starPercent}%`;
-        document.getElementById('qv-reviews').innerText = data.rating_count ? `(${data.rating_count} отз.)` : '';
+            document.getElementById('qv-article').innerText = data.article || '-';
+            document.getElementById('qv-name').innerText = data.name;
+            document.getElementById('qv-price').innerText = data.price;
 
-        // Галерея
-        const thumbsList = document.getElementById('qv-thumbs-list');
-        const mainBox = document.querySelector('.qv-main-image-box');
-        const zoomOverlay = document.getElementById('qv-zoom-overlay');
-        currentProductGallery = (data.gallery && data.gallery.length > 0) ? data.gallery : (data.image ? [data.image] : []);
-        if (currentProductGallery.length === 0) currentProductGallery = [NO_IMAGE];
+            if (stockWrapper) {
+                const qty = parseFloat(data.stock_qty);
+                if (!isNaN(qty) && qty > 0) {
+                    stockWrapper.className = 'qv-stock';
+                    stockWrapper.querySelector('i').className = 'bi bi-check-circle-fill';
+                    stockStatus.innerText = 'В наличии';
+                } else {
+                    stockWrapper.className = 'qv-stock out';
+                    stockWrapper.querySelector('i').className = 'bi bi-x-circle-fill';
+                    stockStatus.innerText = 'Нет в наличии';
+                }
+            }
 
-        if (currentProductGallery.length <= 1) {
-            mainBox.classList.add('single-photo');
-            zoomOverlay.classList.add('single-photo');
-        } else {
-            mainBox.classList.remove('single-photo');
-            zoomOverlay.classList.remove('single-photo');
-        }
+            const rating = parseFloat(data.rating || 0);
+            const starPercent = (rating / 5) * 100;
+            document.getElementById('qv-stars-width').style.width = `${starPercent}%`;
+            document.getElementById('qv-reviews').innerText = data.rating_count ? `(${data.rating_count} отз.)` : '';
 
-        currentProductGallery.forEach((imgUrl, index) => {
-            const thumb = document.createElement('img');
-            thumb.src = imgUrl;
-            thumb.className = 'qv-thumb';
-            thumb.onclick = () => setGalleryIndex(index);
-            thumb.onerror = function() { this.style.display = 'none'; };
-            thumbsList.appendChild(thumb);
-        });
-        setGalleryIndex(0);
+            // Галерея
+            const thumbsList = document.getElementById('qv-thumbs-list');
+            const mainBox = document.querySelector('.qv-main-image-box');
+            const zoomOverlay = document.getElementById('qv-zoom-overlay');
+            currentProductGallery = (data.gallery && data.gallery.length > 0) ? data.gallery : (data.image ? [data.image] : []);
+            if (currentProductGallery.length === 0) currentProductGallery = [NO_IMAGE];
 
-        // ZIP
-        const zipContainer = document.getElementById('qv-zip-container');
-        const zipBtn = document.getElementById('qv-download-zip');
-        if (currentProductGallery.length > 0 && currentProductGallery[0] !== NO_IMAGE) {
+            if (currentProductGallery.length <= 1) {
+                mainBox.classList.add('single-photo');
+                zoomOverlay.classList.add('single-photo');
+            } else {
+                mainBox.classList.remove('single-photo');
+                zoomOverlay.classList.remove('single-photo');
+            }
+
+            currentProductGallery.forEach((imgUrl, index) => {
+                const thumb = document.createElement('img');
+                thumb.src = imgUrl;
+                thumb.className = 'qv-thumb';
+                thumb.onclick = () => setGalleryIndex(index);
+                thumb.onerror = function () { this.style.display = 'none'; };
+                thumbsList.appendChild(thumb);
+            });
+            setGalleryIndex(0);
+
+            // ZIP
+            const zipContainer = document.getElementById('qv-zip-container');
+            const zipBtn = document.getElementById('qv-download-zip');
+            if (currentProductGallery.length > 0 && currentProductGallery[0] !== NO_IMAGE) {
                 zipContainer.style.display = 'block';
                 if (data.download_url) zipBtn.href = data.download_url;
-        } else {
-            zipContainer.style.display = 'none';
-        }
+            } else {
+                zipContainer.style.display = 'none';
+            }
 
-        // Ссылки
-        const siteLinkContainer = document.getElementById('qv-site-link-container');
-        const siteLink = document.getElementById('qv-site-link');
-        if (data.product_url) {
-            siteLink.href = data.product_url;
-            siteLinkContainer.style.display = 'block';
-        } else {
-            siteLinkContainer.style.display = 'none';
-        }
-        
-        // Документы
-        const docsBlock = document.getElementById('qv-docs-block');
-        const docsContent = document.getElementById('qv-docs-content');
-        if (data.documents && data.documents.length > 0) {
-            docsBlock.style.display = 'block';
-            docsContent.innerHTML = '';
-            data.documents.forEach(doc => {
-                const a = document.createElement('a');
-                a.href = doc.url; a.target = '_blank'; a.className = 'qv-doc-item';
-                let icon = 'bi-file-earmark-text';
-                const ext = (doc.ext || '').toLowerCase();
-                if(ext === 'pdf') icon = 'bi-file-earmark-pdf';
-                if(['doc', 'docx'].includes(ext)) icon = 'bi-file-earmark-word';
-                a.innerHTML = `<i class="bi ${icon}"></i> <span>${doc.name}</span>`;
-                docsContent.appendChild(a);
-            });
-        } else {
-            docsBlock.style.display = 'none';
-        }
+            // Ссылки
+            const siteLinkContainer = document.getElementById('qv-site-link-container');
+            const siteLink = document.getElementById('qv-site-link');
+            if (data.product_url) {
+                siteLink.href = data.product_url;
+                siteLinkContainer.style.display = 'block';
+            } else {
+                siteLinkContainer.style.display = 'none';
+            }
 
-        // Логистика
-        const logContainer = document.getElementById('qv-logistics-content');
-        const logBlock = document.getElementById('qv-logistics-block');
-        if (data.logistics && data.logistics.length > 0) {
-            logBlock.style.display = 'block';
-            logContainer.innerHTML = '';
-            data.logistics.forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'qv-log-item';
-                div.innerHTML = `<span class="qv-log-name">${item.name}:</span> <span class="qv-log-val">${item.value}</span>`;
-                logContainer.appendChild(div);
-            });
-        } else {
-            logBlock.style.display = 'none';
-        }
-        
-        // Описание
-        const summaryDiv = document.getElementById('qv-summary');
-        if (data.summary) summaryDiv.innerHTML = data.summary;
-        else if (data.description) summaryDiv.innerHTML = data.description;
-        else summaryDiv.innerHTML = '';
+            // Документы
+            const docsBlock = document.getElementById('qv-docs-block');
+            const docsContent = document.getElementById('qv-docs-content');
+            if (data.documents && data.documents.length > 0) {
+                docsBlock.style.display = 'block';
+                docsContent.innerHTML = '';
+                data.documents.forEach(doc => {
+                    const a = document.createElement('a');
+                    a.href = doc.url; a.target = '_blank'; a.className = 'qv-doc-item';
+                    let icon = 'bi-file-earmark-text';
+                    const ext = (doc.ext || '').toLowerCase();
+                    if (ext === 'pdf') icon = 'bi-file-earmark-pdf';
+                    if (['doc', 'docx'].includes(ext)) icon = 'bi-file-earmark-word';
+                    a.innerHTML = `<i class="bi ${icon}"></i> <span>${doc.name}</span>`;
+                    docsContent.appendChild(a);
+                });
+            } else {
+                docsBlock.style.display = 'none';
+            }
 
-        const featContainer = document.getElementById('qv-features-list');
-        featContainer.innerHTML = '';
-        if (data.features && data.features.length > 0) {
-            data.features.forEach(feat => {
-                const div = document.createElement('div');
-                div.className = 'qv-spec-item'; 
-                div.innerHTML = `<span class="qv-spec-name">${feat.name}</span><span class="qv-spec-val">${feat.value}</span>`;
-                featContainer.appendChild(div);
-            });
-        } else {
-            featContainer.innerHTML = '<div style="color:#999; font-size:13px; grid-column: 1/-1;">Основные характеристики не указаны</div>';
-        }
+            // Логистика
+            const logContainer = document.getElementById('qv-logistics-content');
+            const logBlock = document.getElementById('qv-logistics-block');
+            if (data.logistics && data.logistics.length > 0) {
+                logBlock.style.display = 'block';
+                logContainer.innerHTML = '';
+                data.logistics.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'qv-log-item';
+                    div.innerHTML = `<span class="qv-log-name">${item.name}:</span> <span class="qv-log-val">${item.value}</span>`;
+                    logContainer.appendChild(div);
+                });
+            } else {
+                logBlock.style.display = 'none';
+            }
 
-        if (data.is_liked) {
-            likeBtn.classList.add('is-liked');
-            likeBtn.innerHTML = '<i class="bi bi-heart-fill"></i>';
-        }
-        if (data.is_in_wishlist) {
-            favBtn.classList.add('is-faved');
-            favBtn.innerHTML = '<i class="bi bi-star-fill"></i>';
-        }
-        
-        if (typeof checkGlobalCooldown === 'function') {
-            checkGlobalCooldown('qv-download-zip');
-        }
-    })
-    .catch(err => {
-        if (err.message !== 'Throttled') {
-            console.error(err);
-            showToast('Ошибка сети', 'bi-exclamation-triangle', true);
-        }
-    });
+            // Описание
+            const summaryDiv = document.getElementById('qv-summary');
+            if (data.summary) summaryDiv.innerHTML = data.summary;
+            else if (data.description) summaryDiv.innerHTML = data.description;
+            else summaryDiv.innerHTML = '';
+
+            const featContainer = document.getElementById('qv-features-list');
+            featContainer.innerHTML = '';
+            if (data.features && data.features.length > 0) {
+                data.features.forEach(feat => {
+                    const div = document.createElement('div');
+                    div.className = 'qv-spec-item';
+                    div.innerHTML = `<span class="qv-spec-name">${feat.name}</span><span class="qv-spec-val">${feat.value}</span>`;
+                    featContainer.appendChild(div);
+                });
+            } else {
+                featContainer.innerHTML = '<div style="color:#999; font-size:13px; grid-column: 1/-1;">Основные характеристики не указаны</div>';
+            }
+
+            if (data.is_liked) {
+                likeBtn.classList.add('is-liked');
+                likeBtn.innerHTML = '<i class="bi bi-heart-fill"></i>';
+            }
+            if (data.is_in_wishlist) {
+                favBtn.classList.add('is-faved');
+                favBtn.innerHTML = '<i class="bi bi-star-fill"></i>';
+            }
+
+            if (typeof checkGlobalCooldown === 'function') {
+                checkGlobalCooldown('qv-download-zip');
+            }
+        })
+        .catch(err => {
+            if (err.message !== 'Throttled') {
+                console.error(err);
+                showToast('Ошибка сети', 'bi-exclamation-triangle', true);
+            }
+        });
 };
 
-window.toggleLikeInModal = function() {
+window.toggleLikeInModal = function () {
     const btn = document.getElementById('qv-btn-like');
     const prodId = btn.getAttribute('data-id');
     const tableBtn = document.querySelector(`.btn-like-${prodId}`);
-    if(tableBtn) toggleLike(tableBtn, prodId);
+    if (tableBtn) toggleLike(tableBtn, prodId);
 };
 
-window.toggleWishlistInModal = function() {
+window.toggleWishlistInModal = function () {
     const btn = document.getElementById('qv-btn-fav');
     const prodId = btn.getAttribute('data-id');
     const tableBtn = document.querySelector(`.btn-fav-${prodId}`);
-    if(tableBtn) toggleWishlist(tableBtn, prodId);
+    if (tableBtn) toggleWishlist(tableBtn, prodId);
 };
 
 // ЛАЙК
-window.toggleLike = function(btn, id) {
-    const cooldownTime = window.StoreConfig.settings.cooldownLike || 800; 
+window.toggleLike = function (btn, id) {
+    const cooldownTime = window.StoreConfig.settings.cooldownLike || 800;
     const lastClick = parseInt(localStorage.getItem('like_last_click_time') || 0);
     const now = Date.now();
     const timePassed = now - lastClick;
@@ -822,7 +824,7 @@ window.toggleLike = function(btn, id) {
     if (timePassed < cooldownTime) {
         const secondsLeft = Math.ceil((cooldownTime - timePassed) / 1000);
         showToast(`Подождите ${secondsLeft} сек.`, 'bi-hourglass-split', true);
-        return; 
+        return;
     }
     localStorage.setItem('like_last_click_time', now);
 
@@ -833,14 +835,14 @@ window.toggleLike = function(btn, id) {
     if (wasActive) {
         btn.classList.remove('is-active');
         icon.className = 'bi bi-heart';
-        if(modalBtn && modalBtn.getAttribute('data-id') == id) {
+        if (modalBtn && modalBtn.getAttribute('data-id') == id) {
             modalBtn.classList.remove('is-liked');
             modalBtn.innerHTML = '<i class="bi bi-heart"></i>';
         }
     } else {
         btn.classList.add('is-active');
         icon.className = 'bi bi-heart-fill';
-        if(modalBtn && modalBtn.getAttribute('data-id') == id) {
+        if (modalBtn && modalBtn.getAttribute('data-id') == id) {
             modalBtn.classList.add('is-liked');
             modalBtn.innerHTML = '<i class="bi bi-heart-fill"></i>';
         }
@@ -848,58 +850,58 @@ window.toggleLike = function(btn, id) {
 
     fetch(window.StoreConfig.urls.likeBase + id, {
         method: 'POST',
-        headers: { 
-            'X-CSRF-TOKEN': window.StoreConfig.csrf, 
-            'Content-Type': 'application/json', 
+        headers: {
+            'X-CSRF-TOKEN': window.StoreConfig.csrf,
+            'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest',
-            'Accept': 'application/json' 
+            'Accept': 'application/json'
         }
     })
-    .then(r => {
-        if (!r.ok) return r.json().then(err => { throw new Error(err.message || 'Ошибка сервера'); });
-        return r.json();
-    })
-    .then(data => {
-        if (data.success) {
-            if (data.active) showToast('Вам понравилось!', 'bi-heart-fill');
-            else showToast('Вам больше не нравится', 'bi-heartbreak');
-            
-            const countSpan = btn.closest('.js-art')?.parentElement?.querySelector('.store-name .product-meta-row .meta-item[title="Лайки"]');
-            if(countSpan) {
-                if (data.count > 0) {
-                    countSpan.innerHTML = `<i class="bi bi-heart-fill" style="color: #e11d48; opacity: 0.7;"></i> ${data.count}`;
-                    countSpan.style.display = 'inline-flex';
-                } else {
-                    countSpan.style.display = 'none';
+        .then(r => {
+            if (!r.ok) return r.json().then(err => { throw new Error(err.message || 'Ошибка сервера'); });
+            return r.json();
+        })
+        .then(data => {
+            if (data.success) {
+                if (data.active) showToast('Вам понравилось!', 'bi-heart-fill');
+                else showToast('Вам больше не нравится', 'bi-heartbreak');
+
+                const countSpan = btn.closest('.js-art')?.parentElement?.querySelector('.store-name .product-meta-row .meta-item[title="Лайки"]');
+                if (countSpan) {
+                    if (data.count > 0) {
+                        countSpan.innerHTML = `<i class="bi bi-heart-fill" style="color: #e11d48; opacity: 0.7;"></i> ${data.count}`;
+                        countSpan.style.display = 'inline-flex';
+                    } else {
+                        countSpan.style.display = 'none';
+                    }
                 }
             }
-        }
-    })
-    .catch(error => {
-        console.error(error);
-        showToast(error.message, 'bi-exclamation-triangle', true);
+        })
+        .catch(error => {
+            console.error(error);
+            showToast(error.message, 'bi-exclamation-triangle', true);
 
-        if (wasActive) {
-            btn.classList.add('is-active');
-            icon.className = 'bi bi-heart-fill';
-            if(modalBtn && modalBtn.getAttribute('data-id') == id) {
-                modalBtn.classList.add('is-liked');
-                modalBtn.innerHTML = '<i class="bi bi-heart-fill"></i>';
+            if (wasActive) {
+                btn.classList.add('is-active');
+                icon.className = 'bi bi-heart-fill';
+                if (modalBtn && modalBtn.getAttribute('data-id') == id) {
+                    modalBtn.classList.add('is-liked');
+                    modalBtn.innerHTML = '<i class="bi bi-heart-fill"></i>';
+                }
+            } else {
+                btn.classList.remove('is-active');
+                icon.className = 'bi bi-heart';
+                if (modalBtn && modalBtn.getAttribute('data-id') == id) {
+                    modalBtn.classList.remove('is-liked');
+                    modalBtn.innerHTML = '<i class="bi bi-heart"></i>';
+                }
             }
-        } else {
-            btn.classList.remove('is-active');
-            icon.className = 'bi bi-heart';
-            if(modalBtn && modalBtn.getAttribute('data-id') == id) {
-                modalBtn.classList.remove('is-liked');
-                modalBtn.innerHTML = '<i class="bi bi-heart"></i>';
-            }
-        }
-    });
+        });
 };
 
 // ИЗБРАННОЕ
-window.toggleWishlist = function(btn, id) {
-    const cooldownTime = window.StoreConfig.settings.cooldownLike || 800; 
+window.toggleWishlist = function (btn, id) {
+    const cooldownTime = window.StoreConfig.settings.cooldownLike || 800;
     const lastClick = parseInt(localStorage.getItem('fav_last_click_time') || 0);
     const now = Date.now();
     const timePassed = now - lastClick;
@@ -907,7 +909,7 @@ window.toggleWishlist = function(btn, id) {
     if (timePassed < cooldownTime) {
         const secondsLeft = Math.ceil((cooldownTime - timePassed) / 1000);
         showToast(`Подождите ${secondsLeft} сек.`, 'bi-hourglass-split', true);
-        return; 
+        return;
     }
     localStorage.setItem('fav_last_click_time', now);
 
@@ -918,7 +920,7 @@ window.toggleWishlist = function(btn, id) {
     if (wasActive) {
         btn.classList.remove('is-active');
         icon.className = 'bi bi-star';
-        if(modalBtn && modalBtn.getAttribute('data-id') == id) {
+        if (modalBtn && modalBtn.getAttribute('data-id') == id) {
             modalBtn.classList.remove('is-faved');
             modalBtn.innerHTML = '<i class="bi bi-star"></i>';
         }
@@ -927,8 +929,8 @@ window.toggleWishlist = function(btn, id) {
         icon.className = 'bi bi-star-fill';
         btn.style.transform = "scale(1.2)";
         setTimeout(() => btn.style.transform = "scale(1)", 200);
-        
-        if(modalBtn && modalBtn.getAttribute('data-id') == id) {
+
+        if (modalBtn && modalBtn.getAttribute('data-id') == id) {
             modalBtn.classList.add('is-faved');
             modalBtn.innerHTML = '<i class="bi bi-star-fill"></i>';
         }
@@ -936,51 +938,51 @@ window.toggleWishlist = function(btn, id) {
 
     fetch(window.StoreConfig.urls.wishlistBase + id, {
         method: 'POST',
-        headers: { 
-            'X-CSRF-TOKEN': window.StoreConfig.csrf, 
-            'Content-Type': 'application/json', 
+        headers: {
+            'X-CSRF-TOKEN': window.StoreConfig.csrf,
+            'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest',
             'Accept': 'application/json'
         }
     })
-    .then(r => {
-        if (!r.ok) return r.json().then(err => { throw new Error(err.message || 'Ошибка сервера'); });
-        return r.json();
-    })
-    .then(data => {
-         if (data.success) {
-            if(data.active) showToast('Добавлено в избранное', 'bi-bookmark-check-fill');
-            else showToast('Удалено из избранного', 'bi-bookmark-dash');
-            
-            const countSpan = btn.closest('.js-art')?.parentElement?.querySelector('.store-name .product-meta-row .meta-item[title="В избранном у других"]');
-            if(countSpan) {
-                if (data.count > 0) {
-                    countSpan.innerHTML = `<i class="bi bi-star-fill" style="color: #f59e0b; opacity: 0.7;"></i> ${data.count}`;
-                    countSpan.style.display = 'inline-flex';
-                } else {
-                    countSpan.style.display = 'none';
+        .then(r => {
+            if (!r.ok) return r.json().then(err => { throw new Error(err.message || 'Ошибка сервера'); });
+            return r.json();
+        })
+        .then(data => {
+            if (data.success) {
+                if (data.active) showToast('Добавлено в избранное', 'bi-bookmark-check-fill');
+                else showToast('Удалено из избранного', 'bi-bookmark-dash');
+
+                const countSpan = btn.closest('.js-art')?.parentElement?.querySelector('.store-name .product-meta-row .meta-item[title="В избранном у других"]');
+                if (countSpan) {
+                    if (data.count > 0) {
+                        countSpan.innerHTML = `<i class="bi bi-star-fill" style="color: #f59e0b; opacity: 0.7;"></i> ${data.count}`;
+                        countSpan.style.display = 'inline-flex';
+                    } else {
+                        countSpan.style.display = 'none';
+                    }
                 }
             }
-        }
-    })
-    .catch(error => {
-        console.error(error);
-        showToast(error.message, 'bi-exclamation-triangle', true);
+        })
+        .catch(error => {
+            console.error(error);
+            showToast(error.message, 'bi-exclamation-triangle', true);
 
-        if (wasActive) {
-            btn.classList.add('is-active');
-            icon.className = 'bi bi-star-fill';
-            if(modalBtn && modalBtn.getAttribute('data-id') == id) {
-                modalBtn.classList.add('is-faved');
-                modalBtn.innerHTML = '<i class="bi bi-star-fill"></i>';
+            if (wasActive) {
+                btn.classList.add('is-active');
+                icon.className = 'bi bi-star-fill';
+                if (modalBtn && modalBtn.getAttribute('data-id') == id) {
+                    modalBtn.classList.add('is-faved');
+                    modalBtn.innerHTML = '<i class="bi bi-star-fill"></i>';
+                }
+            } else {
+                btn.classList.remove('is-active');
+                icon.className = 'bi bi-star';
+                if (modalBtn && modalBtn.getAttribute('data-id') == id) {
+                    modalBtn.classList.remove('is-faved');
+                    modalBtn.innerHTML = '<i class="bi bi-star"></i>';
+                }
             }
-        } else {
-            btn.classList.remove('is-active');
-            icon.className = 'bi bi-star';
-            if(modalBtn && modalBtn.getAttribute('data-id') == id) {
-                modalBtn.classList.remove('is-faved');
-                modalBtn.innerHTML = '<i class="bi bi-star"></i>';
-            }
-        }
-    });
+        });
 };

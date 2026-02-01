@@ -36,7 +36,7 @@
                     <div class="request-card-head">
                         <div class="request-title">{{ $ticket->topic }}</div>
                         <div class="request-status status-{{ $ticket->status }}">
-                            {{ $ticket->status === 'open' ? 'Открыто' : ($ticket->status === 'closed' ? 'Закрыто' : $ticket->status) }}
+                            {{ $ticket->status_label }}
                         </div>
                     </div>
 

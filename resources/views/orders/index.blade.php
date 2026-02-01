@@ -108,14 +108,8 @@
                         </div>
                     </td>
                     <td style="text-align: center;">
-                        <span class="order-status {{ $order->status }}">
-                            @switch($order->status)
-                                @case('new') Новый @break
-                                @case('processing') В&nbsp;работе @break
-                                @case('done') Выполнен @break
-                                @case('cancel') Отменен @break
-                                @default {{ $order->status }}
-                            @endswitch
+                        <span class="order-status" style="background-color: {{ $order->status_color ?? '#ccc' }}; color: #fff; border: none;">
+                            {{ $order->status_label ?? $order->status }}
                         </span>
                     </td>
                     <td style="text-align: right; font-weight: 700;" class="text-nowrap">

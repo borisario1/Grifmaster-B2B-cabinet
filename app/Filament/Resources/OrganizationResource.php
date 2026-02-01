@@ -19,7 +19,9 @@ class OrganizationResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-building-office';
 
-    protected static ?string $navigationGroup = 'Пользователи';
+    protected static ?string $navigationGroup = '👥 Пользователи';
+    
+    protected static ?int $navigationSort = 2;
 
     protected static ?string $navigationLabel = 'Организации';
 

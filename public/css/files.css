@@ -113,21 +113,20 @@
     background: #f7fafc;
     border: 1px solid #e2e8f0;
     border-radius: var(--radius, 18px);
-    padding: 24px;
-    text-align: center;
+    padding: 20px;
     cursor: pointer;
-    transition: 0.25s;
+    transition: 0.2s;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
 }
 
 .brand-card:hover,
 .brand-card.active {
     background: #e8f3ff;
-    border-color: #cbd5e1;
-    transform: translateY(-3px);
+    border-color: #3295D1;
+    transform: translateY(-2px);
 }
 
 .brand-card.active {
@@ -148,16 +147,33 @@
     margin-bottom: 8px;
 }
 
+.brand-info {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
 .brand-name {
-    font-size: 16px;
-    font-weight: 600;
+    font-size: 15px;
+    font-weight: 400;
     color: #001F33;
-    margin-bottom: 4px;
+    margin: 0;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .brand-docs-count {
-    font-size: 13px;
-    color: #4a5568;
+    font-size: 12px;
+    font-weight: 500;
+    color: #64748b;
+    background: #e2e8f0;
+    padding: 3px 9px;
+    border-radius: 10px;
+    white-space: nowrap;
 }
 
 /* === БЛОК 3: СПИСКИ ФАЙЛОВ === */
@@ -170,12 +186,20 @@
 }
 
 .resource-type-title {
-    font-size: 18px;
+    font-size: 17px;
     font-weight: 600;
     color: #001F33;
-    margin-bottom: 14px;
-    padding-bottom: 8px;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
     border-bottom: 2px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.resource-type-title i {
+    color: #3295D1;
+    font-size: 18px;
 }
 
 .resources-grid {

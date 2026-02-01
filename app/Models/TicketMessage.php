@@ -16,4 +16,20 @@ class TicketMessage extends Model
     protected $casts = [
         'created_at' => 'datetime',
     ];
+
+    /**
+     * Вложения сообщения
+     */
+    public function attachments()
+    {
+        return $this->hasMany(TicketAttachment::class, 'message_id');
+    }
+
+    /**
+     * Тикет, к которому относится сообщение
+     */
+    public function ticket()
+    {
+        return $this->belongsTo(Ticket::class, 'request_id');
+    }
 }

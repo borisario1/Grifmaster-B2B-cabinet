@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Ticket;
+use App\Models\TicketAttachment;
 use App\Models\TicketMessage;
 use App\Models\User;
 use App\Models\Organization;
@@ -68,20 +69,21 @@ class TicketService
                 'user_phone' => $phone,
                 'category'   => $data['category'] ?? 'general',
                 'topic'      => $data['topic'],
-                'status'     => 'open',
+                'status'     => 'new',
                 'request_code' => $code,
             ], $orgData));
 
             // Создаем первое сообщение
             $this->addMessage($ticket, $user, $data['message']);
 
-            // Отправляем уведомление (внутреннее + email)
+            // Отправляем уведомление (внутреннее + email с контекстом для менеджеров)
             $this->notificationService->send(
                 $user->id,
                 'ticket_created',
                 "Создано новое обращение",
                 "Ваше обращение №{$code} зарегистрировано.",
-                route('tickets.show', $code) // Предполагаем наличие роута
+                route('tickets.show', $code),
+                ['ticket_code' => $code]
             );
 
             return $ticket;
@@ -89,17 +91,39 @@ class TicketService
     }
 
     /**
-     * Добавление сообщения в тикет
+     * Добавление сообщения в тикет с вложениями
+     * 
+     * @param Ticket $ticket
+     * @param User $user
+     * @param string $messageText
+     * @param array $files Массив UploadedFile объектов
+     * @param string $senderType 'user' или 'admin'
      */
-    public function addMessage(Ticket $ticket, User $user, string $messageText): TicketMessage
+    public function addMessage(Ticket $ticket, User $user, string $messageText, array $files = [], string $senderType = 'user'): TicketMessage
     {
-        return TicketMessage::create([
+        $message = TicketMessage::create([
             'request_id'  => $ticket->id,
-            'sender_type' => 'user',
+            'sender_type' => $senderType,
             'sender_id'   => $user->id,
             'message'     => $messageText,
-            'is_read'     => false, // Для админа оно непрочитано
+            'is_read'     => false,
         ]);
+
+        // Сохраняем вложения
+        foreach ($files as $file) {
+            $path = $file->store("ticket-attachments/{$ticket->id}", 'private');
+            
+            TicketAttachment::create([
+                'message_id'    => $message->id,
+                'file_path'     => $path,
+                'original_name' => $file->getClientOriginalName(),
+                'mime_type'     => $file->getMimeType(),
+                'size'          => $file->getSize(),
+                'created_at'    => now(),
+            ]);
+        }
+
+        return $message;
     }
 
     /**

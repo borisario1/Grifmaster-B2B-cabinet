@@ -84,6 +84,11 @@ class Product extends Model
         return $this->hasOne(ProductDetail::class);
     }
 
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
     /**
      * Явно указываем типы
      */

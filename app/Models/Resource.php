@@ -11,6 +11,7 @@ class Resource extends Model
     
     protected $fillable = [
         'title',
+        'description',
         'type',
         'file_path',
         'brand_id',
